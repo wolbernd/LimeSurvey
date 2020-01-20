@@ -2,17 +2,13 @@
          stderr="true"
          colors="true" >
     <testsuites>
-        <testsuite name="unit">
-            <directory>tests/unit</directory>
+        <testsuite name="functional">
             <directory>tests/functional</directory>
         </testsuite>
         <testsuite name="Unit">
             <directory>tests/unit</directory>
         </testsuite>
-        <testsuite name="Unit">
-            <directory>tests/unit</directory>
-        </testsuite>
-        <testsuite name="Acceptance">
+        <testsuite name="acceptance">
             <directory>tests/functional/acceptance</directory>
         </testsuite>
     </testsuites>
