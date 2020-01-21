@@ -29,7 +29,11 @@ final class QuestionThemeConverter
     {
         $sXMLDirectoryPath = str_replace('\\', '/', $sXMLDirectoryPath);
 
-        $sQuestionConfigFilePath = $this->appConfig['rootdir'] . DIRECTORY_SEPARATOR . $sXMLDirectoryPath . DIRECTORY_SEPARATOR . 'config.xml';
+        $sQuestionConfigFilePath = $this->appConfig['rootdir']
+            . DIRECTORY_SEPARATOR
+            . $sXMLDirectoryPath
+            . DIRECTORY_SEPARATOR
+            . 'config.xml';
         $oThemeConfig = $this->xmlIO->load($sQuestionConfigFilePath);
 
         // replace custom_attributes with attributes
@@ -39,7 +43,14 @@ final class QuestionThemeConverter
         //};
 
         $sThemeDirectoryName = basename(dirname($sQuestionConfigFilePath, 1));
-        $sPathToCoreConfigFile = str_replace('\\', '/', $this->appConfig['rootdir'] . '/application/views/survey/questions/answer/' . $sThemeDirectoryName . '/config.xml');
+        $sPathToCoreConfigFile = str_replace(
+            '\\',
+            '/',
+            $this->appConfig['rootdir']
+            . '/application/views/survey/questions/answer/'
+            . $sThemeDirectoryName
+            . '/config.xml'
+        );
 
         // get type from core theme
         if (isset($oThemeConfig->metadata->type)) {
@@ -67,18 +78,23 @@ final class QuestionThemeConverter
                 'success' => false
             ];
         }
-        $bOldEntityLoaderState = libxml_disable_entity_loader(true);
-        $sThemeCoreConfigFile = file_get_contents($sPathToCoreConfigFile);  // @see: Now that entity loader is disabled, we can't use simplexml_load_file; so we must read the file with file_get_contents and convert it as a string
-        $oThemeCoreConfig = simplexml_load_string($sThemeCoreConfigFile);
-        libxml_disable_entity_loader($bOldEntityLoaderState);
+
+        $oThemeCoreConfig = $this->xmlIO->load($sPathToCoreConfigFile);
 
         // get questiontype from core if it is missing
         if (!isset($oThemeConfig->metadata->questionType)) {
             $oThemeConfig->metadata->addChild('questionType', $oThemeCoreConfig->metadata->questionType);
         };
 
-        // search missing new tags and copy theme from the core theme
-        $aNewMetadataTagsToRecoverFromCoreType = ['group', 'subquestions', 'answerscales', 'hasdefaultvalues', 'assessable', 'class'];
+        // Search missing new tags and copy theme from the core theme
+        $aNewMetadataTagsToRecoverFromCoreType = [
+            'group',
+            'subquestions',
+            'answerscales',
+            'hasdefaultvalues',
+            'assessable',
+            'class'
+        ];
         foreach ($aNewMetadataTagsToRecoverFromCoreType as $sMetaTag) {
             if (!isset($oThemeConfig->metadata->$sMetaTag)) {
                 $oThemeConfig->metadata->addChild($sMetaTag, $oThemeCoreConfig->metadata->$sMetaTag);
