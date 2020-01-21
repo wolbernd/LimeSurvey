@@ -5,7 +5,7 @@ namespace LimeSurvey\Models\Services;
 /**
  * XML input/output.
  */
-final class XmlIO
+class XmlIO
 {
     /**
      * @param SimpleXMLElement $xml
