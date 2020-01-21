@@ -3048,8 +3048,12 @@ function db_upgrade_all($iOldDBVersion, $bSilent = false)
             if (!empty($aUserDirectory)) {
                 reset($aUserDirectory);
                 $aUserXMLPaths = key($aUserDirectory);
+                $converter = new QuestionThemeConverter(
+                    App()->getConfig(),
+                    new XmlIO()
+                );
                 foreach ($aUserDirectory[$aUserXMLPaths] as $sXMLDirectoryPath) {
-                    $aSuccess = QuestionTheme::convertLS3toLS4($sXMLDirectoryPath);
+                    $aSuccess = $converter->convert($sXMLDirectoryPath);
                     if ($aSuccess['success']) {
                         $oQuestionTheme = new QuestionTheme;
                         $oQuestionTheme->importManifest($sXMLDirectoryPath, true);
