@@ -5,14 +5,19 @@
  */
 final class QuestionThemeConverter
 {
-    private $rootdir;
+    /** @var array */
+    private $appConfig;
+
+    /** @var XmlIO */
+    private $xmlIO;
 
     /**
      * @param ? $appConfig
      */
-    public function __construct($rootdir)
+    public function __construct(array $appConfig, XmlIO $xmlIO)
     {
-        $this->rootdir = $rootdir;
+        $this->appConfig = $appConfig;
+        $this->xmlIO = $xmlIO;
     }
 
     /**
@@ -24,11 +29,11 @@ final class QuestionThemeConverter
     {
         $sQuestionConfigFilePath = $this->getQuestionConfigPath($sXMLDirectoryPath);
 
-        $oThemeConfig = $this->loadXml($sQuestionConfigFilePath);
+        $themeConfig = $this->xmlIO->load($sQuestionConfigFilePath);
 
-        $this->replaceTags($oThemeConfig);
-        $this->setType($oThemeConfig);
-        $this->setCompatibility($oThemeConfig);
+        $this->replaceTags($themeConfig);
+        $this->setType($themeConfig);
+        $this->setCompatibility($themeConfig);
 
         // check if core question theme can be found to fill in missing information
         $sPathToCoreConfigFile = $this->getCorePath($sQuestionConfigFilePath);
@@ -37,29 +42,19 @@ final class QuestionThemeConverter
             return $aSuccess = [
                 'message' => sprintf(
                     gT("Question theme could not be converted to LimeSurvey 4 standard. Reason: No matching core theme with the name %s could be found"),
-                    $sThemeDirectoryName
+                    $sPathToCoreConfigFile
                 ),
                 'success' => false
             ];
         }
 
-        $oThemeCoreConfig = $this->loadXml($sPathToCoreConfigFile);
+        $coreConfig = $this->xmlIO->load($sPathToCoreConfigFile);
 
-        // get questiontype from core if it is missing
-        if (!isset($oThemeConfig->metadata->questionType)) {
-            $oThemeConfig->metadata->addChild('questionType', $oThemeCoreConfig->metadata->questionType);
-        };
-
-        // search missing new tags and copy theme from the core theme
-        $aNewMetadataTagsToRecoverFromCoreType = ['group', 'subquestions', 'answerscales', 'hasdefaultvalues', 'assessable', 'class'];
-        foreach ($aNewMetadataTagsToRecoverFromCoreType as $sMetaTag) {
-            if (!isset($oThemeConfig->metadata->$sMetaTag)) {
-                $oThemeConfig->metadata->addChild($sMetaTag, $oThemeCoreConfig->metadata->$sMetaTag);
-            }
-        }
+        $this->recoverQuestionType($themeConfig, $coreConfig);
+        $this->recoverNewTags($themeConfig, $coreConfig);
 
         // write everything back to to xml file
-        $oThemeConfig->saveXML($sQuestionConfigFilePath);
+        $this->xmlIO->save($themeConfig, $sQuestionConfigFilePath);
 
         return $aSuccess = [
             'message' => gT('Question Theme has been sucessfully converted to LimeSurvey 4'),
@@ -68,32 +63,10 @@ final class QuestionThemeConverter
     }
 
     /**
-     * @param string $path
-     * @return SimpleXMLElement
-     * @throws \Exception
-     */
-    public function loadXml($path)
-    {
-        $oldState = libxml_disable_entity_loader(true);
-        $file = file_get_contents($path);
-        if (empty($file)) {
-            throw new \Exception(
-                sprintf(
-                    gT('Found no file at path %s'),
-                    $path
-                )
-            );
-        }
-        $xml = simplexml_load_string($file);
-        libxml_disable_entity_loader($oldState);
-        return $xml;
-    }
-
-    /**
-     * @param SimpleXMLElement $oThemeConfig
+     * @param SimpleXMLElement $themeConfig
      * @return void
      */
-    public function replaceTags(SimpleXMLElement $oThemeConfig)
+    public function replaceTags(SimpleXMLElement $themeConfig)
     {
         // replace custom_attributes with attributes
         //if (preg_match('/<custom_attributes>/', $sQuestionConfigFile)) {
@@ -105,31 +78,31 @@ final class QuestionThemeConverter
     }
 
     /**
-     * @param SimpleXMLElement $oThemeConfig
+     * @param SimpleXMLElement $themeConfig
      * @return void
      */
-    public function setCompatibility(SimpleXMLElement $oThemeConfig)
+    public function setCompatibility(SimpleXMLElement $themeConfig)
     {
-        if (isset($oThemeConfig->compatibility->version)) {
-            $oThemeConfig->compatibility->version = '4.0';
+        if (isset($themeConfig->compatibility->version)) {
+            $themeConfig->compatibility->version = '4.0';
         } else {
-            $compatibility = $oThemeConfig->addChild('compatibility');
+            $compatibility = $themeConfig->addChild('compatibility');
             $compatibility->addChild('version');
-            $oThemeConfig->compatibility->version = '4.0';
+            $themeConfig->compatibility->version = '4.0';
         }
     }
 
     /**
-     * @param SimpleXMLElement $oThemeConfig
+     * @param SimpleXMLElement $themeConfig
      * @return void
      */
-    public function setType(SimpleXMLElement $oThemeConfig)
+    public function setType(SimpleXMLElement $themeConfig)
     {
         // get type from core theme
-        if (isset($oThemeConfig->metadata->type)) {
-            $oThemeConfig->metadata->type = 'question_theme';
+        if (isset($themeConfig->metadata->type)) {
+            $themeConfig->metadata->type = 'question_theme';
         } else {
-            $oThemeConfig->metadata->addChild('type', 'question_theme');
+            $themeConfig->metadata->addChild('type', 'question_theme');
         };
     }
 
@@ -140,7 +113,11 @@ final class QuestionThemeConverter
     public function getQuestionConfigPath($sXMLDirectoryPath)
     {
         $sXMLDirectoryPath = str_replace('\\', '/', $sXMLDirectoryPath);
-        return $this->rootdir . DIRECTORY_SEPARATOR . $sXMLDirectoryPath . DIRECTORY_SEPARATOR . 'config.xml';
+        return $this->appConfig['rootdir']
+            . DIRECTORY_SEPARATOR
+            . $sXMLDirectoryPath
+            . DIRECTORY_SEPARATOR
+            . 'config.xml';
     }
 
     /**
@@ -153,7 +130,39 @@ final class QuestionThemeConverter
         return str_replace(
             '\\',
             '/',
-            $this->rootdir . '/application/views/survey/questions/answer/' . $sThemeDirectoryName . '/config.xml'
+            $this->appConfig['rootdir'] . '/application/views/survey/questions/answer/' . $sThemeDirectoryName . '/config.xml'
         );
+    }
+
+    /**
+     * Search missing new tags and copy theme from the core theme
+     *
+     * @param SimpleXMLElement $themeConfig
+     * @param SimpleXMLElement $coreConfig
+     * @return void
+     */
+    public function recoverNewTags(SimpleXMLElement $themeConfig, SimpleXMLElement $coreConfig)
+    {
+        /** @var string New metadata tags to recover from core type */
+        $newTags = ['group', 'subquestions', 'answerscales', 'hasdefaultvalues', 'assessable', 'class'];
+        foreach ($newTags as $metaTag) {
+            if (!isset($themeConfig->metadata->$metaTag)) {
+                $themeConfig->metadata->addChild($metaTag, $coreConfig->metadata->$metaTag);
+            }
+        }
+    }
+
+    /**
+     * Get questiontype from core if it is missing
+     *
+     * @param SimpleXMLElement $themeConfig
+     * @param SimpleXMLElement $coreConfig
+     * @return void
+     */
+    public function recoverQuestionType(SimpleXMLElement $themeConfig, SimpleXMLElement $coreConfig)
+    {
+        if (!isset($themeConfig->metadata->questionType)) {
+            $themeConfig->metadata->addChild('questionType', $coreConfig->metadata->questionType);
+        };
     }
 }
