@@ -280,9 +280,13 @@ class LSYii_Application extends CWebApplication
      * @param boolean|mixed $default Value to return when not found, default is false
      * @return string
      */
-    public function getConfig($name, $default = false)
+    public function getConfig($name = null, $default = false)
     {
-        return isset($this->config[$name]) ? $this->config[$name] : $default;
+        if ($name === null && $default === false) {
+            return $this->config;
+        } else {
+            return isset($this->config[$name]) ? $this->config[$name] : $default;
+        }
     }
 
 
