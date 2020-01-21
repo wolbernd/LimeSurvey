@@ -12,7 +12,9 @@ class QuestionThemeConverterTest extends TestBaseClass
      */
     public function testBasic()
     {
-        \Yii::import('application.models.services.QuestionThemeConverter');
-        $foo = new \QuestionThemeConverter(\Yii::app()->getConfig('rootdir'));
+        $foo = new \LimeSurvey\Models\Services\QuestionThemeConverter(
+            \Yii::app()->getConfig(),
+            new \LimeSurvey\Models\Services\XmlIO()
+        );
     }
 }

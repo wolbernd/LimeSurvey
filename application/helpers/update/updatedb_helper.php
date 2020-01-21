@@ -3048,9 +3048,9 @@ function db_upgrade_all($iOldDBVersion, $bSilent = false)
             if (!empty($aUserDirectory)) {
                 reset($aUserDirectory);
                 $aUserXMLPaths = key($aUserDirectory);
-                $converter = new QuestionThemeConverter(
+                $converter = new \LimeSurvey\Models\Services\QuestionThemeConverter(
                     App()->getConfig(),
-                    new XmlIO()
+                    new \LimeSurvey\Models\Services\XmlIO()
                 );
                 foreach ($aUserDirectory[$aUserXMLPaths] as $sXMLDirectoryPath) {
                     $aSuccess = $converter->convert($sXMLDirectoryPath);
