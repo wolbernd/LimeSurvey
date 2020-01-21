@@ -70,8 +70,8 @@ final class QuestionThemeConverter
             $oThemeConfig->compatibility->version = '4.0';
         }
 
-        // check if core question theme can be found to fill in missing information
-        if (!is_file($sPathToCoreConfigFile)) {
+        $oThemeCoreConfig = $this->xmlIO->load($sPathToCoreConfigFile);
+        if (empty($oThemeCoreConfig)) {
             return $aSuccess = [
                 'message' => sprintf(
                     gT("Question theme could not be converted to LimeSurvey 4 standard. Reason: No matching core theme with the name %s could be found"),
@@ -80,8 +80,6 @@ final class QuestionThemeConverter
                 'success' => false
             ];
         }
-
-        $oThemeCoreConfig = $this->xmlIO->load($sPathToCoreConfigFile);
 
         // get questiontype from core if it is missing
         if (!isset($oThemeConfig->metadata->questionType)) {
