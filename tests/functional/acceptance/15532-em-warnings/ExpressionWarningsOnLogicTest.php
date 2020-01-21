@@ -53,6 +53,8 @@ class ExpressionWarningsOnLogicTest extends TestBaseClassWeb
         );
         try {
             self::$webDriver->get($url);
+            self::$webDriver->dismissModal();
+            self::$webDriver->dismissModal();
             sleep(1);
             /* Did we have thew warning alert */
             $this->assertTrue(self::$webDriver->findElement(WebDriverBy::cssSelector('#logicfiletable .alert-warning'))->isDisplayed(), "Unable to find the alert");
