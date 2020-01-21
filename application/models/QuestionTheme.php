@@ -291,7 +291,11 @@ class QuestionTheme extends LSActiveRecord
 
         // convert Question Theme
         if ($bSkipConversion === false) {
-            $aConvertSuccess = self::convertLS3toLS4($sXMLDirectoryPath);
+            $converter = new QuestionThemeConverter(
+                App()->getConfig(),
+                new XmlIO()
+            );
+            $aConvertSuccess = $converter->convert($sXMLDirectoryPath);
             if (!$aConvertSuccess['success']) {
                 App()->setFlashMessage($aConvertSuccess['message'], 'error');
                 App()->getController()->redirect(array("admin/themeoptions#questionthemes"));
