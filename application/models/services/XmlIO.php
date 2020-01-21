@@ -1,5 +1,7 @@
 <?php
 
+namespace LimeSurvey\Models\Services;
+
 /**
  * XML input/output.
  */

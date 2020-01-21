@@ -291,9 +291,9 @@ class QuestionTheme extends LSActiveRecord
 
         // convert Question Theme
         if ($bSkipConversion === false) {
-            $converter = new QuestionThemeConverter(
+            $converter = new \LimeSurvey\Models\Services\QuestionThemeConverter(
                 App()->getConfig(),
-                new XmlIO()
+                new \LimeSurvey\Models\Services\XmlIO()
             );
             $aConvertSuccess = $converter->convert($sXMLDirectoryPath);
             if (!$aConvertSuccess['success']) {
