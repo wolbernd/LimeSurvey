@@ -39,10 +39,12 @@ final class QuestionThemeConverter
         $oThemeConfig = $this->xmlIO->load($sQuestionConfigFilePath);
 
         // replace custom_attributes with attributes
-        //if (preg_match('/<custom_attributes>/', $sQuestionConfigFile)) {
-            //$sQuestionConfigFile = preg_replace('/<custom_attributes>/', '<attributes>', $sQuestionConfigFile);
-            //$sQuestionConfigFile = preg_replace('/<\/custom_attributes>/', '</attributes>', $sQuestionConfigFile);
-        //};
+        $sThemeConfig = $oThemeConfig->asXML();
+        if (preg_match('/<custom_attributes>/', $sThemeConfig)) {
+            $sThemeConfig = preg_replace('/<custom_attributes>/', '<attributes>', $sThemeConfig);
+            $sThemeConfig = preg_replace('/<\/custom_attributes>/', '</attributes>', $sThemeConfig);
+        };
+        $oThemeConfig = new \SimpleXMLElement($sThemeConfig);
 
         $sThemeDirectoryName = basename(dirname($sQuestionConfigFilePath, 1));
         $sPathToCoreConfigFile = str_replace(
@@ -108,5 +110,26 @@ final class QuestionThemeConverter
             'message' => gT('Question Theme has been sucessfully converted to LimeSurvey 4'),
             'success' => true
         ];
+    }
+
+    /**
+     * @see https://stackoverflow.com/a/13882419/2138090
+     */
+    public function renameTag(\SimpleXMLElement $_oldTag, $newTagName)
+    {
+        $oldTag = new \DOMDocument();
+        $oldTag->loadXML($_oldTag->asXML());
+        $document = $oldTag->ownerDocument;
+
+        $newTag = $document->createElement($newTagName);
+        $oldTag->parentNode->replaceChild($newTag, $oldTag);
+
+        foreach ($oldTag->attributes as $attribute) {
+            $newTag->setAttribute($attribute->name, $attribute->value);
+        }
+        foreach (iterator_to_array($oldTag->childNodes) as $child) {
+            $newTag->appendChild($oldTag->removeChild($child));
+        }
+        return $newTag;
     }
 }
