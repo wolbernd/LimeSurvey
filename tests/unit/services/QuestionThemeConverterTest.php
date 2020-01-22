@@ -11,23 +11,8 @@ use Yii;
  */
 class QuestionThemeConverterTest extends TestBaseClass
 {
-    /**
-     * @return void
-     */
-    public function testBasic()
-    {
-        $converter = new QuestionThemeConverter(
-            ['rootdir' => ''],
-            (new class extends XmlIO {
-                public function save($xml, $path)
-                {
-                    var_dump($xml);
-                    return true;
-                }
-                public function load($path)
-                {
-                    if ($path === '/listradio/config.xml') {
-                        return new \SimpleXMLElement(<<<XML
+    /** @var string Config for question theme, LS3 */
+    private $dummyLS3config = <<<XML
 <?xml version="1.0" encoding="UTF-8"?>
 
 <config>
@@ -107,10 +92,10 @@ class QuestionThemeConverterTest extends TestBaseClass
         <show_as_question_type>true</show_as_question_type>
     </engine>
 </config>
-XML
-                        );
-                    } elseif ($path === '/application/views/survey/questions/answer/listradio/config.xml') {
-                        return new \SimpleXMLElement(<<<XML
+XML;
+
+    /** @var string Config for question theme, LS4 */
+    private $dummyLS4config = <<<XML
 <?xml version="1.0" encoding="UTF-8"?>
 
 <config>
@@ -854,13 +839,45 @@ XML
         <show_as_question_type>true</show_as_question_type>
     </engine>
 </config>
-XML
-                        );
+XML;
+
+    /**
+     * @return void
+     */
+    public function testBasic()
+    {
+        $appConfig = ['rootdir' => ''];
+        $xmlIO =
+            (new class($this->dummyLS3config, $this->dummyLS4config) extends XmlIO {
+                public $convertedXml = '';
+                public function __construct($dummyLS3config, $dummyLS4config)
+                {
+                    $this->dummyLS3config = $dummyLS3config;
+                    $this->dummyLS4config = $dummyLS4config;
+                }
+                public function save($xml, $path)
+                {
+                    $this->convertedXml = $xml;
+                    return true;
+                }
+                public function load($path)
+                {
+                    if ($path === '/listradio/config.xml') {
+                        return new \SimpleXMLElement($this->dummyLS3config);
+                    } elseif ($path === '/application/views/survey/questions/answer/listradio/config.xml') {
+                        return new \SimpleXMLElement($this->dummyLS4config);
+                    } else {
+                        throw new \Exception('Unknown path, mock XmlIO failed');
                     }
                 }
-            })
-        );
+            });
+        $converter = new QuestionThemeConverter($appConfig, $xmlIO);
+
+        /** @var array */
         $result = $converter->convert('listradio');
-        var_dump($result);
+
+        $this->assertTrue($result['success']);
+        $this->assertNotEmpty($xmlIO->convertedXml->attributes);
+        $this->assertEmpty($xmlIO->convertedXml->custom_attributes);
     }
 }
