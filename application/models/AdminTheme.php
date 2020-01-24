@@ -37,23 +37,6 @@ class AdminTheme extends CFormModel
     private static $instance;
 
     /**
-     * Get the list of admin theme, as an array containing each configuration object for each template
-     * @return array the array of configuration object
-     */
-    static public function getAdminThemeList()
-    {
-        $sStandardTemplateRootDir  = Yii::app()->getConfig("styledir"); // The directory containing the default admin themes
-        $sUserTemplateDir          = Yii::app()->getConfig('uploaddir').DIRECTORY_SEPARATOR.'admintheme'; // The directory containing the user themes
-
-        $aStandardThemeObjects     = self::getThemeList($sStandardTemplateRootDir); // array containing the configuration files of standard admin themes (styles/...)
-        $aUserThemeObjects         = self::getThemeList($sUserTemplateDir); // array containing the configuration files of user admin themes (upload/admintheme/...)
-        $aListOfThemeObjects       = array_merge($aStandardThemeObjects, $aUserThemeObjects);
-
-        ksort($aListOfThemeObjects);
-        return $aListOfThemeObjects;
-    }
-
-    /**
      * Set the Admin Theme :
      * - checks if the required template exists
      * - set the admin theme variables
@@ -296,42 +279,6 @@ class AdminTheme extends CFormModel
     }
 
     /**
-     * Return an array containing the configuration object of all templates in a given directory
-     *
-     * @param string $sDir          the directory to scan
-     * @return array                the array of object
-     */
-    static private function getThemeList($sDir)
-    {
-        $bOldEntityLoaderState = libxml_disable_entity_loader(true); // @see: http://phpsecurity.readthedocs.io/en/latest/Injection-Attacks.html#xml-external-entity-injection
-        $aListOfFiles = array();
-        $oAdminTheme = new AdminTheme;
-        if ($sDir && $pHandle = opendir($sDir)) {
-            while (false !== ($file = readdir($pHandle))) {
-                if (is_dir($sDir.DIRECTORY_SEPARATOR.$file) && is_file($sDir.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'config.xml')) {
-                    $sXMLConfigFile = file_get_contents(realpath($sDir.DIRECTORY_SEPARATOR.$file.'/config.xml')); // Now that entity loader is disabled, we can't use simplexml_load_file; so we must read the file with file_get_contents and convert it as a string
-
-                    // Simple Xml is buggy on PHP < 5.4. The [ array -> json_encode -> json_decode ] workaround seems to be the most used one.
-                    // @see: http://php.net/manual/de/book.simplexml.php#105330 (top comment on PHP doc for simplexml)
-                    $oTemplateConfig = json_decode(json_encode((array) simplexml_load_string($sXMLConfigFile), 1));
-                    if ($oAdminTheme->isStandardAdminTheme($file)) {
-                        $previewUrl = Yii::app()->getConfig('styleurl').$file;
-                    } else {
-                        $previewUrl = Yii::app()->getConfig('uploadurl').DIRECTORY_SEPARATOR.'admintheme'.DIRECTORY_SEPARATOR.$file;
-                    }
-                    $oTemplateConfig->path    = $file;
-                    $oTemplateConfig->preview = '<img src="'.$previewUrl.'/preview.png" alt="admin theme preview" height="200" class="img-thumbnail" />';
-                    $aListOfFiles[$file] = $oTemplateConfig;
-                }
-            }
-            closedir($pHandle);
-        }
-        libxml_disable_entity_loader($bOldEntityLoaderState);
-        return $aListOfFiles;
-    }
-
-
-    /**
      * Few constants depending on Template
      */
     private function defineConstants()
@@ -359,7 +306,7 @@ class AdminTheme extends CFormModel
      * @param string $sAdminThemeName the name of the template
      * @return boolean                  return true if it's a standard template, else false
      */
-    private function isStandardAdminTheme($sAdminThemeName)
+    public function isStandardAdminTheme($sAdminThemeName)
     {
         return in_array($sAdminThemeName,
             array(

@@ -104,7 +104,13 @@ class GlobalSettings extends Survey_Common_Action
         // Get current setting from DB
         $data['thischaracterset'] = getGlobalSetting('characterset');
         $data['sideMenuBehaviour'] = getGlobalSetting('sideMenuBehaviour');
-        $data['aListOfThemeObjects'] = AdminTheme::getAdminThemeList();
+
+        $adminThemeListFetcher = new \LimeSurvey\Models\Services\AdminThemeListFetcher(
+            App()->getConfig(),
+            new \LimeSurvey\Models\Services\XmlIO(),
+            new AdminTheme()
+        );
+        $data['aListOfThemeObjects'] = $adminThemeListFetcher->getList();
 
         $this->_renderWrappedTemplate('globalsettings', 'globalSettings_view', $data);
     }
