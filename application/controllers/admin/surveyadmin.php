@@ -1981,7 +1981,13 @@ class SurveyAdmin extends Survey_Common_Action
             Permission::model()->giveAllSurveyPermissions(Yii::app()->session['loginID'], $iNewSurveyid);
 
             // This will force the generation of the entry for survey group
-            TemplateConfiguration::checkAndcreateSurveyConfig($iNewSurveyid);
+            //TemplateConfiguration::checkAndcreateSurveyConfig($iNewSurveyid);
+            $creator = new \LimeSurvey\Models\Services\SurveyTemplateConfigurationCreator(
+                Survey::model(),
+                TemplateConfiguration::model()
+            );
+            $creator->checkAndcreateSurveyConfig($iNewSurveyid);
+
             $createSample = App()->request->getPost('createsample');
             $createSampleChecked = ($createSample === 'on');
 
