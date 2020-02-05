@@ -1116,19 +1116,19 @@ class questions extends Survey_Common_Action
             ];
         }
 
-        $redirectUrl = Yii::app()->createUrl('admin/survey/sa/listquestions/', ['surveyid' => $surveyid, 'gid' => $gid_search]);
+        $redirect = Yii::app()->createUrl('admin/survey/sa/listquestions/', ['surveyid' => $surveyid, 'gid' => $gid_search]);
         if (Yii::app()->request->isAjaxRequest) {
             $this->renderJSON(
                 [
                     'status'=>true,
                     'message'=>$sMessage,
-                    'redirectUrl' => $redirectUrl
+                    'redirect' => $redirect
                 ]
             );
             return;
         }
         Yii::app()->session['flashmessage'] = $sMessage;
-        $this->getController()->redirect($redirectUrl);
+        $this->getController()->redirect($redirect);
     }
 
 
@@ -1616,7 +1616,7 @@ class questions extends Survey_Common_Action
 
         $aQidsAndLang = json_decode(Yii::app()->request->getPost('$oCheckedItems')); ;
         $aResults     = [];
-        $tableLabels  = array(gT('Question ID'),gT('Question Title') ,gT('Status'));
+        $tableLabels  = array(gT('Question ID'),gT('Question title') ,gT('Status'));
 
         foreach ($aQidsAndLang as $sQidAndLang) {
             $aQidAndLang = explode(',', $sQidAndLang);

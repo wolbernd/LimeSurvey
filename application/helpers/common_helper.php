@@ -2643,7 +2643,7 @@ function randomChars($length, $pattern = "23456789abcdefghijkmnpqrstuvwxyz")
     $patternlength = strlen($pattern) - 1;
     $key = '';
     for ($i = 0; $i < $length; $i++) {
-        $key .= $pattern{mt_rand(0, $patternlength)};
+        $key .= $pattern[mt_rand(0, $patternlength)];
     }
     return $key;
 }
@@ -4062,7 +4062,7 @@ function modifyDatabase($sqlfile = '', $sqlstring = '')
         }
     } else {
         $sqlstring = trim($sqlstring);
-        if ($sqlstring{strlen($sqlstring) - 1} != ";") {
+        if ($sqlstring[strlen($sqlstring) - 1] != ";") {
             $sqlstring .= ";"; // add it in if it's not there.
         }
         $lines[] = $sqlstring;

@@ -79,6 +79,7 @@ class questionedit extends Survey_Common_Action
         $aData['surveyid'] = $iSurveyID;
         $aData['oSurvey'] = $oSurvey;
         $aData['aQuestionTypeList'] = QuestionTheme::findAllQuestionMetaDataForSelector();
+        $aData['aQuestionTypeStateList'] = QuestionType::modelsAttributes();
         $aData['selectedQuestion'] = QuestionTheme::findQuestionMetaData($oQuestion->type);
         $aData['gid'] = $gid;
         $aData['qid'] = $oQuestion->qid;
@@ -149,13 +150,17 @@ class questionedit extends Survey_Common_Action
                 'Tab' => gT('Tab'),
                 'New rows' => gT('New rows'),
                 'Scale' => gT('Scale'),
-                'Save and Close' => gT('Save and Close'),
+                'Save and Close' => gT('Save and close'),
                 'Script' => gT('Script'),
                 '__SCRIPTHELP' => gT("This optional script field will be wrapped,"
                     . " so that the script is correctly executed after the question is on the screen."
                     . " If you do not have the correct permissions, this will be ignored"),
                 "noCodeWarning" =>
                 gT("Please put in a valid code. Only letters and numbers are allowed and it has to start with a letter. For example [Question1]"),
+                "alreadyTaken" =>
+                gT("This code is already used - duplicate codes are not allowed."),
+                "codeTooLong" =>
+                gT("A question code cannot be longer than 20 characters."),
                 "Question cannot be stored. Please check the subquestion codes for duplicates or empty codes." =>
                 gT("Question cannot be stored. Please check the subquestion codes for duplicates or empty codes."),
                 "Question cannot be stored. Please check the answer option for duplicates or empty titles." =>
@@ -211,6 +216,7 @@ class questionedit extends Survey_Common_Action
         $isNewQuestion = false;
         $questionCopy = (boolean) App()->request->getPost('questionCopy');
         $questionCopySettings = App()->request->getPost('copySettings', []);
+        $questionCopySettings = array_map( function($value) {return !!$value;}, $questionCopySettings);
 
         // Store changes to the actual question data, by either storing it, or updating an old one
         $oQuestion = Question::model()->findByPk($questionData['question']['qid']);
@@ -414,6 +420,7 @@ class questionedit extends Survey_Common_Action
         $oQuestion = $this->getQuestionObject($iQuestionId, $type, $gid);
 
         $aQuestionInformationObject = $this->getCompiledQuestionData($oQuestion);
+        $surveyInfo = $this->getCompiledSurveyInfo($oQuestion);
 
         $aLanguages = [];
         $aAllLanguages = getLanguageData(false, App()->session['adminlang']);
@@ -429,6 +436,7 @@ class questionedit extends Survey_Common_Action
             array_merge(
                 $aQuestionInformationObject,
                 [
+                    'surveyInfo' => $surveyInfo,
                     'languages' => $aLanguages,
                     'mainLanguage' => $oQuestion->survey->language,
                 ]
@@ -780,6 +788,14 @@ class questionedit extends Survey_Common_Action
             App()->getConfig('preselectquestiontype')
         );
 
+        if(isset($aQuestionData['same_default'])){
+            if($aQuestionData['same_default'] == 1){
+                $aQuestionData['same_default'] =0;
+            }else{
+                $aQuestionData['same_default'] =1;
+            }
+        }
+
         $aQuestionData = array_merge([
             'sid' => $iSurveyId,
             'gid' => App()->request->getParam('gid'),
@@ -816,8 +832,8 @@ class questionedit extends Survey_Common_Action
         if ($saved == false) {
             throw new LSJsonException(
                 500,
-                "Object creation failed, couldn't save.\n ERRORS:"
-                . implode(", ", $oQuestion->getErrors()),
+                "Object creation failed, couldn't save.\n ERRORS:\n"
+                . print_r($oQuestion->getErrors(), true),
                 0,
                 null,
                 true
@@ -849,6 +865,16 @@ class questionedit extends Survey_Common_Action
      */
     private function updateQuestionData(&$oQuestion, $aQuestionData)
     {
+        //todo something wrong in frontend ...
+
+        if(isset($aQuestionData['same_default'])){
+            if($aQuestionData['same_default'] == 1){
+                $aQuestionData['same_default'] =0;
+            }else{
+                $aQuestionData['same_default'] =1;
+            }
+        }
+
         $oQuestion->setAttributes($aQuestionData, false);
         if ($oQuestion == null) {
             throw new LSJsonException(
@@ -1012,7 +1038,12 @@ class questionedit extends Survey_Common_Action
      */
     private function copyDefaultAnswers($oQuestion, $oldQid)
     {
+        if (empty($oldQid)) {
+            return false;
+        }
+
         $oOldDefaultValues = DefaultValue::model()->with('defaultValueL10ns')->findAllByAttributes(['qid' => $oldQid]);
+
         $setApplied['defaultValues'] = array_reduce(
             $oOldDefaultValues,
             function ($collector, $oDefaultValue) use ($oQuestion) {
@@ -1306,6 +1337,27 @@ class questionedit extends Survey_Common_Action
             'subquestions' => $aScaledSubquestions,
             'answerOptions' => $aScaledAnswerOptions,
         ];
+    }
+
+    private function getCompiledSurveyInfo(&$oQuestion) {
+        $oSurvey = $oQuestion->survey;
+        $aQuestionTitles = $oCommand = Yii::app()->db->createCommand()
+            ->select('title')
+            ->from('{{questions}}')
+            ->where('sid=:sid', [':sid'=>$oSurvey->sid])
+            ->where('parent_qid=0')
+            ->queryColumn();
+        $isActive = $oSurvey->isActive;
+        $questionCount = safecount($aQuestionTitles);
+        $groupCount = safecount($oSurvey->groups);
+
+        return [
+            "aQuestionTitles" => $aQuestionTitles,
+            "isActive" => $isActive,
+            "questionCount" => $questionCount,
+            "groupCount" => $groupCount,
+        ];
+
     }
 
     /**

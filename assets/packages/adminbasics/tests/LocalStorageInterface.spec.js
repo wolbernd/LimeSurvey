@@ -32,12 +32,12 @@ describe("Creating a save state", () => {
         global.LS = {localStorageInterface: new LocalStorageInterface()};
         saveState = global.LS.localStorageInterface.createSaveState('TESTSTATE');
         saveState('TESTSTATE', { valueStored: 'TESTVALUE' }, global.localStorage);
-        creationTime = Math.floor(new Date().getTime()/10);
+        creationTime = Math.floor(new Date().getTime()/100);
     });
     
     test("A safe state has been created", () => {
         expect( 
-            Math.floor(global.LS.localStorageInterface.archive['TESTSTATE'].created/10)
+            Math.floor(global.LS.localStorageInterface.archive['TESTSTATE'].created/100)
         ).toBe( creationTime);
     });
 
@@ -51,9 +51,9 @@ describe("Creating a save state", () => {
     });
 
     test("Timestamp on state has been updated", () => {
-        const dateBefore = Math.floor(global.LS.localStorageInterface.archive.TESTSTATE.created/10);
+        const dateBefore = Math.floor(global.LS.localStorageInterface.archive.TESTSTATE.created/100);
         saveState('TESTSTATE', { valueStored: 'TESTVALUE' }, global.localStorage);
-        expect(dateBefore).toBe(Math.floor(global.LS.localStorageInterface.archive.TESTSTATE.created/10));
+        expect(dateBefore).toBe(Math.floor(global.LS.localStorageInterface.archive.TESTSTATE.created/100));
     });
 
 });
