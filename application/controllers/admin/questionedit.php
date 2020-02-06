@@ -219,6 +219,10 @@ class questionedit extends Survey_Common_Action
             QuestionL10n::model(),
             $this->getController()
         );
+        /*
+         * AnswerSaver, take Answer and AnswerL10n
+         * 
+         */
         $this->renderJSON($questionSaver->saveQuestionData($sid));
     }
 
@@ -618,40 +622,6 @@ class questionedit extends Survey_Common_Action
         return $oQuestion;
     }
 
-
-    /**
-     * @todo document me
-     *
-     * @param Question $oQuestion
-     * @param array $dataSet
-     * @return void
-     */
-    private function cleanAnsweroptions(&$oQuestion, &$dataSet)
-    {
-        $aAnsweroptions = $oQuestion->answers;
-        array_walk(
-            $aAnsweroptions,
-            function ($oAnsweroption) use (&$dataSet) {
-                $exists = false;
-                foreach ($dataSet as $scaleId => $aAnsweroptions) {
-                    foreach ($aAnsweroptions as $i => $aAnsweroptionDataSet) {
-                        if (((is_numeric($aAnsweroptionDataSet['aid'])
-                            && $oAnsweroption->aid == $aAnsweroptionDataSet['aid'])
-                            || $oAnsweroption->code == $aAnsweroptionDataSet['code'])
-                            && ($oAnsweroption->scale_id == $scaleId)
-                        ) {
-                            $exists = true;
-                            $dataSet[$scaleId][$i]['aid'] = $oAnsweroption->aid;
-                        }
-
-                        if (!$exists) {
-                            $oAnsweroption->delete();
-                        }
-                    }
-                }
-            }
-        );
-    }
 
     /**
      * @todo document me.

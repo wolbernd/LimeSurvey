@@ -608,6 +608,41 @@ class QuestionSaver
     /**
      * @todo document me
      *
+     * @param Question $oQuestion
+     * @param array $dataSet
+     * @return void
+     */
+    private function cleanAnsweroptions($oQuestion, &$dataSet)
+    {
+        $aAnsweroptions = $oQuestion->answers;
+        array_walk(
+            $aAnsweroptions,
+            function ($oAnsweroption) use (&$dataSet) {
+                $exists = false;
+                foreach ($dataSet as $scaleId => $aAnsweroptions) {
+                    foreach ($aAnsweroptions as $i => $aAnsweroptionDataSet) {
+                        if (((is_numeric($aAnsweroptionDataSet['aid'])
+                            && $oAnsweroption->aid == $aAnsweroptionDataSet['aid'])
+                            || $oAnsweroption->code == $aAnsweroptionDataSet['code'])
+                            && ($oAnsweroption->scale_id == $scaleId)
+                        ) {
+                            $exists = true;
+                            $dataSet[$scaleId][$i]['aid'] = $oAnsweroption->aid;
+                        }
+
+                        if (!$exists) {
+                            $oAnsweroption->delete();
+                        }
+                    }
+                }
+            }
+        );
+    }
+
+
+    /**
+     * @todo document me
+     *
      * @param Answer $oAnswer
      * @param Question $oQuestion
      * @param array $dataSet
