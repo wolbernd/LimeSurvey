@@ -74,11 +74,12 @@ function strSplitUnicode($str, $l = 0)
  * @param mixed $iSurveyID The survey ID
  * @param string $iLength Maximum text lenght data, usually 255 for SPSS <v16 and 16384 for SPSS 16 and later
  * @param string $na Value for N/A data
+ * @param string $sEmptyAnswerValue Value for empty data ('')
  * @param string $q sep Quote separator. Use '\'' for SPSS, '"' for R
  * @param bool $header logical $header If TRUE, adds SQGA code as column headings (used by export to R)
  * @param string $sLanguage
  */
-function SPSSExportData($iSurveyID, $iLength, $na = '', $q = '\'', $header = false, $sLanguage = '')
+function SPSSExportData($iSurveyID, $iLength, $na = '', $sEmptyAnswerValue = '', $q = '\'', $header = false, $sLanguage = '')
 {
 
     // Build array that has to be returned
@@ -101,17 +102,19 @@ function SPSSExportData($iSurveyID, $iLength, $na = '', $q = '\'', $header = fal
 
     foreach ($result as $row) {
         // prepare the data for decryption
-        if ($survey->hasTokensTable()) {
-            $oToken = Token::model($iSurveyID);
-            $oToken->setAttributes($row, false);
-            $oToken->decrypt();
-        }
 
         $oResponse = Response::model($iSurveyID);
         $oResponse->setAttributes($row, false);
         $oResponse->decrypt();
 
-        $row = array_merge($oToken->attributes, $oResponse->attributes);
+        if ($survey->hasTokensTable) {
+            $oToken = Token::model($iSurveyID);
+            $oToken->setAttributes($row, false);
+            $oToken->decrypt();
+            $row = array_merge($oToken->attributes, $oResponse->attributes);
+        } else {
+            $row = $oResponse->attributes;
+        }
 
         $rownr++;
         if ($rownr == 1) {
@@ -143,6 +146,8 @@ function SPSSExportData($iSurveyID, $iLength, $na = '', $q = '\'', $header = fal
                     list($year, $month, $day, $hour, $minute, $second) = preg_split('([^0-9])', $row[$fieldno]);
                     if ($year != '' && (int) $year >= 1900) {
                         echo $q.date('d-m-Y H:i:s', mktime($hour, $minute, $second, $month, $day, $year)).$q;
+                    } elseif ($row[$fieldno] === '') {
+                        echo ($sEmptyAnswerValue);
                     } else {
                         echo ($na);
                     }
@@ -152,57 +157,51 @@ function SPSSExportData($iSurveyID, $iLength, $na = '', $q = '\'', $header = fal
             } else {
                 switch ($field['LStype']) {
                     case 'Y': // Yes/No Question Type
-                        switch ($row[$fieldno]) {
-                            case 'Y':
-                                echo($q.'1'.$q);
-                                break;
-                            case 'N':
-                                echo($q.'2'.$q);
-                                break;
-                            default:
-                                echo($na);
+                        if ($row[$fieldno] === 'Y') {
+                            echo($q.'1'.$q);
+                        } elseif ($row[$fieldno] === 'N') {
+                            echo($q.'2'.$q);
+                        } elseif ($row[$fieldno] === '') {
+                            echo ($sEmptyAnswerValue);
+                        } else {
+                            echo($na);
                         }
                         break;
                     case 'G': //Gender
-                        switch ($row[$fieldno]) {
-                            case 'F':
-                                echo($q.'1'.$q);
-                                break;
-                            case 'M':
-                                echo($q.'2'.$q);
-                                break;
-                            default:
-                                echo($na);
+                        if ($row[$fieldno] === 'F') {
+                            echo($q.'1'.$q);
+                        } elseif ($row[$fieldno] === 'M') {
+                            echo($q.'2'.$q);
+                        } elseif ($row[$fieldno] === '') {
+                            echo ($sEmptyAnswerValue);
+                        } else {
+                            echo($na);
                         }
                         break;
                     case 'C': //Yes/No/Uncertain
-                        switch ($row[$fieldno]) {
-                            case 'Y':
-                                echo($q.'1'.$q);
-                                break;
-                            case 'N':
-                                echo($q.'2'.$q);
-                                break;
-                            case 'U':
-                                echo($q.'3'.$q);
-                                break;
-                            default:
-                                echo($na);
+                        if ($row[$fieldno] === 'Y') {
+                            echo($q.'1'.$q);
+                        } elseif ($row[$fieldno] === 'N') {
+                            echo($q.'2'.$q);
+                        } elseif ($row[$fieldno] === 'U') {
+                            echo($q.'3'.$q);
+                        } elseif ($row[$fieldno] === '') {
+                            echo ($sEmptyAnswerValue);
+                        } else {
+                            echo($na);
                         }
                         break;
                     case 'E': //Increase / Same / Decrease
-                        switch ($row[$fieldno]) {
-                            case 'I':
-                                echo($q.'1'.$q);
-                                break;
-                            case 'S':
-                                echo($q.'2'.$q);
-                                break;
-                            case 'D':
-                                echo($q.'3'.$q);
-                                break;
-                            default:
-                                echo($na);
+                        if ($row[$fieldno] === 'I') {
+                            echo($q.'1'.$q);
+                        } elseif ($row[$fieldno] === 'S') {
+                            echo($q.'2'.$q);
+                        } elseif ($row[$fieldno] === 'D') {
+                            echo($q.'3'.$q);
+                        } elseif ($row[$fieldno] === '') {
+                            echo ($sEmptyAnswerValue);
+                        } else {
+                            echo($na);
                         }
                         break;
                     case ':':
@@ -219,6 +218,8 @@ function SPSSExportData($iSurveyID, $iLength, $na = '', $q = '\'', $header = fal
                         if (substr($field['code'], -7) != 'comment' && substr($field['code'], -5) != 'other') {
                             if ($row[$fieldno] == 'Y') {
                                 echo($q.'1'.$q);
+                            } elseif ($row[$fieldno] === '') {
+                                echo ($sEmptyAnswerValue);
                             } elseif (isset($row[$fieldno])) {
                                 echo($q.'0'.$q);
                             } else {
@@ -242,6 +243,8 @@ function SPSSExportData($iSurveyID, $iLength, $na = '', $q = '\'', $header = fal
                             }
                             */
                             echo $q.$strTemp.$q;
+                        } elseif ($row[$fieldno] === '') {
+                            echo $sEmptyAnswerValue;
                         } else {
                             echo $na;
                         }

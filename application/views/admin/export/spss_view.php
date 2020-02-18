@@ -77,6 +77,14 @@ echo viewHelper::getViewTestTag('exportSpss');
         </div>
     </div>
 
+    <div class="form-group row">
+        <label for='offset' class='col-sm-2  form-control-label'><?php eT("Empty answer:");?></label>
+        <div class="col-sm-1">
+            <?php
+                echo CHtml::textField('emptyanswervalue', App()->getRequest()->getParam('emptyanswervalue'),array('class'=>'form-control'));
+            ?>
+        </div>
+    </div>
 
     <div class="form-group row">
         <?php
