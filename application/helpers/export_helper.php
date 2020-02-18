@@ -506,31 +506,31 @@ function SPSSFieldMap($iSurveyID, $prefix = 'V', $sLanguage = '')
             case 'datestamp':
                 $fieldtype = 'DATETIME23.2';
                 break;
-            case 'startlanguage';
+            case 'startlanguage':
                 $fieldtype = 'A';
                 $val_size = 20;
                 break;
-            case 'token';
+            case 'token':
                 $fieldtype = 'A';
                 $val_size = Token::MAX_LENGTH;
                 break;
-            case 'id';
+            case 'id':
                 $fieldtype = 'F';
                 $val_size = 7; //Arbitrarilty restrict to 9,999,999 (7 digits) responses/survey
                 break;
-            case 'ipaddr';
+            case 'ipaddr':
                 $fieldtype = 'A';
                 $val_size = 45; // IPv6 + IPv4-mapped feature : 39+1+15
                 break;
-            case 'refurl';
+            case 'refurl':
                 $fieldtype = 'A';
                 $val_size = 255;
                 break;
-            case 'lastpage';
+            case 'lastpage':
                 $fieldtype = 'F';
                 $val_size = 7;
                 break;
-            case 'seed';
+            case 'seed':
                 $fieldtype = 'A';
                 $val_size = 31;
                 break;
