@@ -94,11 +94,18 @@ function SPSSExportData($iSurveyID, $iLength, $na = '', $q = '\'', $header = fal
 
     $rownr = 0;
 
+    $survey = Survey::model()->findByPk($iSurveyID);
+    if (empty($survey)) {
+        throw new \Exception('Found no survey with id ' . $iSurveyID);
+    }
+
     foreach ($result as $row) {
         // prepare the data for decryption
-        $oToken = Token::model($iSurveyID);
-        $oToken->setAttributes($row, false);
-        $oToken->decrypt();
+        if ($survey->hasTokensTable()) {
+            $oToken = Token::model($iSurveyID);
+            $oToken->setAttributes($row, false);
+            $oToken->decrypt();
+        }
 
         $oResponse = Response::model($iSurveyID);
         $oResponse->setAttributes($row, false);
