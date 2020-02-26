@@ -12,7 +12,7 @@ class XmlIO
      * @param string $filename
      * @return mixed
      */
-    public function save(SimpleXMLElement $xml, $filename)
+    public function save(\SimpleXMLElement $xml, $filename)
     {
         // If the filename isn't specified, this function returns a string on success and FALSE on error.
         // If the parameter is specified, it returns TRUE if the file was written successfully and FALSE otherwise.
