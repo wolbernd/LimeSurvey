@@ -8,7 +8,7 @@ namespace LimeSurvey\Models\Services;
 class XmlIO
 {
     /**
-     * @param SimpleXMLElement $xml
+     * @param \SimpleXMLElement $xml
      * @param string $filename
      * @return mixed
      */
@@ -21,7 +21,7 @@ class XmlIO
 
     /**
      * @param string $path
-     * @return SimpleXMLElement
+     * @return \SimpleXMLElement
      * @throws \Exception
      */
     public function load($path)
