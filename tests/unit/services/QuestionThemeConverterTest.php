@@ -846,38 +846,46 @@ XML;
      */
     public function testBasic()
     {
+        /** @var array */
         $appConfig = ['rootdir' => ''];
-        $xmlIO =
-            (new class($this->dummyLS3config, $this->dummyLS4config) extends XmlIO {
-                public $convertedXml = '';
-                public function __construct($dummyLS3config, $dummyLS4config)
-                {
-                    $this->dummyLS3config = $dummyLS3config;
-                    $this->dummyLS4config = $dummyLS4config;
-                }
-                public function save($xml, $path)
-                {
-                    $this->convertedXml = $xml;
-                    return true;
-                }
-                public function load($path)
-                {
-                    if ($path === '/listradio/config.xml') {
-                        return new \SimpleXMLElement($this->dummyLS3config);
-                    } elseif ($path === '/application/views/survey/questions/answer/listradio/config.xml') {
-                        return new \SimpleXMLElement($this->dummyLS4config);
-                    } else {
-                        throw new \Exception('Unknown path, mock XmlIO failed');
+
+        // Create mock of XmlIO.
+        $xmlIOMock = $this
+            ->getMockBuilder(XmlIO::class)
+            ->setMethods(['save', 'load'])
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        // Mock load() method (called twice).
+        $xmlIOMock
+            ->expects($this->at(0))
+            ->method('load')
+            ->willReturn(new \SimpleXMLElement($this->dummyLS3config));
+        $xmlIOMock
+            ->expects($this->at(1))
+            ->method('load')
+            ->willReturn(new \SimpleXMLElement($this->dummyLS4config));
+
+        // Mock save() method.
+        $xmlIOMock
+            ->expects($this->once())
+            ->method('save')
+            ->with(
+                $this->callback(
+                    function (\SimpleXMLElement $xml) use ($xmlIOMock) {
+                        $xmlIOMock->convertedXml = $xml;
+                        return true;
                     }
-                }
-            });
-        $converter = new QuestionThemeConverter($appConfig, $xmlIO);
+                )
+            );
+
+        $converter = new QuestionThemeConverter($appConfig, $xmlIOMock);
 
         /** @var array */
-        $result = $converter->convert('listradio');
+        $result = $converter->convert('dummy_theme_name');
 
         $this->assertTrue($result['success']);
-        $this->assertNotEmpty($xmlIO->convertedXml->attributes);
-        $this->assertEmpty($xmlIO->convertedXml->custom_attributes);
+        $this->assertNotEmpty($xmlIOMock->convertedXml->attributes);
+        $this->assertEmpty($xmlIOMock->convertedXml->custom_attributes);
     }
 }
