@@ -184,7 +184,7 @@ class UserManagement extends Survey_Common_Action
                 } else {
                     // has to be sent again or no other way
                     $sReturnMessage = CHtml::tag("h4", array(), gT("Success"));;
-                    $sReturnMessage .= CHtml::tag("p", array(), sprintf(gT("Username : %s - Email : %s."), $newUser['users_name'], $newUser['email']));
+                    $sReturnMessage .= CHtml::tag("p", array(), sprintf(gT("Username: %s - Email: %s"), $newUser['users_name'], $newUser['email']));
                     $sReturnMessage .= CHtml::tag("p", array(), gT("An email with a generated password was sent to the user."));
                 }
             }
@@ -320,7 +320,7 @@ class UserManagement extends Survey_Common_Action
             }
         }
 
-        $tableLabels = array(gT('User id'), gT('Username'), gT('Status'));
+        $tableLabels = array(gT('User ID'), gT('Username'), gT('Status'));
 
         Yii::app()->getController()->renderPartial(
             'ext.admin.survey.ListSurveysWidget.views.massive_actions._action_results',
@@ -349,7 +349,7 @@ class UserManagement extends Survey_Common_Action
         $userId = Yii::app()->request->getPost('userid');
         if ($userId == Yii::app()->user->id) {
 
-            Yii::app()->setFlashMessage(gT("you cannot elete yourself."), 'error');
+            Yii::app()->setFlashMessage(gT("You cannot delete yourself."), 'error');
             Yii::app()->getController()->redirect(
                 Yii::app()->createUrl('admin/usermanagement/sa/view')
             );
@@ -647,13 +647,13 @@ class UserManagement extends Survey_Common_Action
             $aResults[$user]['result'] = gT('Selected');
         }
         //set Modal table labels
-        $tableLabels = array(gT('User id'), gT('Username'), gT('Status'));
+        $tableLabels = array(gT('User ID'), gT('Username'), gT('Status'));
 
         App()->getController()->renderPartial(
             'ext.admin.grid.MassiveActionsWidget.views._selected_items',
             array(
                 'aResults'     => $aResults,
-                'successLabel' => gT('Seleted'),
+                'successLabel' => gT('Selected'),
                 'tableLabels'  => $tableLabels,
             )
         );
@@ -700,37 +700,44 @@ class UserManagement extends Survey_Common_Action
             );
         }
 
-        $userIds = json_decode(Yii::app()->request->getPost('sItems', "[]"));
-        $entity_ids = Yii::app()->request->getPost('entity_ids', []);
-        $permissionclass = Yii::app()->request->getPost('permissionclass');
+        $aUsers = json_decode(App()->request->getPost('sItems'));
 
-        $results = [];
-        foreach ($userIds as $userId) {
-            $oUser = User::model()->findByPk($userId);
-            $result[] = $this->resetLoginData($oUser, true);
-            $oUser->modified = date('Y-m-d H:i:s');
-            $result['saved'] = $oUser->save();
-            $results[] = $result;
+        $aResults = [];
+        foreach ($aUsers as $user) {
+            $oUser = $this->loadModel($user);
+            $aResults[$user]['result'] = false;
+            $aResults[$user]['title'] = $oUser->users_name;
+            //User should not reset and resend  email to himself throw massive action
+            if ($oUser->uid == Yii::app()->user->id) {
+                $aResults[$user]['error'] = gT("Error! Please change your password from your profile settings.");
+            } else {
+                //not modify original superuser 
+                if ($oUser->uid == 1) {
+                    $aResults[$user]['error'] = gT("Error! You do not have the permission to edit this user.");
+                } else {
+                    $success = $this->resetLoginData($oUser, true)['success'];
+                    if ($success) {
+                        $oUser->modified = date('Y-m-d H:i:s');
+                        $aResults[$user]['result'] = $oUser->save();
+                    }
+                }
+            }
         }
 
-        $success = array_reduce($results, function ($coll, $arr) {
-            return $coll = $coll && $arr['saved'];
-        }, true);
+        $tableLabels = array(gT('User id'), gT('Username'), gT('Status'));
 
-        if (!$success) { }
-
-        return $this->getController()->renderPartial(
-            '/admin/usermanagement/partial/success',
-            [
-                'sMessage' => gT('Emails successfully sent'),
-                'sDebug' => json_encode($results, JSON_PRETTY_PRINT),
-                'noButton' => true,
-            ]
+        Yii::app()->getController()->renderPartial(
+            'ext.admin.survey.ListSurveysWidget.views.massive_actions._action_results',
+            array(
+                'aResults'     => $aResults,
+                'successLabel' => gT('Email successfully sent.'),
+                'tableLabels' =>  $tableLabels
+            )
         );
     }
 
     /**
-     * Mass edition apply roles
+     * Mass edition apply group
      *
      *
      * @return string
@@ -743,31 +750,44 @@ class UserManagement extends Survey_Common_Action
                 ['errors' => [gT("You do not have permission to access this page.")], 'noButton' => true]
             );
         }
+
         $aItems = json_decode(Yii::app()->request->getPost('sItems', []));
         $iUserGroupId = Yii::app()->request->getPost('addtousergroup');
-        $oUserGroup = UserGroup::model()->findByPk($iUserGroupId);
-        $aResults = [];
 
-        foreach ($aItems as $sItem) {
-            $aResults[$sItem]['title'] = '';
-            $model = $this->loadModel($sItem);
-            $aResults[$sItem]['title'] = $model->users_name;
+        if ($iUserGroupId) {
+            $oUserGroup = UserGroup::model()->findByPk($iUserGroupId);
+            $aResults = [];
 
-            if (!$oUserGroup->hasUser($sItem)) {
-                $aResults[$sItem]['result'] = $oUserGroup->addUser($sItem);
-            } else {
+            foreach ($aItems as $sItem) {
+                $aResults[$sItem]['title'] = '';
+                $model = $this->loadModel($sItem);
+                $aResults[$sItem]['title'] = $model->users_name;
+
+                if (!$oUserGroup->hasUser($sItem)) {
+                    $aResults[$sItem]['result'] = $oUserGroup->addUser($sItem);
+                } else {
+                    $aResults[$sItem]['result'] = false;
+                    $aResults[$sItem]['error'] = gT('User is already a part of the group.');
+                }
+            }
+        } else {
+
+            foreach ($aItems as $sItem) {
+                $aResults[$sItem]['title'] = '';
+                $model = $this->loadModel($sItem);
+                $aResults[$sItem]['title'] = $model->users_name;
                 $aResults[$sItem]['result'] = false;
-                $aResults[$sItem]['error'] = gT('User is already a part of the group');
+                $aResults[$sItem]['error'] = gT('No user group selected.');
             }
         }
 
-        $tableLabels = array(gT('User id'), gT('Username'), gT('Status'));
+        $tableLabels = array(gT('User ID'), gT('Username'), gT('Status'));
 
         Yii::app()->getController()->renderPartial(
             'ext.admin.survey.ListSurveysWidget.views.massive_actions._action_results',
             array(
                 'aResults'     => $aResults,
-                'successLabel' => gT('Usergroup updated'),
+                'successLabel' => gT('User group updated.'),
                 'tableLabels' =>  $tableLabels
             )
         );
@@ -811,7 +831,7 @@ class UserManagement extends Survey_Common_Action
         }
 
 
-        $tableLabels = array(gT('User id'), gT('Username'), gT('Status'));
+        $tableLabels = array(gT('User ID'), gT('Username'), gT('Status'));
 
         Yii::app()->getController()->renderPartial(
             'ext.admin.survey.ListSurveysWidget.views.massive_actions._action_results',
@@ -892,11 +912,11 @@ class UserManagement extends Survey_Common_Action
             );
         }
 
-        $importNote = sprintf(gT("Please make sure that your CSV contains the columns '%s' as well as '%s' , '%s' , '%s' and  '%s'"), '<b>users_name</b>', '<b>full_name</b>', '<b>email</b>', '<b>lang</b>', '<b>password</b>');
+        $importNote = sprintf(gT("Please make sure that your CSV contains the fields '%s', '%s', '%s', '%s', and '%s'"), '<b>users_name</b>', '<b>full_name</b>', '<b>email</b>', '<b>lang</b>', '<b>password</b>');
         $allowFileType = ".csv";
 
         if ($importFormat == 'json') {
-            $importNote = sprintf(gT("Please make sure that your JSON Arrays contains the offsets '%s' as well as '%s' , '%s' , '%s' and  '%s'"), '<b>users_name</b>', '<b>full_name</b>', '<b>email</b>', '<b>lang</b>', '<b>password</b>');
+            $importNote = sprintf(gT("Wrong definition! Please make sure that your JSON arrays contains the fields '%s', '%s', '%s', '%s', and '%s'"), '<b>users_name</b>','<b>full_name</b>','<b>email</b>','<b>lang</b>','<b>password</b>');
             $allowFileType = ".json,application/json";
         }
 
@@ -1201,8 +1221,8 @@ class UserManagement extends Survey_Common_Action
                 $renderArray = [
                     'surveyapplicationname' => Yii::app()->getConfig("sitename"),
                     'emailMessage' => sprintf(gT("Hello %s,"), $aUser['full_name']) . "<br />"
-                        . sprintf(gT("this is an automated email to notify that your login credentials for '%s' have been reset."), Yii::app()->getConfig("sitename")),
-                    'credentialsText' => gT("Here are you're new credentials."),
+                        . sprintf(gT("This is an automated email to notify you that your login credentials for '%s' have been reset."), Yii::app()->getConfig("sitename")),
+                    'credentialsText' => gT("Here are your new credentials."),
                     'siteadminemail' => Yii::app()->getConfig("siteadminemail"),
                     'linkToAdminpanel' => $this->getController()->createAbsoluteUrl("/admin"),
                     'username' => $aUser['users_name'],
@@ -1219,7 +1239,7 @@ class UserManagement extends Survey_Common_Action
                 $renderArray = [
                     'surveyapplicationname' => Yii::app()->getConfig("sitename"),
                     'emailMessage' => sprintf(gT("Hello %s,"), $aUser['full_name']) . "<br />"
-                        . sprintf(gT("this is an automated email to notify that a user has been created for you on the site '%s'.."), Yii::app()->getConfig("sitename")),
+                        . sprintf(gT("This is an automated email to notify that a user has been created for you on the site '%s'."), Yii::app()->getConfig("sitename")),
                     'credentialsText' => gT("You can use now the following credentials to log into the site:"),
                     'siteadminemail' => Yii::app()->getConfig("siteadminemail"),
                     'linkToAdminpanel' => $this->getController()->createAbsoluteUrl("/admin"),
@@ -1364,10 +1384,10 @@ class UserManagement extends Survey_Common_Action
      */
     protected function applyPermissionTemplate($oUser, $permissionclass, $entity_ids = [])
     {
-        if ($permissionclass == 'Gruppenmanager' && empty($entity_ids)) {
+        if ($permissionclass == 'Group manager' && empty($entity_ids)) {
             return [
                 "success" => false,
-                "error" => "Keine Umfrage für Berechtigung ausgewählt",
+                "error" => "No survey selected for permissions",
             ];
         }
         $oCriteria = new CDbCriteria();
@@ -1379,10 +1399,10 @@ class UserManagement extends Survey_Common_Action
         Permission::model()->setGlobalPermission($oUser->uid, 'auth_db');
 
         $result = false;
-        if (in_array($permissionclass, ['Befragungsmanager', 'Wissenschaftler', 'combo'])) {
+        if (in_array($permissionclass, ['Survey manager', 'Scientist', 'combo'])) {
             $result = $this->applyGlobalPermissionTemplate($oUser, $permissionclass);
-            $this->applyCorrectUsergroup($oUser->uid, ($permissionclass == 'combo' ? ['Befragungsmanager', 'Wissenschaftler'] : [$permissionclass]));
-        } elseif ($permissionclass == 'Gruppenmanager') {
+            $this->applyCorrectUsergroup($oUser->uid, ($permissionclass == 'combo' ? ['Survey manager', 'Scientist'] : [$permissionclass]));
+        } elseif ($permissionclass == 'Group manager') {
             $result = $this->applySurveyPermissionTemplate($oUser, $permissionclass, $entity_ids);
             $this->applyCorrectUsergroup($oUser->uid, [$permissionclass]);
         }

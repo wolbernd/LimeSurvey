@@ -319,43 +319,62 @@ class User extends LSActiveRecord
         return($error);
     }
 
+    /**
+     * Checks if
+     *  -- password strength
+     *  -- oldpassword is correct
+     *  -- oldpassword and newpassword are identical
+     *  -- newpassword and repeatpassword are identical
+     *  -- newpassword is not empty
+     *
+     * @param $newPassword
+     * @param $oldPassword
+     * @param $repeatPassword
+     * @return string empty string means everything is ok, otherwise error message is returned
+     */
+    public function validateNewPassword($newPassword, $oldPassword,$repeatPassword){
+        $errorMsg = '';
+
+        if (!empty($newPassword)) {
+            $errorMsg = $this->checkPasswordStrength($newPassword);
+        }
+
+        if($errorMsg === '') {
+            if (!$this->checkPassword($oldPassword)) {
+                // Always check password
+                $errorMsg = gT("Your new password was not saved because the old password was wrong.");
+            } elseif (trim($oldPassword) === trim($newPassword)) {
+                //First test if old and new password are identical => no need to save it (or ?)
+                $errorMsg = gT("Your new password was not saved because it matches the old password.");
+            } elseif (trim($newPassword) !== trim($repeatPassword)) {
+                //Then test the new password and the repeat password for identity
+                $errorMsg = gT("Your new password was not saved because the passwords did not match.");
+                //Now check if the old password matches the old password saved
+            } elseif (empty(trim($newPassword))) {
+                $errorMsg = gT("The new password can not be empty.");
+            }
+        }
+
+        return $errorMsg;
+    }
+
     public function getPasswordHelpText(){
-        $settings = Yii::app()->getConfig("passwordValidationRules");
-        $txt = '';
-        $txt2 = '';
-        if((int) $settings['min'] > 0) $txt = sprintf(ngT('Password must be at least %d character long|Password must be at least %d characters long', $settings['min']), $settings['min']);
-        if((int) $settings['max'] > 0) $txt = sprintf(ngT('Password must be at most %d character long|Password must be at most %d characters long', $settings['max']), $settings['max']);
+        $settings =  Yii::app()->getConfig("passwordValidationRules");
+        $txt = gT('A password must meet the following requirements: ');
+        if((int) $settings['min'] > 0) $txt .= sprintf(ngT('At least %d character long.|At least %d characters long.', $settings['min']), $settings['min']).' ';
+        if((int) $settings['max'] > 0) $txt .= sprintf(ngT('At most %d character long.|At most %d characters long.', $settings['max']), $settings['max']).' ';
         if((int) $settings['min'] > 0 && (int) $settings['max'] > 0){
           if($settings['min'] == $settings['max']){
-            $txt = sprintf(ngT('Password must be exactly %d character in length|Password must be exactly %d characters in length', $settings['min']), $settings['min']);
+            $txt .= sprintf(ngT('Exactly %d character long.|Exactly %d characters long.', $settings['min']), $settings['min']).' ';
           } else
           if($settings['min'] < $settings['max']){
-            $txt = sprintf(gT('Password must be between %d - %d characters in length'), $settings['min'], $settings['max']);
+            $txt .= sprintf(gT('Between %d and %d characters long.'), $settings['min'], $settings['max']).' ';
           }
         }
-
-        $txt1 = array();
-        if((int) $settings['lower'] > 0) $txt1[] = ' '.sprintf(ngT('%d lower case letter|%d lower case letters', $settings['lower']), $settings['lower']);
-        if((int) $settings['upper'] > 0) $txt1[] = ' '.sprintf(ngT('%d upper case letter|%d upper case letters', $settings['upper']), $settings['upper']);
-        if((int) $settings['numeric'] > 0) $txt1[] = ' '.sprintf(ngT('%d number|%d numbers', $settings['numeric']), $settings['numeric']);
-        if((int) $settings['symbol'] > 0) $txt1[] = ' '.sprintf(ngT('%d special character|%d special characters', $settings['symbol']), $settings['symbol']);
-        if(!empty($txt1)){
-          foreach($txt1 as $i => $tmp){
-            if($i == (count($txt1)-1)){
-              if($txt2) $txt2 .= ' '.gT("and").' ';
-            } else {
-              if($txt2) $txt2 .= ", ";
-            }
-            $txt2 .= $tmp;
-          }
-        }
-
-        if($txt && $txt2){
-          $txt = $txt.' '. gT('and must include at least').' '.$txt2.'.';
-        } else
-        if($txt2){
-          $txt = gT('Password must include at least').' '.$txt2.'.';
-        }
+        if((int) $settings['lower'] > 0)  $txt .= sprintf(ngT('At least %d lower case letter.|At least %d lower case letters.', $settings['lower']), $settings['lower']).' ';
+        if((int) $settings['upper'] > 0)  $txt .= sprintf(ngT('At least %d upper case letter.|At least %d upper case letters.', $settings['upper']), $settings['upper']).' ';
+        if((int) $settings['numeric'] > 0) $txt .= sprintf(ngT('At least %d number.|At least %d numbers.', $settings['numeric']), $settings['numeric']).' ';
+        if((int) $settings['symbol'] > 0) $txt .= sprintf(ngT('At least %d special character.|At least %d special characters.', $settings['symbol']), $settings['symbol']).' ';
         return($txt);
     }
 
@@ -563,9 +582,11 @@ class User extends LSActiveRecord
                 data-userid='".$this->uid."' 
                 data-user='".$this->full_name."' 
                 data-action='deluser' 
-                data-onclick='(LS.UserManagement.triggerRunAction(\"#UserManagement--takeown-".$this->uid."\"))()' 
-                data-message='".gt('Do you want to take ownerschip of this user?')."'>
-                    <i class='fa fa-hand-rock-o'></i>
+                data-onclick='LS.UserManagement.triggerRunAction(\"#UserManagement--takeown-".$this->uid."\")' 
+                data-message='".gt('Do you want to take ownership of this user?')."'>
+                    <span data-toggle='tooltip' title='".gT("Take ownership")."'>
+                        <i class='fa fa-hand-rock-o'></i>
+                    </span>
               </button>";
         $deleteUserButton = ""
             ."<button 
@@ -586,6 +607,11 @@ class User extends LSActiveRecord
 
         // Superadmins can do everything, no need to do further filtering
         if (Permission::model()->hasGlobalPermission('superadmin', 'read')) {
+            //Prevent users to modify original superadmin. Original superadmin can change his password on his account setting!
+            if ($this->uid == 1) {
+                $editUserButton = "";
+            }
+
             // and Except deleting themselves and changing permissions when they are forced superadmin
             if (Permission::isForcedSuperAdmin($this->uid)|| $this->uid == Yii::app()->user->getId() ){
                 return join("",[$userDetail, $editUserButton]);

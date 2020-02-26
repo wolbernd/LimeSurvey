@@ -737,7 +737,7 @@
         }
 
         /**
-        * Tells Expression Manager that something has changed enough that needs to eliminate internal caching
+        * Tells ExpressionScript Engine that something has changed enough that needs to eliminate internal caching
         * @return void
         */
         public static function SetDirtyFlag()
@@ -769,7 +769,7 @@
         }
 
         /**
-        * Sets the language for Expression Manager.  If the language has changed, then EM cache must be invalidated and refreshed
+        * Sets the language for ExpressionScript Engine.  If the language has changed, then EM cache must be invalidated and refreshed
         * @param string|null $lang
         * @return void
         */
@@ -5622,6 +5622,12 @@
                 if (isset($_SESSION[$this->sessid]['srid']) && $this->surveyOptions['active'])
                 {
                     $oResponse = Response::model($this->sid)->findByPk($_SESSION[$this->sessid]['srid']);
+                    if (empty($oResponse)) {
+                        // This can happen if admin deletes incomple response while survey is running.
+                        $message = submitfailed($this->gT('The data could not be saved because the response does not exist in the database.'));
+                        LimeExpressionManager::addFrontendFlashMessage('error', $message, $this->sid);
+                        return;
+                    }
                     if ($oResponse->submitdate == null || Survey::model()->findByPk($this->sid)->alloweditaftercompletion == 'Y') {
                         $oResponse->setAttributes($aResponseAttributes, false);
                         if (!$oResponse->encryptSave())
@@ -5676,7 +5682,7 @@
                                 $submitdate = date("Y-m-d H:i:s",mktime(0,0,0,1,1,1980));
                             }
                             if (!Response::model($this->sid)->updateByPk($oResponse->id,array('submitdate'=>$submitdate))) {
-                                LimeExpressionManager::addFrontendFlashMessage('error', $this->gT('An error happen when try to submit your response.'), $this->sid);
+                                LimeExpressionManager::addFrontendFlashMessage('error', $this->gT('An error happened when trying to submit your response.'), $this->sid);
                             }
                         }
                     }

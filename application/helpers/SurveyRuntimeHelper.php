@@ -69,7 +69,7 @@ class SurveyRuntimeHelper
     private $LEMsessid = null;
 
     /**
-     * customizable debugging for Lime Expression Manager ; LEM_DEBUG_TIMING;
+     * customizable debugging for Lime ExpressionScript Engine ; LEM_DEBUG_TIMING;
      * (LEM_DEBUG_TIMING + LEM_DEBUG_VALIDATION_SUMMARY + LEM_DEBUG_VALIDATION_DETAIL);
      * @var int
      */
@@ -525,7 +525,7 @@ class SurveyRuntimeHelper
         }
 
         /**
-         *  Expression Manager Scrips and inputs
+         *  ExpressionScript Engine Scrips and inputs
          */
         $step = isset($_SESSION[$this->LEMsessid]['step']) ? $_SESSION[$this->LEMsessid]['step'] : '';
         $this->aSurveyInfo['EM']['ScriptsAndHiddenInputs'] = "<!-- emScriptsAndHiddenInputs -->";
@@ -537,15 +537,13 @@ class SurveyRuntimeHelper
 
         if (!$this->previewgrp && !$this->previewquestion) {
             $this->aSurveyInfo['aNavigator']            = getNavigatorDatas();
-            $this->aSurveyInfo['hiddenInputs']          = "<input type='hidden' name='thisstep' value='{$_SESSION[$this->LEMsessid]['step']}' id='thisstep' />\n";
-            $this->aSurveyInfo['hiddenInputs']         .= "<input type='hidden' name='sid' value='$this->iSurveyid' id='sid' />\n";
-            $this->aSurveyInfo['hiddenInputs']         .= "<input type='hidden' name='start_time' value='".time()."' id='start_time' />\n";
+            $this->aSurveyInfo['hiddenInputs']          = \CHtml::hiddenField('thisstep', $_SESSION[$this->LEMsessid]['step'], array('id'=>'thisstep'));
+            $this->aSurveyInfo['hiddenInputs']         .= \CHtml::hiddenField('sid', $this->iSurveyid, array('id'=>'sid'));
+            $this->aSurveyInfo['hiddenInputs']         .= \CHtml::hiddenField('start_time', time(), array('id'=>'start_time'));
             $_SESSION[$this->LEMsessid]['LEMpostKey'] =  isset($_POST['LEMpostKeyPreset']) ? $_POST['LEMpostKeyPreset'] : mt_rand();
-            $this->aSurveyInfo['hiddenInputs']         .= "<input type='hidden' name='LEMpostKey' value='{$_SESSION[$this->LEMsessid]['LEMpostKey']}' id='LEMpostKey' />\n";
-
-            global $token;
-            if ($token) {
-                $this->aSurveyInfo['hiddenInputs'] .= "\n<input type='hidden' name='token' value='$token' id='token' />\n";
+            $this->aSurveyInfo['hiddenInputs']         .= \CHtml::hiddenField('LEMpostKey', $_SESSION[$this->LEMsessid]['LEMpostKey'], array('id'=>'LEMpostKey'));
+            if (!empty($_SESSION[$this->LEMsessid]['token'])) {
+                $this->aSurveyInfo['hiddenInputs']     .= \CHtml::hiddenField('token', $_SESSION[$this->LEMsessid]['token'], array('id'=>'token'));
             }
         }
 
@@ -674,6 +672,8 @@ class SurveyRuntimeHelper
     private function setArgs()
     {
         if ($this->sMove == "movesubmit") {
+            $aSurveyInfo = getSurveyInfo($this->iSurveyid, App()->getLanguage());
+            $this->aSurveyInfo = $aSurveyInfo;
 
             if ($this->aSurveyInfo['refurl'] == "Y") {
                 //Only add this if it doesn't already exist
@@ -681,12 +681,7 @@ class SurveyRuntimeHelper
                     $_SESSION[$this->LEMsessid]['insertarray'][] = "refurl";
                 }
             }
-
             resetTimers();
-
-            // TODO: Why is $this->aSurveyInfo empty here?
-            $aSurveyInfo = getSurveyInfo($this->iSurveyid, App()->getLanguage());
-            $this->aSurveyInfo = $aSurveyInfo;
 
             //Before doing the "templatereplace()" function, check the $this->aSurveyInfo['url']
             //field for limereplace stuff, and do transformations!

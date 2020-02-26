@@ -3,7 +3,7 @@
  * @author Denis Chenu <denis@sondages.pro>
  * @copyright 2019 Denis Chenu <http://www.sondages.pro>
  * @license GPL version 3
- * @version 0.0.1
+ * @version 0.1.1
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
  */
 class statFunctions extends PluginBase
 {
-    protected static $description = 'Add some function in Expression Manager to get count from other responses';
+    protected static $description = 'Add some function in ExpressionScript Engine to get count from other responses';
     protected static $name = 'statCountFunctions';
 
     public function init()
