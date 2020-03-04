@@ -2479,7 +2479,6 @@ function db_upgrade_all($iOldDBVersion, $bSilent = false)
                     INNER JOIN {{surveys}} ON {{questions_update400}}.sid = {{surveys}}.sid AND {{questions_update400}}.language = {{surveys}}.language
                 ")->execute();
             switchMSSQLIdentityInsert('questions', false); // Untested
-            $oDB->createCommand()->dropTable('{{questions_update400}}'); // Drop the table before create index for pgsql
             $oDB->createCommand()->createIndex('{{idx1_questions}}', '{{questions}}', 'sid', false);
             $oDB->createCommand()->createIndex('{{idx2_questions}}', '{{questions}}', 'gid', false);
             $oDB->createCommand()->createIndex('{{idx3_questions}}', '{{questions}}', 'type', false);
@@ -2518,7 +2517,6 @@ function db_upgrade_all($iOldDBVersion, $bSilent = false)
                     INNER JOIN {{surveys}} ON {{groups_update400}}.sid = {{surveys}}.sid AND {{groups_update400}}.language = {{surveys}}.language
                 ")->execute();
             switchMSSQLIdentityInsert('groups', false); // Untested
-            $oDB->createCommand()->dropTable('{{groups_update400}}'); // Drop the table before create index for pgsql
             $oDB->createCommand()->createIndex('{{idx1_groups}}', '{{groups}}', 'sid', false);
 
             // Answers table
@@ -2564,7 +2562,6 @@ function db_upgrade_all($iOldDBVersion, $bSilent = false)
                 ON {{answers_update400}}.qid = {{answers}}.qid AND {{answers_update400}}.code = {{answers}}.code AND {{answers_update400}}.scale_id = {{answers}}.scale_id
             ")->execute();
 
-            $oDB->createCommand()->dropTable('{{answers_update400}}');
             $oDB->createCommand()->createIndex('{{answers_idx}}', '{{answers}}', ['qid', 'code', 'scale_id'], true);
             $oDB->createCommand()->createIndex('{{answers_idx2}}', '{{answers}}', 'sortorder', false);
 
@@ -2603,7 +2600,6 @@ function db_upgrade_all($iOldDBVersion, $bSilent = false)
                 FROM {{labels_update400}}
                     INNER JOIN {{labels}} ON {{labels_update400}}.lid = {{labels}}.lid AND {{labels_update400}}.code = {{labels}}.code 
                 ")->execute();
-            $oDB->createCommand()->dropTable('{{labels_update400}}');
 
             // Extend language field on labelsets
             alterColumn('{{labelsets}}', 'languages', "string(255)", false);
@@ -2613,6 +2609,12 @@ function db_upgrade_all($iOldDBVersion, $bSilent = false)
             
             // Drop autoincrement on timings table primary key
             upgradeSurveyTimings350();
+
+            // Drop all backup tables. Do this last if anything goes wrong above. Transactions don't work with CREATE statements.
+            $oDB->createCommand()->dropTable('{{groups_update400}}');
+            $oDB->createCommand()->dropTable('{{questions_update400}}');
+            $oDB->createCommand()->dropTable('{{labels_update400}}');
+            $oDB->createCommand()->dropTable('{{answers_update400}}');
 
             $oDB->createCommand()->update('{{settings_global}}', array('stg_value'=>400), "stg_name='DBVersion'");
 
