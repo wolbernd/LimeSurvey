@@ -829,6 +829,7 @@ class database extends Survey_Common_Action
                     $datasec = Yii::app()->request->getPost('datasec_'.$langname, null);
                     $datasecerror = Yii::app()->request->getPost('datasecerror_'.$langname, null);
                     $dataseclabel = Yii::app()->request->getPost('dataseclabel_'.$langname, null);
+                    $legalnotice = Yii::app()->request->getPost('legalnotice_'.$langname, null);
                     $dateformat = Yii::app()->request->getPost('dateformat_'.$langname, null);
                     $numberformat = Yii::app()->request->getPost('numberformat_'.$langname, null);
 
@@ -864,6 +865,11 @@ class database extends Survey_Common_Action
                     }
                     if ($dataseclabel !== null) {
                         $data['surveyls_policy_notice_label'] = $dataseclabel;
+                    }
+                    if ($legalnotice !== null) {
+                        // Fix bug with FCKEditor saving strange BR types
+                        $legalnotice = $this->oFixCKeditor->fixCKeditor($legalnotice);
+                        $data['surveyls_legal_notice'] = $legalnotice;
                     }
                     if ($sURL !== null) {
                         $data['surveyls_url'] = htmlspecialchars($sURL);

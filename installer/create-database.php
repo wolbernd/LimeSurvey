@@ -612,6 +612,7 @@ function createDatabase($oDB){
             'surveyls_policy_notice' => "text NULL",
             'surveyls_policy_error' => "text NULL",
             'surveyls_policy_notice_label' => 'string(192) NULL',
+            'surveyls_legal_notice' => 'text NULL',
             'surveyls_url' => "text NULL",
             'surveyls_urldescription' => "string(255) NULL",
             'surveyls_email_invite_subj' => "string(255) NULL",
