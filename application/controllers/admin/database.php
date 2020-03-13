@@ -67,6 +67,8 @@ class database extends Survey_Common_Action
                 'shownoanswer' => ['type'=> 'yesno', 'default' => false, 'dbname'=>false, 'active'=>true, 'required'=>[]],
                 'showwelcome' => ['type'=> 'yesno', 'default' => false, 'dbname'=>false, 'active'=>true, 'required'=>[]],
                 'showsurveypolicynotice' => ['type'=> '', 'default' => 0, 'dbname'=>false, 'active'=>true, 'required'=>[]],
+                'showdatapolicybutton' => ['type'=> '', 'default' => 0, 'dbname'=>false, 'active'=>true, 'required'=>[]],
+                'showlegalnoticebutton' => ['type'=> '', 'default' => 0, 'dbname'=>false, 'active'=>true, 'required'=>[]],
                 'allowprev' => ['type'=> 'yesno', 'default' => false, 'dbname'=>false, 'active'=>true, 'required'=>[]],
                 'questionindex' => ['type'=> '', 'default' => false, 'dbname'=>false, 'active'=>true, 'required'=>[]],
                 'nokeyboard' => ['type'=> 'yesno', 'default' => false, 'dbname'=>false, 'active'=>true, 'required'=>[]],
@@ -136,7 +138,7 @@ class database extends Survey_Common_Action
             $this->actionUpdateSurveyLocaleSettingsGeneralSettings($this->iSurveyID);
         }
 
-        Yii::app()->setFlashMessage(gT("Unknown action or no permission."), 'error');
+        App()->setFlashMessage(gT("Unknown action or no permission."), 'error');
         $this->getController()->redirect(Yii::app()->request->urlReferrer);
     }
 
@@ -973,6 +975,8 @@ class database extends Survey_Common_Action
             }
             $oSurvey->showwelcome = $this->_filterEmptyFields($oSurvey, 'showwelcome');
             $oSurvey->showsurveypolicynotice = $this->_filterEmptyFields($oSurvey, 'showsurveypolicynotice');
+            $oSurvey->showdatapolicybutton = $this->_filterEmptyFields($oSurvey, 'showdatapolicybutton');
+            $oSurvey->showlegalnoticebutton = $this->_filterEmptyFields($oSurvey, 'showlegalnoticebutton');
             $oSurvey->allowprev = $this->_filterEmptyFields($oSurvey, 'allowprev');
             $oSurvey->questionindex = (int) $this->_filterEmptyFields($oSurvey, 'questionindex');
             $oSurvey->nokeyboard = $this->_filterEmptyFields($oSurvey, 'nokeyboard');

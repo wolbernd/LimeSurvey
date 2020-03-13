@@ -17,3 +17,61 @@ body > article {
 }
 
 #}
+<div id="datapolicy">
+    <div class="container">
+        <div class="row text-center datapolicy-links">
+            {% if aSurveyInfo.oSurvey.showlegalnoticebutton == 1 %}
+                <a data-toggle="modal" data-target="#datapolicy-modal">
+                    {{ gT('Data policy') }}
+                </a>
+            {% endif %}
+            {% if aSurveyInfo.oSurvey.showlegalnoticebutton == 1 %}
+                <span>|</span>
+                <a data-toggle="modal" data-target="#legalnotice-modal">
+                    {{ gT('Legal notice') }}
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Data policy Modal -->
+    <div class="modal fade" id="datapolicy-modal" tabindex="-1" role="dialog" aria-labelledby="{{ gT('Data policy') }}">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title" id="datapolicy-label">{{ gT('Data policy') }}</h4>
+                </div>
+                <div class="modal-body">
+                    {{ aSurveyInfo.surveyls_policy_notice }}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Legal notice Modal -->
+    <div class="modal fade" id="legalnotice-modal" tabindex="-1" role="dialog"
+         aria-labelledby="{{ gT('Legal notice') }}">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title" id="legalnotice-label">{{ gT('Legal notice') }}</h4>
+                </div>
+                <div class="modal-body">
+                    {{ aSurveyInfo.surveyls_legal_notice }}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

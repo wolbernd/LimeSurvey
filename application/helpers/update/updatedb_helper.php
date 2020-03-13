@@ -2438,6 +2438,8 @@ function db_upgrade_all($iOldDBVersion, $bSilent = false)
         if ($iOldDBVersion < 360) {
             $oTransaction = $oDB->beginTransaction();
             addColumn('{{surveys_languagesettings}}','surveyls_legal_notice',"text");
+            addColumn('{{surveys}}', 'showdatapolicybutton', 'integer DEFAULT 0');
+            addColumn('{{surveys}}', 'showlegalnoticebutton', 'integer DEFAULT 0');
             $oDB->createCommand()->update('{{settings_global}}', ['stg_value'=>360], "stg_name='DBVersion'");
             $oTransaction->commit();
         }

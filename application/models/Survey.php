@@ -140,6 +140,8 @@ use \LimeSurvey\PluginManager\PluginEvent;
  * @property bool $isShowWelcome Show welcome screen
  * @property bool $isShowProgress how progress bar
  * @property bool $showsurveypolicynotice Show the security notice
+ * @property bool $showdatapolicybutton Show the data policy button in the survey with modal
+ * @property bool $showlegalnoticebutton Show the legal notice button in the survey with modal
  * @property bool $isNoKeyboard Show on-screen keyboard
  * @property bool $isAllowEditAfterCompletion Allow multiple responses or update responses with one token
  * @property SurveyLanguageSetting $defaultlanguage
@@ -156,12 +158,11 @@ class Survey extends LSActiveRecord
      */
     protected $findByPkCache = array();
 
-
-
     public $searched_value;
 
     public $showsurveypolicynotice = 0;
-
+    public $showdatapolicybutton = 0;
+    public $showlegalnoticebutton = 0;
 
     private $sSurveyUrl;
 
@@ -467,6 +468,8 @@ class Survey extends LSActiveRecord
             array('shownoanswer', 'in', 'range'=>array('Y', 'N'), 'allowEmpty'=>true),
             array('showwelcome', 'in', 'range'=>array('Y', 'N'), 'allowEmpty'=>true),
             array('showsurveypolicynotice', 'in', 'range'=>array('0', '1', '2'), 'allowEmpty'=>true),
+            array('showdatapolicybutton', 'in', 'range'=>array('0', '1'), 'allowEmpty'=>true),
+            array('showlegalnoticebutton', 'in', 'range'=>array('0', '1'), 'allowEmpty'=>true),
             array('showprogress', 'in', 'range'=>array('Y', 'N'), 'allowEmpty'=>true),
             array('questionindex', 'numerical', 'min' => 0, 'max' => 2, 'allowEmpty'=>false),
             array('nokeyboard', 'in', 'range'=>array('Y', 'N'), 'allowEmpty'=>true),

@@ -326,6 +326,8 @@ class GlobalSettings extends Survey_Common_Action
         }
         SettingGlobal::setSetting('timeadjust', $savetime);
         SettingGlobal::setSetting('usercontrolSameGroupPolicy', strip_tags(Yii::app()->getRequest()->getPost('usercontrolSameGroupPolicy')));
+        SettingGlobal::setSetting('datapolicy', App()->getRequest()->getPost('datapolicy'));
+        SettingGlobal::setSetting('legalnotice', App()->getRequest()->getPost('legalnotice'));
 
         Yii::app()->session['flashmessage'] = $warning.gT("Global settings were saved.");
 
