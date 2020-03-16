@@ -537,6 +537,8 @@ function createDatabase($oDB){
             'refurl' => "string(1) NOT NULL default 'N'",
             'datecreated' => "datetime",
             'showsurveypolicynotice' => 'integer DEFAULT 0',
+            'showdatapolicybutton' => 'integer DEFAULT 0',
+            'showlegalnoticebutton' => 'integer DEFAULT 0',
             'publicstatistics' => "string(1) NOT NULL default 'N'",
             'publicgraphs' => "string(1) NOT NULL default 'N'",
             'listpublic' => "string(1) NOT NULL default 'N'",
