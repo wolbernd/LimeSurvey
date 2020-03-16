@@ -20,13 +20,15 @@ body > article {
 <div id="datapolicy">
     <div class="container">
         <div class="row text-center datapolicy-links">
-            {% if aSurveyInfo.oSurvey.showlegalnoticebutton == 1 %}
+            {% if aSurveyInfo.oSurvey.showdatapolicybutton == 1 %}
                 <a data-toggle="modal" data-target="#datapolicy-modal">
                     {{ gT('Data policy') }}
                 </a>
             {% endif %}
-            {% if aSurveyInfo.oSurvey.showlegalnoticebutton == 1 %}
+            {% if aSurveyInfo.oSurvey.showdatapolicybutton == 1 and aSurveyInfo.oSurvey.showlegalnoticebutton == 1%}
                 <span>|</span>
+            {% endif %}
+            {% if aSurveyInfo.oSurvey.showlegalnoticebutton == 1 %}
                 <a data-toggle="modal" data-target="#legalnotice-modal">
                     {{ gT('Legal notice') }}
                 </a>
