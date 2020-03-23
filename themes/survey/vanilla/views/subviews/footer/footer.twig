@@ -20,15 +20,15 @@ body > article {
 <div id="datapolicy">
     <div class="container">
         <div class="row text-center datapolicy-links">
-            {% if aSurveyInfo.oSurvey.showdatapolicybutton == 1 %}
+            {% if aSurveyInfo.oSurvey.showdatapolicybutton == 1 or aSurveyInfo.sShowDataPolicyButton == '1' %}
                 <a data-toggle="modal" data-target="#datapolicy-modal">
                     {{ gT('Data policy') }}
                 </a>
             {% endif %}
-            {% if aSurveyInfo.oSurvey.showdatapolicybutton == 1 and aSurveyInfo.oSurvey.showlegalnoticebutton == 1%}
+            {% if (aSurveyInfo.oSurvey.showdatapolicybutton == 1 and aSurveyInfo.oSurvey.showlegalnoticebutton == 1) or (aSurveyInfo.sShowLegalNoticeButton == '1' and aSurveyInfo.sShowDataPolicyButton == '1') %}
                 <span>|</span>
             {% endif %}
-            {% if aSurveyInfo.oSurvey.showlegalnoticebutton == 1 %}
+            {% if aSurveyInfo.oSurvey.showlegalnoticebutton == 1 or aSurveyInfo.sShowLegalNoticeButton == '1' %}
                 <a data-toggle="modal" data-target="#legalnotice-modal">
                     {{ gT('Legal notice') }}
                 </a>
@@ -47,7 +47,7 @@ body > article {
                     <h4 class="modal-title" id="datapolicy-label">{{ gT('Data policy') }}</h4>
                 </div>
                 <div class="modal-body">
-                    {{ aSurveyInfo.surveyls_policy_notice }}
+                    {{ aSurveyInfo.sGlobalDataPolicy }}
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -68,7 +68,7 @@ body > article {
                     <h4 class="modal-title" id="legalnotice-label">{{ gT('Legal notice') }}</h4>
                 </div>
                 <div class="modal-body">
-                    {{ aSurveyInfo.surveyls_legal_notice }}
+                    {{ aSurveyInfo.sGlobalLegalNotice }}
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>

@@ -11,6 +11,9 @@ App()->getClientScript()->registerScript('GlobalSettingsBSSwitcher', "
 LS.renderBootstrapSwitch();
 ", LSYii_ClientScript::POS_POSTSCRIPT);
 
+if (isset($scripts)) {
+    echo $scripts;
+}
 ?>
 <script type="text/javascript">
     var msgCantRemoveDefaultLanguage = '<?php eT("You can't remove the default language.",'js'); ?>';
@@ -26,6 +29,7 @@ LS.renderBootstrapSwitch();
         <li role="presentation" ><a role="tab" data-toggle="tab" href='#bounce'><?php eT("Bounce settings"); ?></a></li>
         <li role="presentation" ><a role="tab" data-toggle="tab" href='#security'><?php eT("Security"); ?></a></li>
         <li role="presentation" ><a role="tab" data-toggle="tab" href='#presentation'><?php eT("Presentation"); ?></a></li>
+        <li role="presentation" ><a role="tab" data-toggle="tab" href='#datapolicy_legalnotice'><?php eT("Data policy"); ?></a></li>
         <li role="presentation" ><a role="tab" data-toggle="tab" href='#language'><?php eT("Language"); ?></a></li>
         <li role="presentation" ><a role="tab" data-toggle="tab" href='#interfaces'><?php eT("Interfaces"); ?></a></li>
         <li role="presentation" ><a role="tab" data-toggle="tab" href='#storage'><?php eT("Storage"); ?></a></li>
@@ -67,6 +71,17 @@ LS.renderBootstrapSwitch();
 
     <div id="presentation" class="tab-pane col-md-10 col-md-offset-1">
         <?php $this->renderPartial("./global_settings/_presentation"); ?>
+    </div>
+
+    <div id="datapolicy_legalnotice" class="tab-pane col-md-10 col-md-offset-1">
+        <?php $this->renderPartial("./global_settings/_datapolicy", [
+            'sLanguage' => $sCurrentDefaultLanguage,
+            'sLegalNotice' => $sGlobalLegalNotice,
+            'sDataPolicy' => $sGlobalDataPolicy,
+            'sShowLegalNoticeButton' => $sShowLegalNoticeButton,
+            'sShowDataPolicyButton' => $sShowDataPolicyButton
+        ]);
+        ?>
     </div>
 
     <div id="language" class="tab-pane col-md-10 col-md-offset-1">
