@@ -168,6 +168,17 @@ class RegisterController extends LSYii_Controller
             }
         }
 
+        $aSurveyInfo['datasecuritynotaccepted'] = false;
+        if ($aSurveyInfo['oSurvey']->showsurveypolicynotice > 0) {
+            $data_security_accepted = App()->request->getPost('datasecurity_accepted', false);
+
+            if ($data_security_accepted !== 'on') {
+                if (empty($this->$aSurveyInfo['datasecurity_error'])) {
+                    $this->aRegisterErrors[] = gT("We are sorry but you can't proceed without first agreeing to our survey data policy.");
+                }
+            }
+        }
+
         $aFieldValue = $this->getFieldValue($iSurveyId);
         $aRegisterAttributes = $this->getExtraAttributeInfo($iSurveyId);
 

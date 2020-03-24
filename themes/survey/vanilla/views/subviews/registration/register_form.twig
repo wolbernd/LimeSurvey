@@ -49,6 +49,11 @@
             </div>
         </div>
 
+        {# Privay Message #}
+        <div class='form-group'>
+            {{ include('./subviews/privacy/privacy.twig') }}
+        </div>
+
         {# Loop to add extra attributes #}
         {% for key, aExtraAttribute in aSurveyInfo.aExtraAttributes  %}
             <div class=' {{ aSurveyInfo.class.registerformextras }} form-group row' {{ aSurveyInfo.attr.registerformextras }} >
