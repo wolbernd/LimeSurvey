@@ -104,8 +104,8 @@ class GlobalSettings extends Survey_Common_Action
         $data['aListOfThemeObjects'] = AdminTheme::getAdminThemeList();
         $data['sGlobalLegalNotice'] = getGlobalSetting('legalnotice');
         $data['sGlobalDataPolicy'] = getGlobalSetting('datapolicy');
-        $data['sShowLegalNoticeButton'] = getGlobalSetting('showlegalnoticebutton');
-        $data['sShowDataPolicyButton'] = getGlobalSetting('showdatapolicybutton');
+        $data['sShowGlobalLegalNoticeButton'] = getGlobalSetting('showlegalnoticebutton');
+        $data['sShowGlobalDataPolicyButton'] = getGlobalSetting('showdatapolicybutton');
         App()->loadHelper("admin/htmleditor");
         $data['scripts'] = PrepareEditorScript(false, $this->getController());
 

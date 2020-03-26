@@ -41,8 +41,8 @@
                 'surveyls_title'         => Yii::app()->getConfig('sitename'),
                 'sGlobalLegalNotice'     => getGlobalSetting('legalnotice'),
                 'sGlobalDataPolicy'      => getGlobalSetting('datapolicy'),
-                'sShowLegalNoticeButton' => getGlobalSetting('showlegalnoticebutton'),
-                'sShowDataPolicyButton'  => getGlobalSetting('showdatapolicybutton')
+                'sShowGlobalLegalNoticeButton' => getGlobalSetting('showlegalnoticebutton'),
+                'sShowGlobalDataPolicyButton'  => getGlobalSetting('showdatapolicybutton')
             );
 
             $aData['alanguageChanger']['show'] = false;

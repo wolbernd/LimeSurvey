@@ -78,8 +78,8 @@ if (isset($scripts)) {
             'sLanguage' => $sCurrentDefaultLanguage,
             'sLegalNotice' => $sGlobalLegalNotice,
             'sDataPolicy' => $sGlobalDataPolicy,
-            'sShowLegalNoticeButton' => $sShowLegalNoticeButton,
-            'sShowDataPolicyButton' => $sShowDataPolicyButton
+            'sShowGlobalLegalNoticeButton' => $sShowGlobalLegalNoticeButton,
+            'sShowGlobalDataPolicyButton' => $sShowGlobalDataPolicyButton
         ]);
         ?>
     </div>
