@@ -108,6 +108,7 @@ class GlobalSettings extends Survey_Common_Action
         $data['sShowGlobalDataPolicyButton'] = getGlobalSetting('showdatapolicybutton');
         App()->loadHelper("admin/htmleditor");
         $data['scripts'] = PrepareEditorScript(false, $this->getController());
+        $data['sCurrentDefaultLanguage'] = getGlobalSetting('defaultlang');
 
         $this->_renderWrappedTemplate('', 'globalSettings_view', $data);
     }
