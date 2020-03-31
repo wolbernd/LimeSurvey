@@ -527,9 +527,8 @@ class RegisterController extends LSYii_Controller
         } else {
             $aData['aSurveyInfo'] = self::getRegisterForm($iSurveyId);
         }
-
+        $aData['aSurveyInfo']['datasecurity_notice_label'] = Survey::replacePolicyLink($aSurveyInfo['datasecurity_notice_label'], $aSurveyInfo['sid']);
         $aData['aSurveyInfo']['registration_view'] = $registerContent;
-
         $aData['aSurveyInfo']['registerform']['hiddeninputs'] = '<input value="'.$aData['aSurveyInfo']['sLanguage'].'"  type="hidden" name="lang" id="register_lang" />';
         $aData['aSurveyInfo']['include_content'] = 'register';
 
