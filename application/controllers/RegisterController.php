@@ -173,7 +173,7 @@ class RegisterController extends LSYii_Controller
             $data_security_accepted = App()->request->getPost('datasecurity_accepted', false);
 
             if ($data_security_accepted !== 'on') {
-                if (empty($this->$aSurveyInfo['datasecurity_error'])) {
+                if (empty($aSurveyInfo['datasecurity_error'])) {
                     $this->aRegisterErrors[] = gT("We are sorry but you can't proceed without first agreeing to our survey data policy.");
                 }
             }
