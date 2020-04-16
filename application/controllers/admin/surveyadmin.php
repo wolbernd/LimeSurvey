@@ -221,6 +221,7 @@ class SurveyAdmin extends Survey_Common_Action
         );
 
         //Prepare the edition panes
+        /*
         $aData['edittextdata']              = array_merge($aData, $this->_getTextEditData($survey));
         $aData['datasecdata']               = array_merge($aData, $this->_getDataSecurityEditData($survey));
         $aData['generalsettingsdata']       = array_merge($aData, $this->_generalTabEditSurvey($survey));
@@ -228,6 +229,7 @@ class SurveyAdmin extends Survey_Common_Action
         $aData['publicationsettingsdata']   = array_merge($aData, $this->_tabPublicationAccess($survey));
         $aData['notificationsettingsdata']  = array_merge($aData, $this->_tabNotificationDataManagement($esrow));
         $aData['tokensettingsdata']         = array_merge($aData, $this->_tabTokens($esrow));
+         */
 
         $aViewUrls[] = 'newSurvey_view';
 
@@ -1965,36 +1967,12 @@ class SurveyAdmin extends Survey_Common_Action
 
             Yii::app()->loadHelper("surveytranslator");
             // If start date supplied convert it to the right format
-            $aDateFormatData = getDateFormatData(Yii::app()->session['dateformat']);
-            $sStartDate = Yii::app()->request->getPost('startdate');
-            if (trim($sStartDate) != '') {
-                Yii::import('application.libraries.Date_Time_Converter');
-                $converter = new Date_Time_Converter($sStartDate, $aDateFormatData['phpdate'].' H:i:s');
-                $sStartDate = $converter->convert("Y-m-d H:i:s");
-            }
 
             // If expiry date supplied convert it to the right format
-            $sExpiryDate = Yii::app()->request->getPost('expires');
-            if (trim($sExpiryDate) != '') {
-                Yii::import('application.libraries.Date_Time_Converter');
-                $converter = new Date_Time_Converter($sExpiryDate, $aDateFormatData['phpdate'].' H:i:s');
-                $sExpiryDate = $converter->convert("Y-m-d H:i:s");
-            }
-
-            $iTokenLength = (int) Yii::app()->request->getPost('tokenlength');
-            //token length has to be at least 5, otherwise set it to default (15)
-            if ($iTokenLength !== -1) {
-                if ($iTokenLength < 5) {
-                    $iTokenLength = 15;
-                }
-                if ($iTokenLength > 36) {
-                    $iTokenLength = 36;
-                }
-            }
 
             $aInsertData = array(
-                'expires' => $sExpiryDate,
-                'startdate' => $sStartDate,
+                'expires' => null,
+                'startdate' => null,
                 'template' => App()->request->getPost('template'),
                 'admin' => App()->request->getPost('admin'),
                 'active' => 'N',
@@ -2032,7 +2010,6 @@ class SurveyAdmin extends Survey_Common_Action
                 'publicgraphs' => App()->request->getPost('publicgraphs'),
                 'assessments' => App()->request->getPost('assessments'),
                 'emailresponseto' => App()->request->getPost('emailresponseto'),
-                'tokenlength' => $iTokenLength,
                 'gsid'  => App()->request->getPost('gsid', '1'),
                 'adminemail' => Yii::app()->request->getPost('adminemail'),
                 'bounce_email' => Yii::app()->request->getPost('bounce_email'),
@@ -2052,37 +2029,25 @@ class SurveyAdmin extends Survey_Common_Action
             $iNewSurveyid = $newSurvey->sid;
             // Prepare locale data for surveys_language_settings table
             $sTitle          = Yii::app()->request->getPost('surveyls_title');
-            $sDescription    = Yii::app()->request->getPost('description');
-            $sWelcome        = Yii::app()->request->getPost('welcome');
 
             $sTitle          = html_entity_decode($sTitle, ENT_QUOTES, "UTF-8");
-            $sDescription    = html_entity_decode($sDescription, ENT_QUOTES, "UTF-8");
-            $sWelcome        = html_entity_decode($sWelcome, ENT_QUOTES, "UTF-8");
 
             // Fix bug with FCKEditor saving strange BR types
             $sTitle       = fixCKeditorText($sTitle);
-            $sDescription = fixCKeditorText($sDescription);
-            $sWelcome     = fixCKeditorText($sWelcome);
 
 
             // Insert base language into surveys_language_settings table
             $aInsertData = array(
                 'surveyls_survey_id'           => $iNewSurveyid,
                 'surveyls_title'               => $sTitle,
-                'surveyls_description'         => $sDescription,
-                'surveyls_welcometext'         => $sWelcome,
                 'surveyls_language'            => Yii::app()->request->getPost('language'),
-                'surveyls_urldescription'      => Yii::app()->request->getPost('urldescrip', ''),
-                'surveyls_endtext'             => Yii::app()->request->getPost('endtext', ''),
-                'surveyls_url'                 => Yii::app()->request->getPost('url', ''),
-                'surveyls_dateformat'          => (int)Yii::app()->request->getPost('dateformat'),
-                'surveyls_numberformat'        => (int)Yii::app()->request->getPost('numberformat'),
-                'surveyls_policy_notice'       => App()->request->getPost('surveyls_policy_notice'),
-                'surveyls_policy_notice_label' => App()->request->getPost('surveyls_policy_notice_label')
             );
 
             $langsettings = new SurveyLanguageSetting;
-            $langsettings->insertNewSurvey($aInsertData);
+            $result = $langsettings->insertNewSurvey($aInsertData);
+            if (!$result) {
+                safeDie('Could not save SurveyLanguageSetting');
+            }
             // Update survey permissions
             Permission::model()->giveAllSurveyPermissions(Yii::app()->session['loginID'], $iNewSurveyid);
 
