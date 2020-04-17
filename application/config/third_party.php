@@ -428,5 +428,11 @@ return array(
         'depends' => array(
             'jquery',
         )
+    ),
+    'ckeditor5' => array(
+        'basePath' => 'third_party.ckeditor5',
+        'js' => array(
+            'ckeditor.js'
+        )
     )
 );
