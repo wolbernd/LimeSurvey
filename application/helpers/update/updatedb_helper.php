@@ -3066,6 +3066,14 @@ function db_upgrade_all($iOldDBVersion, $bSilent = false)
             $oDB->createCommand()->update('{{settings_global}}', array('stg_value' => 425), "stg_name='DBVersion'");
             $oTransaction->commit();
         }
+        if ($iOldDBVersion < 426) {
+            $oTransaction = $oDB->beginTransaction();
+            addColumn('{{surveys_languagesettings}}', 'surveyls_legal_notice', "text");
+            addColumn('{{surveys}}', 'showdatapolicybutton', 'integer DEFAULT 0');
+            addColumn('{{surveys}}', 'showlegalnoticebutton', 'integer DEFAULT 0');
+            $oDB->createCommand()->update('{{settings_global}}', ['stg_value' => 426], "stg_name='DBVersion'");
+            $oTransaction->commit();
+        }
     } catch (Exception $e) {
         Yii::app()->setConfig('Updating', false);
         $oTransaction->rollback();

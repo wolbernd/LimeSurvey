@@ -67,6 +67,20 @@ echo viewHelper::getViewTestTag('surveyTexts');
                 </div>
             </div>
         </div>
+        <div class="row">
+            <div class="col-sm-12 col-lg-6">
+                <!-- Survey legal notice -->
+                <div class="form-group">
+                    <label class=" control-label" for='legalnotice_<?php echo $aSurveyLanguageSettings['surveyls_language']; ?>'><?php eT("Survey legal notice:"); ?></label>
+                    <div class="">
+                        <div class="htmleditor input-group">
+                            <?php echo CHtml::textArea("legalnotice_{$aSurveyLanguageSettings['surveyls_language']}",$aSurveyLanguageSettings['surveyls_legal_notice'],array('class'=>'form-control','cols'=>'80','rows'=>'20','id'=>"legalnotice_{$aSurveyLanguageSettings['surveyls_language']}")); ?>
+                            <?php echo getEditor("survey-legalnotice","legalnotice_".$aSurveyLanguageSettings['surveyls_language'], "[".gT("Survey legal notice:", "js")."](".$aSurveyLanguageSettings['surveyls_language'].")",$surveyid,'','',$action); ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 

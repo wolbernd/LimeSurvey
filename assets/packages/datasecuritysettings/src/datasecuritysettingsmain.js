@@ -1,5 +1,5 @@
 import Vue from 'vue';
-import LSCKEditor from '../../meta/LSCKVue/plugin'
+import LSCKEditor from '../../meta/LSCKVue/plugin';
 
 import DataSecurityApp from './DataSecurityApp.vue';
 import Loader from './helperComponents/loader.vue';

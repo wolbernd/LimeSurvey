@@ -2313,6 +2313,7 @@ class SurveyAdmin extends Survey_Common_Action
             "dataseclabel" => [],
             "datasecmessage" => [],
             "datasecerror" => [],
+            "legalnoticemessage" => [],
         ];
 
         if ($oSurvey == null ) {
@@ -2321,8 +2322,11 @@ class SurveyAdmin extends Survey_Common_Action
             $aReturner["datasecmessage"][$defaultLanguage] = "";
             $aReturner["datasecerror"][$defaultLanguage] = "";
             $aReturner["dataseclabel"][$defaultLanguage] = "";
+            $aReturner["legalnoticemessage"][$defaultLanguage] = "";
+            $aReturner["showdatasecuritybutton"][$defaultLanguage] = "";
+            $aReturner["showlegalnoticebutton"][$defaultLanguage] = "";
 
-            return Yii::app()->getController()->renderPartial(
+            return App()->getController()->renderPartial(
                 '/admin/super/_renderJson',
                 ['data' => [
                     "showsurveypolicynotice" => 0,
@@ -2330,7 +2334,7 @@ class SurveyAdmin extends Survey_Common_Action
                     "languages" => $aLanguages,
                     "permissions" => [
                         "update" => Permission::model()->hasGlobalPermission('surveys', 'create'),
-                        "editorpreset" => Yii::app()->session['htmleditormode'],
+                        "editorpreset" => App()->session['htmleditormode'],
                     ]
                 ]],
                 false,
@@ -2343,17 +2347,20 @@ class SurveyAdmin extends Survey_Common_Action
             $aReturner["datasecmessage"][$sLanguage] = $oSurvey->languagesettings[$sLanguage]->surveyls_policy_notice;
             $aReturner["datasecerror"][$sLanguage] = $oSurvey->languagesettings[$sLanguage]->surveyls_policy_error;
             $aReturner["dataseclabel"][$sLanguage] = $oSurvey->languagesettings[$sLanguage]->surveyls_policy_notice_label;
+            $aReturner["legalnoticemessage"][$sLanguage] = $oSurvey->languagesettings[$sLanguage]->surveyls_legal_notice;
         }
 
-        return Yii::app()->getController()->renderPartial(
+        return App()->getController()->renderPartial(
             '/admin/super/_renderJson',
             ['data' => [
                 "showsurveypolicynotice" => $oSurvey->showsurveypolicynotice,
+                'showdatasecuritybutton' => $oSurvey->showdatapolicybutton,
+                'showlegalnoticebutton'  => $oSurvey->showlegalnoticebutton,
                 "textdata" => $aReturner,
                 "languages" => $aLanguages,
                 "permissions" => [
                     "update" => Permission::model()->hasSurveyPermission($iSurveyId, 'surveysecurity', 'update'),
-                    "editorpreset" => Yii::app()->session['htmleditormode'],
+                    "editorpreset" => App()->session['htmleditormode'],
                 ]
             ]],
             false,
@@ -2372,10 +2379,12 @@ class SurveyAdmin extends Survey_Common_Action
     {
         $iSurveyId = (int) $sid;
         $oSurvey = Survey::model()->findByPk($iSurveyId);
-        $changes = Yii::app()->request->getPost('changes', []);
+        $changes = App()->request->getPost('changes', []);
         $aSuccess = [];
 
         $oSurvey->showsurveypolicynotice = isset($changes['showsurveypolicynotice']) ? $changes['showsurveypolicynotice'] : 0;
+        $oSurvey->showdatapolicybutton = isset($changes['showdatasecuritybutton']) ? $changes['showdatasecuritybutton'] : 0;
+        $oSurvey->showlegalnoticebutton = isset($changes['showlegalnoticebutton']) ? $changes['showlegalnoticebutton'] : 0;
         $aSuccess[] = $oSurvey->save();
         foreach ($oSurvey->allLanguages as $sLanguage ) {
             $oSurveyLanguageSetting = SurveyLanguageSetting::model()->findByPk(["surveyls_survey_id" => $iSurveyId, "surveyls_language" => $sLanguage]);
@@ -2389,6 +2398,7 @@ class SurveyAdmin extends Survey_Common_Action
             $oSurveyLanguageSetting->surveyls_policy_notice = isset($changes['datasecmessage'][$sLanguage]) ? $changes['datasecmessage'][$sLanguage] : '';
             $oSurveyLanguageSetting->surveyls_policy_error = isset($changes['datasecerror'][$sLanguage]) ? $changes['datasecerror'][$sLanguage] : '';
             $oSurveyLanguageSetting->surveyls_policy_notice_label = isset($changes['dataseclabel'][$sLanguage]) ? $changes['dataseclabel'][$sLanguage] : '';
+            $oSurveyLanguageSetting->surveyls_legal_notice= isset($changes['legalnoticemessage'][$sLanguage]) ? $changes['legalnoticemessage'][$sLanguage] : '';
             $aSuccess[$sLanguage] = $oSurveyLanguageSetting->save();
             unset($oSurveyLanguageSetting);
         }
@@ -2401,7 +2411,7 @@ class SurveyAdmin extends Survey_Common_Action
             true
         );
 
-        return Yii::app()->getController()->renderPartial(
+        return App()->getController()->renderPartial(
             '/admin/super/_renderJson',
             ['data' => [
                 "success" => $success,

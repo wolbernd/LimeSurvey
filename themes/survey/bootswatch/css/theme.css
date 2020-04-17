@@ -28,9 +28,16 @@
 
 */
 
+html {
+    height: 100%;
+}
+
 body {
-     padding-bottom: 10px;
-     padding-top: 60px;/* now is redefine in JS to fit any title length */
+    padding-bottom: 10px;
+    padding-top: 60px; /* now is redefine in JS to fit any title length */
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
 .navbar-action-link{
@@ -829,6 +836,22 @@ p.return-to-survey{
     border-left: none;
     border-right: none;
     outline: none;
+}
+
+#datapolicy {
+    margin-top: 1em;
+    flex: 1 1 auto;
+    display: flex;
+    align-items: flex-end;
+}
+
+.datapolicy-links a {
+    padding: 10px;
+}
+
+.datapolicy-links a:hover {
+    cursor: pointer;
+    text-decoration: none;
 }
 
 /* Define the color for Awesome Bootsrap Checkboxes ; based on bg-primary background-color*/

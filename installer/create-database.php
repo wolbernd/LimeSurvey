@@ -17,7 +17,7 @@ function createDatabase($oDB){
     * - Always prefix key/index names by using curly brackets {{ }}*
     */
 
-    // Get current database version:
+    // Get current database version: 
     $version = require(\Yii::app()->getBasePath() . '/config/version.php');
     $databaseCurrentVersion = $version['dbversionnumber'];
 
@@ -609,6 +609,8 @@ function createDatabase($oDB){
             'refurl' => "string(1) NOT NULL default 'N'",
             'datecreated' => "datetime",
             'showsurveypolicynotice' => 'integer DEFAULT 0',
+            'showdatapolicybutton' => 'integer DEFAULT 0',
+            'showlegalnoticebutton' => 'integer DEFAULT 0',
             'publicstatistics' => "string(1) NOT NULL default 'N'",
             'publicgraphs' => "string(1) NOT NULL default 'N'",
             'listpublic' => "string(1) NOT NULL default 'N'",
@@ -824,6 +826,7 @@ function createDatabase($oDB){
             'surveyls_policy_notice' => "text NULL",
             'surveyls_policy_error' => "text NULL",
             'surveyls_policy_notice_label' => 'string(192) NULL',
+            'surveyls_legal_notice' => 'text NULL',
             'surveyls_url' => "text NULL",
             'surveyls_urldescription' => "string(255) NULL",
             'surveyls_email_invite_subj' => "string(255) NULL",

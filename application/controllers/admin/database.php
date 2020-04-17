@@ -70,6 +70,8 @@ class database extends Survey_Common_Action
                 'shownoanswer' => ['type'=> 'yesno', 'default' => false, 'dbname'=>false, 'active'=>true, 'required'=>[]],
                 'showwelcome' => ['type'=> 'yesno', 'default' => false, 'dbname'=>false, 'active'=>true, 'required'=>[]],
                 'showsurveypolicynotice' => ['type'=> '', 'default' => 0, 'dbname'=>false, 'active'=>true, 'required'=>[]],
+                'showdatapolicybutton' => ['type'=> '', 'default' => 0, 'dbname'=>false, 'active'=>true, 'required'=>[]],
+                'showlegalnoticebutton' => ['type'=> '', 'default' => 0, 'dbname'=>false, 'active'=>true, 'required'=>[]],
                 'allowprev' => ['type'=> 'yesno', 'default' => false, 'dbname'=>false, 'active'=>true, 'required'=>[]],
                 'questionindex' => ['type'=> '', 'default' => false, 'dbname'=>false, 'active'=>true, 'required'=>[]],
                 'nokeyboard' => ['type'=> 'yesno', 'default' => false, 'dbname'=>false, 'active'=>true, 'required'=>[]],
@@ -864,6 +866,7 @@ class database extends Survey_Common_Action
                     $datasec = Yii::app()->request->getPost('datasec_'.$langname, null);
                     $datasecerror = Yii::app()->request->getPost('datasecerror_'.$langname, null);
                     $dataseclabel = Yii::app()->request->getPost('dataseclabel_'.$langname, null);
+                    $legalnotice = Yii::app()->request->getPost('legalnotice_'.$langname, null);
                     $dateformat = Yii::app()->request->getPost('dateformat_'.$langname, null);
                     $numberformat = Yii::app()->request->getPost('numberformat_'.$langname, null);
 
@@ -899,6 +902,11 @@ class database extends Survey_Common_Action
                     }
                     if ($dataseclabel !== null) {
                         $data['surveyls_policy_notice_label'] = $dataseclabel;
+                    }
+                    if ($legalnotice !== null) {
+                        // Fix bug with FCKEditor saving strange BR types
+                        $legalnotice = $this->oFixCKeditor->fixCKeditor($legalnotice);
+                        $data['surveyls_legal_notice'] = $legalnotice;
                     }
                     if ($sURL !== null) {
                         $data['surveyls_url'] = htmlspecialchars($sURL);
@@ -1002,6 +1010,8 @@ class database extends Survey_Common_Action
             //}
             $oSurvey->showwelcome = $this->_filterEmptyFields($oSurvey, 'showwelcome');
             $oSurvey->showsurveypolicynotice = $this->_filterEmptyFields($oSurvey, 'showsurveypolicynotice');
+            $oSurvey->showdatapolicybutton = $this->_filterEmptyFields($oSurvey, 'showdatapolicybutton');
+            $oSurvey->showlegalnoticebutton = $this->_filterEmptyFields($oSurvey, 'showlegalnoticebutton');
             $oSurvey->allowprev = $this->_filterEmptyFields($oSurvey, 'allowprev');
             $oSurvey->questionindex = (int) $this->_filterEmptyFields($oSurvey, 'questionindex');
             $oSurvey->nokeyboard = $this->_filterEmptyFields($oSurvey, 'nokeyboard');

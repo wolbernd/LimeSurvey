@@ -8,6 +8,12 @@ export default {
     setShowsurveypolicynotice(state, newValue) {
         state.showsurveypolicynotice = newValue;
     },
+    setShowDataSecurityButton(state, newValue) {
+        state.showdatasecuritybutton = newValue;
+    },
+    setShowLegalNoticeButton(state, newValue) {
+        state.showlegalnoticebutton = newValue;
+    },
 
     setDataseclabel(state, newValue) {
         state.dataseclabel = newValue;
@@ -21,6 +27,9 @@ export default {
     setPermissions(state, newValue) {
         state.permissions = newValue;
     },
+    setLegalNoticeMessage(state, newValue) {
+        state.legalnoticemessage = newValue;
+    },
 
     setDataseclabelForCurrentLanguage(state, newValue) {
         Vue.set(state.dataseclabel, state.activeLanguage, newValue);
@@ -30,6 +39,9 @@ export default {
     },
     setDatasecerrorForCurrentLanguage(state, newValue) {
         Vue.set(state.datasecerror, state.activeLanguage, newValue);
+    },
+    setLegalNoticeMessageForCurrentLanguage(state, newValue) {
+        Vue.set(state.legalnoticemessage, state.activeLanguage, newValue);
     },
 
     //view controllers

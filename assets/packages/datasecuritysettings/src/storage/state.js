@@ -5,6 +5,10 @@ export default {
     dataseclabel: [],
     datasecmessage: [],
     datasecerror: [],
+    legalnoticemessage: [],
+    showdatasecuritybutton: 0,
+    showlegalnoticebutton: 0,
+
     languages: [],
     survey: {},
     debugMode: false,
