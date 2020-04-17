@@ -113,6 +113,8 @@ class GlobalSettings extends Survey_Common_Action
         $data['scripts'] = PrepareEditorScript(false, $this->getController());
         $data['sCurrentDefaultLanguage'] = getGlobalSetting('defaultlang');
 
+        Yii::app()->clientScript->registerPackage('ckeditor5');
+
         $this->_renderWrappedTemplate('globalsettings', 'globalSettings_view', $data);
     }
 
