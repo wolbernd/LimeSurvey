@@ -58,7 +58,7 @@
             },
             currentShowLegalNoticeButton: {
                 get() {
-                    return parseInt(this.$store.state.showsurveypolicynotice)
+                    return parseInt(this.$store.state.showlegalnoticebutton)
                 },
                 set(newValue) {
                     this.$store.commit('setShowLegalNoticeButton', newValue);
