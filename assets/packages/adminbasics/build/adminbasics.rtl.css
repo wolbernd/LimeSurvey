@@ -116,10 +116,6 @@
   display: none;
 }
 
-#cpdbatt {
-  min-height: 100px;
-}
-
 .draggable-container {
   min-height: 300px;
 }
@@ -227,20 +223,8 @@ div.mappable-attribute-wrapper.paired.ui-state-disabled {
   min-height: 100px;
 }
 
-#responses-column-filter-modal .checkbox label {
-  vertical-align: text-bottom;
-  white-space: nowrap;
-  overflow-x: hidden;
-}
-
-.responses-multiselect-checkboxes {
-  overflow-y: scroll;
-  height: 60vh;
-}
-
-.responses-column-filter-modal-checkbox-buttons {
-  text-align: right;
-  padding-bottom: 15px;
+#cpdbatt {
+  min-height: 100px;
 }
 
 /**
@@ -4330,6 +4314,22 @@ textarea.form-control.input-text {
 .template-files-delete-button {
   margin: 1px 0 0 0;
   padding: 0 5px;
+}
+
+#responses-column-filter-modal .checkbox label {
+  vertical-align: text-bottom;
+  white-space: nowrap;
+  overflow-x: hidden;
+}
+
+.responses-multiselect-checkboxes {
+  overflow-y: scroll;
+  height: 60vh;
+}
+
+.responses-column-filter-modal-checkbox-buttons {
+  text-align: right;
+  padding-bottom: 15px;
 }
 
 #selectable .ui-selecting {

@@ -58,7 +58,7 @@ const SaveController = () => {
                     if ($form.data('isvuecomponent') == true) {
                         LS.EventBus.$emit('componentFormSubmit', button)
                     } else {
-                        $form.find('[type="submit"]').first().trigger('click');
+                        $form.find('[type="submit"]:not(.ck)').first().trigger('click');
                         displayLoadingState(this);
                     }
                 },
@@ -124,7 +124,7 @@ const SaveController = () => {
                     if ($form.data('isvuecomponent') == true) {
                         LS.EventBus.$emit('componentFormSubmit', button)
                     } else {
-                        $form.find('[type="submit"]').first().trigger('click');
+                        $form.find('[type="submit"]:not(.ck)').first().trigger('click');
                         displayLoadingState(this);
                     }
 
@@ -144,7 +144,7 @@ const SaveController = () => {
                     if ($form.data('isvuecomponent') == true) {
                         LS.EventBus.$emit('componentFormSubmit', button)
                     } else {
-                        $form.find('[type="submit"]').first().trigger('click');
+                        $form.find('[type="submit"]:not(.ck)').first().trigger('click');
                         displayLoadingState(this);
                     }
                 },
@@ -164,7 +164,7 @@ const SaveController = () => {
                         value: '1'
                     }).appendTo($form);
                     
-                    $form.find('[type="submit"]').first().trigger('click');
+                    $form.find('[type="submit"]:not(.ck)').first().trigger('click');
                     displayLoadingState(this);
                         
                     return false;
@@ -182,7 +182,7 @@ const SaveController = () => {
                     if ($form.data('isvuecomponent') == true) {
                         LS.EventBus.$emit('componentFormSubmit', button)
                     } else {
-                        $form.find('[type="submit"]').first().trigger('click');
+                        $form.find('[type="submit"]:not(.ck)').first().trigger('click');
                         displayLoadingState(this);
                     }
                 },
