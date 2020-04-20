@@ -86,7 +86,7 @@ const SaveController = () => {
                     const
                         formid = '#' + $(this).attr('data-form-id'),
                         $form = $(formid),
-                        $firstSubmit = $form.find('[type="submit"]').first();
+                        $firstSubmit = $form.find('[type="submit"]:not(.ck)').first();
 
                     if($firstSubmit.length > 0) {
                         $firstSubmit.trigger('click');

@@ -154,9 +154,7 @@
                 while (i--) {
                     let scriptContent = scripts[i].innerHTML;
                     let cleanScript = document.createElement('pre');
-                    cleanScript.innerHTML = `[script]
-${scriptContent}
-[/script]`;
+                    cleanScript.innerHTML = `[script]${scriptContent}[/script]`;
                     scripts[i].parentNode.appendChild(cleanScript);
                     scripts[i].parentNode.removeChild(scripts[i]);
                 }
@@ -253,8 +251,7 @@ ${scriptContent}
                 </div>
                 <div class="row scoped-editor-row">
                     <div class="col-sm-6 ls-space margin top-5 bottom-5 scope-contains-ckeditor ">
-                        <label for="inputdataseclabel" class="">{{ "Survey data policy checkbox label:" | translate
-                            }}:</label>
+                        <label for="inputdataseclabel" class="">{{ "Survey data policy checkbox label:" | translate}}:</label>
                         <input type="text" id="inputdataseclabel" name="surveyls_policy_notice_label"
                                class="form-control" v-model="currentDataseclabel"/>
                     </div>

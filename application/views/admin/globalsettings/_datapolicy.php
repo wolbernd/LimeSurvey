@@ -53,9 +53,8 @@
                 <label class=" control-label"
                        for='datapolicy'><?php eT("Data policy:"); ?></label>
                 <div class="">
-                    <div class="htmleditor input-group">
+                    <div class="htmleditor">
                         <?php echo CHtml::textArea("datapolicy", $sDataPolicy, ['class' => 'form-control', 'cols' => '80', 'rows' => '20', 'id' => "datapolicy"]); ?>
-                        <?php echo getEditor("datapolicy", "datapolicy", "[" . gT("Data policy:", "js") . "]"); ?>
                     </div>
                 </div>
             </div>
@@ -66,12 +65,17 @@
                 <label class=" control-label"
                        for='legalnotice'><?php eT("Legal notice:"); ?></label>
                 <div class="">
-                    <div class="htmleditor input-group">
+                    <div class="htmleditor">
                         <?php echo CHtml::textArea("legalnotice", $sLegalNotice, ['class' => 'form-control', 'cols' => '80', 'rows' => '20', 'id' => "legalnotice"]); ?>
-                        <?php echo getEditor("legalnotice", "legalnotice", "[" . gT("Legal notice:", "js") . "]"); ?>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+<script>
+    ClassicEditor
+        .create(document.querySelector('#datapolicy'))
+    ClassicEditor
+        .create(document.querySelector('#legalnotice'))
+</script>
