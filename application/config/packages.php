@@ -129,6 +129,28 @@ return array(
             'bootstrap',
         )
     ),
+    'ckeditor' => array(
+        'devBaseUrl'  => 'assets/packages/ckeditor',
+        'basePath' => 'core.ckeditor',
+        'js' => array(
+            'ckeditor.js',
+            'config.js',
+        ),
+        'depends' => array(
+            'adminbasics',
+        ),
+    ),
+    'ckeditoradditions' => array(
+        'devBaseUrl'  => 'assets/packages/ckeditoradditions/',
+        'basePath' => 'core.ckeditoradditions',
+        'js' => array(
+            'ckeditoradditions.js',
+        ),
+        'depends' => array(
+            'ckeditor'
+        )
+    ),
+
     'pjax' => array(
         'devBaseUrl' => 'assets/packages/pjax/',
         'basePath' => 'core.pjax',
@@ -527,7 +549,7 @@ return array(
         )
     ),
 
-    'emailtemplatesold' => array(
+    'emailtemplates' => array(
         'devBaseUrl' => 'assets/packages/emailtemplates/',
         'basePath' => 'core.emailtemplates',
         'position' =>CClientScript::POS_BEGIN,
@@ -535,13 +557,14 @@ return array(
             'popup-dialog.css'
         ),
         'js' => array(
-            'emailtemplates'.$minVersion.'.js',
+            'emailtemplates.js',
         ),
         'depends' => array(
             'adminbasics',
         )
     ),
 
+    /*
     'emailtemplates' => array(
         'devBaseUrl' => 'assets/packages/emailtemplates/',
         'basePath' => 'core.emailtemplates',
@@ -563,6 +586,7 @@ return array(
             'ace',
         )
     ),
+     */
 
     'surveysummary' => array(
         'devBaseUrl' => 'assets/packages/surveysummary/',
