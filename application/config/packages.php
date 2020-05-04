@@ -549,7 +549,7 @@ return array(
         )
     ),
 
-    'emailtemplates' => array(
+    'emailtemplatesold' => array(
         'devBaseUrl' => 'assets/packages/emailtemplates/',
         'basePath' => 'core.emailtemplates',
         'position' =>CClientScript::POS_BEGIN,
@@ -557,14 +557,13 @@ return array(
             'popup-dialog.css'
         ),
         'js' => array(
-            'emailtemplates.js',
+            'emailtemplates.' . $minVersion . '.js',
         ),
         'depends' => array(
             'adminbasics',
         )
     ),
 
-    /*
     'emailtemplates' => array(
         'devBaseUrl' => 'assets/packages/emailtemplates/',
         'basePath' => 'core.emailtemplates',
@@ -586,7 +585,6 @@ return array(
             'ace',
         )
     ),
-     */
 
     'surveysummary' => array(
         'devBaseUrl' => 'assets/packages/surveysummary/',
