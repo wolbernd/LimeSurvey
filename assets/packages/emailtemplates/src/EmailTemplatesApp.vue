@@ -41,12 +41,15 @@
                                 <div class="ls-flex-item text-left">
                                     <label class="">{{currentTemplateTypeData.body}}</label>
                                 </div>
-                                <div class="ls-flex-item text-right" v-if="$store.state.permissions.update">
+                                <div class="ls-flex-item text-right" v-if="$store.state.permissions.update && $store.state.useHtml">
                                     <button class="btn btn-default btn-xs" @click.prevent="sourceMode=!sourceMode"><i class="fa fa-file-code-o"></i>{{'Toggle source mode'|translate}}</button>
                                 </div>
                             </div>
                             <div v-if="!$store.state.permissions.update" class="col-12" v-html="stripScripts(currentEditorContent)" />
-                            <lsckeditor v-if="!sourceMode && $store.state.permissions.update" :editor="currentEditorObject" v-model="currentEditorContent" :config="currentEditorOptions" :extra-data="editorExtraOptions" @ready="onReadySetEditor"></lsckeditor>
+
+                            <lsckeditor v-if="!sourceMode && $store.state.permissions.update && $store.state.useHtml" :editor="currentEditorObject" v-model="currentEditorContent" :config="currentEditorOptions" :extra-data="editorExtraOptions" @ready="onReadySetEditor"></lsckeditor>
+                            <textarea v-else :editor="currentEditorObject" v-model="currentEditorContent" cols=100 rows=20></textarea>
+
                             <aceeditor v-if="sourceMode && $store.state.permissions.update" @external-change-applied="applyExternalChange=false" :apply-external-change="applyExternalChange" v-model="currentEditorContent" thisId="currentTemplateTypesSourceEditor" :showLangSelector="false"></aceeditor>
                         </div>
                         <div class="row ls-space margin top-15">
@@ -63,7 +66,7 @@
                                     :key="file.hash"
                                     class="simple-carousel-item"
                                 >
-                                    <i class="fa fa-times text-danger simple-carousel-delete" @click="deleteAttachment(file)" />
+                                    <i class="fa fa-times text-danger simple-carousel-delete" @click="deleteAttachment(file)"></i>
                                     <img v-if="file.isImage !='false'" class="scoped-contain-image" :src="file.src" :alt="file.shortName" />
                                     <i v-else :class="'fa '+file.iconClass+' fa-4x'"></i>
                                 </div>
@@ -161,7 +164,7 @@ export default {
                 try{    
                     if (this.$store.state.templateTypeContents[this.$store.state.activeLanguage]) {
                         let descriptor = this.currentTemplateTypeData.field.body;
-                        if(!this.$store.state.useHtml) {
+                        if(this.$store.state.useHtml) {
                             returner = this.nl2br(he.decode(this.$store.state.templateTypeContents[this.$store.state.activeLanguage][descriptor]));
                         } else {
                             returner = this.$store.state.templateTypeContents[this.$store.state.activeLanguage][descriptor];
