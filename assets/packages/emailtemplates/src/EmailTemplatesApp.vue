@@ -41,7 +41,7 @@
                                 <div class="ls-flex-item text-left">
                                     <label class="">{{currentTemplateTypeData.body}}</label>
                                 </div>
-                                <div class="ls-flex-item text-right" v-if="$store.state.permissions.update && $store.state.useHtml">
+                                <div class="ls-flex-item text-right" v-if="showTriggerSourceModeButton">
                                     <button class="btn btn-default btn-xs" @click.prevent="sourceMode=!sourceMode"><i class="fa fa-file-code-o"></i>{{'Toggle source mode'|translate}}</button>
                                 </div>
                             </div>
@@ -192,6 +192,9 @@ export default {
         languageChangerEnabled() {
             return LS.ld.size(this.$store.state.languages) > 1;
         },
+        showTriggerSourceModeButton() {
+            return this.$store.state.permissions.update && this.$store.state.useHtml;
+        }
     },
     methods: {
         nl2br (str, is_xhtml=true) {
