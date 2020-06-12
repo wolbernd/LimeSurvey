@@ -795,13 +795,17 @@ class questionedit extends Survey_Common_Action
             App()->getConfig('preselectquestiontype')
         );
 
+        /**
+         *  frontend sends it correctly, here we don't need this ...
+         *
+
         if(isset($aQuestionData['same_default'])){
             if($aQuestionData['same_default'] == 1){
                 $aQuestionData['same_default'] =0;
             }else{
                 $aQuestionData['same_default'] =1;
             }
-        }
+        } **/
 
         $aQuestionData = array_merge([
             'sid' => $iSurveyId,
