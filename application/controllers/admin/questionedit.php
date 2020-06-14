@@ -228,10 +228,15 @@ class questionedit extends Survey_Common_Action
         // Store changes to the actual question data, by either storing it, or updating an old one
         $oQuestion = Question::model()->findByPk($questionData['question']['qid']);
         if ($oQuestion == null || $questionCopy == true) {
+            //wrong from frontend ...
+            //the 'same_default' value is allways set to 1 (yes) from frontend as a default, no matter what the user selects
+            //thats why it has to be resett to users selected value here ...
+            $questionData['question']['same_default'] = $questionData['generalSettings']['save_as_default']['formElementValue'] == 'Y' ? 1 :0;
             $oQuestion = $this->storeNewQuestionData($questionData['question']);
             // TODO: Unused variable
             $isNewQuestion = true;
         } else {
+            $questionData['question']['same_default'] = $questionData['generalSettings']['save_as_default']['formElementValue'] == 'Y' ? 1 :0;
             $oQuestion = $this->updateQuestionData($oQuestion, $questionData['question']);
         }
 
@@ -795,18 +800,6 @@ class questionedit extends Survey_Common_Action
             App()->getConfig('preselectquestiontype')
         );
 
-        /**
-         *  frontend sends it correctly, here we don't need this ...
-         *
-
-        if(isset($aQuestionData['same_default'])){
-            if($aQuestionData['same_default'] == 1){
-                $aQuestionData['same_default'] =0;
-            }else{
-                $aQuestionData['same_default'] =1;
-            }
-        } **/
-
         $aQuestionData = array_merge([
             'sid' => $iSurveyId,
             'gid' => App()->request->getParam('gid'),
@@ -876,16 +869,6 @@ class questionedit extends Survey_Common_Action
      */
     private function updateQuestionData(&$oQuestion, $aQuestionData)
     {
-        //todo something wrong in frontend ...
-
-        if(isset($aQuestionData['same_default'])){
-            if($aQuestionData['same_default'] == 1){
-                $aQuestionData['same_default'] =0;
-            }else{
-                $aQuestionData['same_default'] =1;
-            }
-        }
-
         $oQuestion->setAttributes($aQuestionData, false);
         if ($oQuestion == null) {
             throw new LSJsonException(

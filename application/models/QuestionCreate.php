@@ -22,7 +22,7 @@ class QuestionCreate extends Question
                 'type' => $questionType,
                 'other' => 'N',
                 'mandatory' => 'N',
-                'same_default' => 1,
+                'same_default' => 0,
                 'relevance' => 1,
                 'group_name' => '',
                 'modulename' => '',
