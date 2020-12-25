@@ -1,9 +1,9 @@
 //globals formId
 import Vue from "vue";
-import Sidebar from "./components/sidebar.vue";
-import getAppState from "./store/vuex-store.js";
+import SideBar from "./components/SideBar.vue";
+//import getAppState from "./store/vuex-store.js";
 import {PluginLog} from "./mixins/logSystem.js";
-import Loader from './helperComponents/loader.vue';
+import Loader from './components/Loader.vue';
 
 //Ignore phpunits testing tags
 Vue.config.ignoredElements = ["x-test"];
@@ -17,7 +17,7 @@ Vue.mixin({
     methods: {
         updatePjaxLinks: function () {
             this.$forceUpdate();
-            this.$store.commit('newToggleKey');
+            //this.$store.commit('newToggleKey');
         },
         redoTooltips: function () {
             window.LS.doToolTip();
@@ -34,7 +34,7 @@ Vue.mixin({
 });
 
 const Lsadminsidepanel = (userid, surveyid) => {
-    const AppState = getAppState(userid, surveyid);
+    //const AppState = getAppState(userid, surveyid);
     const panelNameSpace = {};
 
     const applySurveyId = (store) => {
@@ -66,21 +66,21 @@ const Lsadminsidepanel = (userid, surveyid) => {
     const createSideMenu = () => {
         return new Vue({
             el: "#vue-sidebar-container",
-            store: AppState,
+            //store: AppState,
             components: {
-                sidebar: Sidebar,
+                sidebar: SideBar,
             },
             created() {
                 $(document).on("vue-sidebar-collapse", () => {
-                    this.$store.commit("changeIsCollapsed", true);
+                    //this.$store.commit("changeIsCollapsed", true);
                 });
             },
             mounted() {
                 applySurveyId(this.$store);
 
                 const maxHeight = $("#in_survey_common").height() - 35 || 400;
-                this.$store.commit("changeMaxHeight", maxHeight);
-                this.$store.commit("setAllowOrganizer", window.SideMenuData.allowOrganizer);
+                //this.$store.commit("changeMaxHeight", maxHeight);
+                //this.$store.commit("setAllowOrganizer", window.SideMenuData.allowOrganizer);
                 this.updatePjaxLinks();
 
 

@@ -1,6 +1,6 @@
 <script>
-import ajaxMethods from '../../mixins/runAjax.js';
-import Menuicon from './_menuicon.vue';
+import ajaxMethods from '../mixins/runAjax.js';
+import Menuicon from './MenuIcon.vue';
 
 export default {
     name: 'submenu',

@@ -1,7 +1,7 @@
 <script>
-import ajaxMethods from '../../mixins/runAjax.js';
-import Menuicon from './_menuicon.vue';
-import Submenu from './_submenu.vue';
+import ajaxMethods from '../mixins/runAjax.js';
+import Menuicon from './MenuIcon.vue';
+import Submenu from './SubMenu.vue';
 
 export default {
     name: 'sidemenu',

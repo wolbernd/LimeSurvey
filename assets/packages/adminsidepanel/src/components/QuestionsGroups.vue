@@ -1,6 +1,5 @@
 <script>
-import _ from "lodash";
-import ajaxMethods from "../../mixins/runAjax.js";
+import ajaxMethods from "../mixins/runAjax.js";
 
 export default {
     mixins: [ajaxMethods],

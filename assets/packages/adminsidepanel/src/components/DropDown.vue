@@ -1,6 +1,6 @@
 <script>
 
-import ajaxMixin from '../../mixins/runAjax.js';
+import ajaxMixin from '../mixins/runAjax.js';
 
 export default {
     props: {

@@ -1,10 +1,9 @@
 <script>
-import _ from "lodash";
 import ajaxMixin from "../mixins/runAjax.js";
-import Questionexplorer from "./subcomponents/_questionsgroups.vue";
-import SidebarStateToggle from "./subcomponents/_sidebarStateToggle.vue";
-import Sidemenu from "./subcomponents/_sidemenu.vue";
-import Quickmenu from "./subcomponents/_quickmenu.vue";
+import Questionexplorer from "./QuestionsGroups.vue";
+import SidebarStateToggle from "./SideBarStateToggle.vue";
+import Sidemenu from "./SideMenu.vue";
+import Quickmenu from "./QuickMenu.vue";
 
 export default {
     props: {
