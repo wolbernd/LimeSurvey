@@ -55,7 +55,10 @@ final class SaveQuestionData
      */
     public function save($question = null)
     {
-        if ($this->questionData['question']['qid'] == 0) {
+        if (
+            !isset($this->questionData['question']['qid'])
+            || $this->questionData['question']['qid'] == 0
+        ) {
             $this->questionData['question']['qid'] = null;
             $question = $this->storeNewQuestionData($this->questionData['question']);
         } else {
@@ -450,7 +453,7 @@ final class SaveQuestionData
                         'code is not set in data: ' . json_encode($data)
                     );
                 }
-                $answer = new Answer();
+                $answer = $this->getNewAnswer();
                 $answer->qid = $question->qid;
                 $answer->code = $data['code'];
                 $answer->sortorder = $i;
@@ -470,7 +473,7 @@ final class SaveQuestionData
                 }
                 $answer->refresh();
                 foreach ($data['answeroptionl10n'] as $lang => $answerOptionText) {
-                    $l10n = new AnswerL10n();
+                    $l10n = $this->getNewAnswerL10n();
                     $l10n->aid = $answer->aid;
                     $l10n->language = $lang;
                     $l10n->answer = $answerOptionText;
@@ -484,5 +487,21 @@ final class SaveQuestionData
                 }
             }
         }
+    }
+
+    /**
+     * @return Answer
+     */
+    private function getNewAnswer()
+    {
+        return new Answer();
+    }
+
+    /**
+     * @return AnswerL10n
+     */
+    private function getNewAnswerL10n()
+    {
+        return new AnswerL10n();
     }
 }
