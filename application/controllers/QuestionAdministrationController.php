@@ -351,6 +351,7 @@ class QuestionAdministrationController extends LSBaseController
         $iSurveyId = (int) $request->getPost('sid');
         $sScenario = App()->request->getPost('scenario', '');
 
+        // TODO: No reason to pass around both the request object and question data array.
         $questionData = [];
         $questionData['question']         = (array) $request->getPost('question');
         // TODO: It's l10n, not i10n.
