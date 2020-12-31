@@ -12,20 +12,20 @@ namespace LimeSurvey\Datavalueobjects;
  */
 class CopyQuestionValues
 {
-        /** @var string the question Code */
-        private $questionCode;
+    /** @var string the question Code */
+    private $questionCode;
 
-        /** @var int questionGroup id that the copied question should belong to */
-        private $questionGroupId;
+    /** @var int questionGroup id that the copied question should belong to */
+    private $questionGroupId;
 
-        /** @var \Survey the survey the question belongs to */
-        private $oSurvey;
+    /** @var \Survey the survey the question belongs to */
+    private $oSurvey;
 
-        /** @var \Question the question that should be copied */
-        private $questiontoCopy;
+    /** @var \Question the question that should be copied */
+    private $questiontoCopy;
 
-        /** @var int the position for the question on the left menu group */
-        private $questionPositionInGroup;
+    /** @var int the position for the question on the left menu group */
+    private $questionPositionInGroup;
 
     /**
      * @return int
