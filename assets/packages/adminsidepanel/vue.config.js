@@ -3,7 +3,7 @@ const appName = 'adminsidepanel';
 const outputDir = process.env.NODE_ENV === 'production' ? 'build.min/' : 'build/';
 const entryPoint = ['./lib/surveysettings.js','./src/'+appName+'main.js', './scss/'+appName+'main.scss'];
 
-const RtlCSS = require("../meta/LSRTLPlugin/LSRTLPlugin.js");
+// const RtlCSS = require("../meta/LSRTLPlugin/LSRTLPlugin.js");
 
 
 module.exports = {
@@ -77,7 +77,7 @@ module.exports = {
                 }]);
         }
 
-        config.plugin('rtlcss')
+        /** config.plugin('rtlcss')
             .use(RtlCSS, [{
                 stringMap: [
                     {
@@ -106,7 +106,7 @@ module.exports = {
                         replace: ['fa-chevron-left', 'fa-chevron-right'],
                     }
                   ]
-            }]);
+            }]); **/
 
         config.plugins
             .delete("html")

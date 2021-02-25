@@ -1,5 +1,6 @@
 //globals formId
 import Vue from "vue";
+import App from "./App.vue";
 import Sidebar from "./components/sidebar.vue";
 import getAppState from "./store/vuex-store.js";
 import {PluginLog} from "./mixins/logSystem.js";
@@ -9,11 +10,11 @@ import Loader from './helperComponents/loader.vue';
 Vue.config.ignoredElements = ["x-test"];
 Vue.config.devtools = true;
 
-Vue.use(PluginLog);
+// Vue.use(PluginLog);
 
 Vue.component('loader-widget', Loader);
 
-Vue.mixin({
+/* Vue.mixin({
     methods: {
         updatePjaxLinks: function () {
             this.$forceUpdate();
@@ -31,12 +32,18 @@ Vue.mixin({
             return window.SideMenuData.translate[string] || string;
         }
     }
-});
+ }); */
 
-const Lsadminsidepanel = (userid, surveyid) => {
+new Vue({
+    render: h => h(App)
+}).$mount('#vue-sidebar-container');
+
+// TODO: THIS STUFF NEEDS TO BE MOVED TO APP.VUE
+/** const Lsadminsidepanel = (userid, surveyid) => {
     const AppState = getAppState(userid, surveyid);
     const panelNameSpace = {};
 
+    // TODO: What is happening here?! This should be moved to App.vue
     const applySurveyId = (store) => {
         if (surveyid != 0) {
             store.commit("updateSurveyId", surveyid);
@@ -64,6 +71,7 @@ const Lsadminsidepanel = (userid, surveyid) => {
     }
 
     const createSideMenu = () => {
+        // TODO: Moves this to App.vue
         return new Vue({
             el: "#vue-sidebar-container",
             store: AppState,
@@ -71,18 +79,19 @@ const Lsadminsidepanel = (userid, surveyid) => {
                 sidebar: Sidebar,
             },
             created() {
+                // TODO: Replave jQuery with plain JavaScript
                 $(document).on("vue-sidebar-collapse", () => {
                     this.$store.commit("changeIsCollapsed", true);
                 });
             },
             mounted() {
+                // TODO: Why does this be needed here?
                 applySurveyId(this.$store);
 
                 const maxHeight = $("#in_survey_common").height() - 35 || 400;
                 this.$store.commit("changeMaxHeight", maxHeight);
                 this.$store.commit("setAllowOrganizer", window.SideMenuData.allowOrganizer);
                 this.updatePjaxLinks();
-
 
                 $(document).on("vue-redraw", () => {
                     this.updatePjaxLinks();
@@ -170,9 +179,7 @@ const Lsadminsidepanel = (userid, surveyid) => {
     return createPanelAppliance;
 };
 
-
-
-$(document).ready(function(){
+$(document).ready(function() {
     let surveyid = 'newSurvey';
     if(window.LS != undefined) {
         surveyid = window.LS.parameters.$GET.surveyid || window.LS.parameters.keyValuePairs.surveyid;
@@ -184,5 +191,4 @@ $(document).ready(function(){
     window.adminsidepanel =  window.adminsidepanel || Lsadminsidepanel(window.LS.globalUserId, surveyid);
 
     window.adminsidepanel();
-});
-
+}); **/
