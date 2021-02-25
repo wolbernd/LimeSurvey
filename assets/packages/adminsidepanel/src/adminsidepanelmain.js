@@ -1,20 +1,21 @@
 //globals formId
 import Vue from "vue";
 import App from "./App.vue";
-import Sidebar from "./components/sidebar.vue";
 import getAppState from "./store/vuex-store.js";
-import {PluginLog} from "./mixins/logSystem.js";
-import Loader from './helperComponents/loader.vue';
+// import {PluginLog} from "./mixins/logSystem.js";
+// import Loader from './helperComponents/loader.vue';
 
 //Ignore phpunits testing tags
 Vue.config.ignoredElements = ["x-test"];
 Vue.config.devtools = true;
 
+Vue.use(getAppState);
+
 // Vue.use(PluginLog);
 
-Vue.component('loader-widget', Loader);
+//Vue.component('loader-widget', Loader);
 
-/* Vue.mixin({
+/** Vue.mixin({
     methods: {
         updatePjaxLinks: function () {
             this.$forceUpdate();
@@ -32,7 +33,7 @@ Vue.component('loader-widget', Loader);
             return window.SideMenuData.translate[string] || string;
         }
     }
- }); */
+ }); **/
 
 new Vue({
     render: h => h(App)
