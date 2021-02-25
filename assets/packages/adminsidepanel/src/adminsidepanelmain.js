@@ -43,7 +43,7 @@ Vue.use(Vuex);
             return window.SideMenuData.translate[string] || string;
         }
     }
- }); */
+ }); **/
 
 const getRandomInt = function (maximal) {
     return Math.floor(Math.random() * Math.floor(maximal));
