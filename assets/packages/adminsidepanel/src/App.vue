@@ -1,5 +1,5 @@
 <template>
-    <div class="Application-Side-Menu">
+    <div id="Application-Side-Menu">
         <sidebar suvey="survey"></sidebar>
     </div>
 </template>
