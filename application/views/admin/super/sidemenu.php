@@ -82,8 +82,10 @@
     v-bind:style="{'max-height': $store.state.inSurveyViewHeight, width : $store.getters.sideBarSize}"
     v-bind:data-collapsed="$store.state.isCollapsed">
     <?php if($landOnSideMenuTab !== ''): ?>
-        <sidebar land-on-tab='<?php echo $landOnSideMenuTab ?>' />
+        <app land-on-side-tab='<?php echo $landOnSideMenuTab ?>'>
+        <!-- <sidebar land-on-tab='<?php echo $landOnSideMenuTab ?>' /> -->
     <?php else: ?>
-        <sidebar />
+        <!-- <sidebar /> -->
+        <app>
     <?php endif; ?>
 </div>

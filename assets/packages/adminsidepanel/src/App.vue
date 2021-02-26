@@ -1,6 +1,6 @@
 <template>
     <div id="Application-Side-Menu">
-        <sidebar suvey="survey"></sidebar>
+        <sidebar suvey="survey" landOnTab="landOnSideTab"></sidebar>
     </div>
 </template>
 <script>
@@ -13,6 +13,7 @@ export default {
     },
     props: {
         surveyid: Number,
+        landOnSideTab: String,
     },
     data() {
         return {
