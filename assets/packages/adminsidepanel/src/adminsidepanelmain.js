@@ -9,7 +9,7 @@ import getAppState from "./store/vuex-store.js";
 Vue.config.ignoredElements = ["x-test"];
 Vue.config.devtools = true;
 
-Vue.use(getAppState);
+Vue.use(getAppState); // Self developed Vuex by previous frontend dev.
 
 // Vue.use(PluginLog);
 
@@ -41,67 +41,24 @@ new Vue({
 
 // TODO: THIS STUFF NEEDS TO BE MOVED TO APP.VUE
 /** const Lsadminsidepanel = (userid, surveyid) => {
-    const AppState = getAppState(userid, surveyid);
-    const panelNameSpace = {};
-
-    // TODO: What is happening here?! This should be moved to App.vue
-    const applySurveyId = (store) => {
-        if (surveyid != 0) {
-            store.commit("updateSurveyId", surveyid);
-        }
-    };
+    const panelNameSpace   = {};
 
     const controlWindowSize = () => {
         const adminmenuHeight = $("body").find("nav").first().height();
-        const footerHeight = $("body").find("footer").last().height();
-        const menuHeight = $(".menubar").outerHeight();
-        const inSurveyOffset = adminmenuHeight + footerHeight + menuHeight + 25;
-        const windowHeight = window.innerHeight;
+        const footerHeight    = $("body").find("footer").last().height();
+        const menuHeight      = $(".menubar").outerHeight();
+        const inSurveyOffset  = adminmenuHeight + footerHeight + menuHeight + 25;
+        const windowHeight       = window.innerHeight;
         const inSurveyViewHeight = windowHeight - inSurveyOffset;
-        const bodyWidth = (1 - (parseInt($('#sidebar').width()) / $('#vue-apps-main-container').width())) * 100;
+        const bodyWidth          = (1 - (parseInt($('#sidebar').width()) / $('#vue-apps-main-container').width())) * 100;
         const collapsedBodyWidth = (1 - (parseInt('98px') / $('#vue-apps-main-container').width())) * 100;
-        const inSurveyViewWidth = Math.floor($('#sidebar').data('collapsed') ? bodyWidth : collapsedBodyWidth) + '%';
+        const inSurveyViewWidth  = Math.floor($('#sidebar').data('collapsed') ? bodyWidth : collapsedBodyWidth) + '%';
 
         panelNameSpace["surveyViewHeight"] = inSurveyViewHeight;
-        panelNameSpace["surveyViewWidth"] = inSurveyViewWidth;
-        $('#fullbody-container').css({
-            //'height': inSurveyViewHeight,
-            'max-width': inSurveyViewWidth,
-            'overflow-x': 'auto'
-        });
+        panelNameSpace["surveyViewWidth"]  = inSurveyViewWidth;
     }
 
-    const createSideMenu = () => {
-        // TODO: Moves this to App.vue
-        return new Vue({
-            el: "#vue-sidebar-container",
-            store: AppState,
-            components: {
-                sidebar: Sidebar,
-            },
-            created() {
-                // TODO: Replave jQuery with plain JavaScript
-                $(document).on("vue-sidebar-collapse", () => {
-                    this.$store.commit("changeIsCollapsed", true);
-                });
-            },
-            mounted() {
-                // TODO: Why does this be needed here?
-                applySurveyId(this.$store);
-
-                const maxHeight = $("#in_survey_common").height() - 35 || 400;
-                this.$store.commit("changeMaxHeight", maxHeight);
-                this.$store.commit("setAllowOrganizer", window.SideMenuData.allowOrganizer);
-                this.updatePjaxLinks();
-
-                $(document).on("vue-redraw", () => {
-                    this.updatePjaxLinks();
-                });
-
-                $(document).trigger("vue-reload-remote");
-            }
-        });
-    };
+    const createSideMenu = () => {};
 
     const applyPjaxMethods = () => {
         panelNameSpace.reloadcounter = 5;
@@ -172,7 +129,6 @@ new Vue({
         window.addEventListener("resize", LS.ld.debounce(controlWindowSize, 300));
         $(document).on("vue-resize-height", LS.ld.debounce(controlWindowSize, 300));
         applyPjaxMethods();
-
     }
 
     LS.adminCore.addToNamespace(panelNameSpace, 'adminsidepanel');
