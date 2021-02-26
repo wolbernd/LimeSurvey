@@ -1,6 +1,6 @@
 <template>
     <div class="Application-Side-Menu">
-        <sidebar></sidebar>
+        <sidebar suvey="survey"></sidebar>
     </div>
 </template>
 <script>
@@ -11,15 +11,21 @@ export default {
     components: {
         'sidebar': SideBar,
     },
+    props: {
+        surveyid: Number,
+    },
     data() {
         return {
             applyPjaxMethods: undefined,
+            survey: {
+                id : 0,
+            }
         }
     },
     methods: {
-        applySurveyId(store) {
+        applySurveyId() {
             if (self.surveyid != 0) {
-                store.commit("updateSurveyId", self.surveyid);
+                this.survey.id = self.surveyid;
             }
         },
         controlWindowSize() {
@@ -33,8 +39,8 @@ export default {
             const collapsedBodyWidth = (1 - (parseInt('98px') / $('#vue-apps-main-container').width())) * 100;
             const inSurveyViewWidth  = Math.floor($('#sidebar').data('collapsed') ? bodyWidth : collapsedBodyWidth) + '%';
 
-            panelNameSpace["surveyViewHeight"] = inSurveyViewHeight;
-            panelNameSpace["surveyViewWidth"]  = inSurveyViewWidth;
+            this.panelNameSpace["surveyViewHeight"] = inSurveyViewHeight;
+            this.panelNameSpace["surveyViewWidth"]  = inSurveyViewWidth;
         },
         applyPjaxMethods() {
             self.panelNameSpace.reloadcounter = 5;
@@ -113,7 +119,7 @@ export default {
     },
     mounted() {
         // TODO: ????
-        applySurveyId(this.$store);
+        this.applySurveyId();
 
         const maxHeight = $("#in_survey_common").height() - 35 || 400;
         this.$store.commit("changeMaxHeight", maxHeight);

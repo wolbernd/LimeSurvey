@@ -1,6 +1,6 @@
 export default  function(userid) {
     return {
-        surveyid: 0,
+       // surveyid: 0,
         language: '',
         maxHeight: 0,
         inSurveyViewHeight: 1000,
@@ -27,4 +27,4 @@ export default  function(userid) {
         toggleKey: Math.floor(Math.random()*10000)+'--key',
         allowOrganizer: true
     };
-};
+}

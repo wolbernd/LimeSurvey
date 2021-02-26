@@ -1,7 +1,7 @@
 export default {
-    updateSurveyId(state, newSurveyId) {
+    /** updateSurveyId(state, newSurveyId) {
         state.surveyid = newSurveyId;
-    },
+    }, */
     changeLanguage(state, language) {
         state.language = language;
     },
