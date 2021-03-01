@@ -1,7 +1,7 @@
 export default  function(userid) {
     return {
-       // surveyid: 0,
-        language: '',
+        // surveyid: 0,
+        // language: '',
         maxHeight: 0,
         inSurveyViewHeight: 1000,
         sideBodyHeight: '100%',
