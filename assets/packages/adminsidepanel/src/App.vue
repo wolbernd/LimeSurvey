@@ -20,7 +20,8 @@ export default {
             applyPjaxMethods: undefined,
             survey: {
                 id : 0,
-            }
+            },
+            maxHeight: 0,
         }
     },
     methods: {
@@ -123,7 +124,7 @@ export default {
         this.applySurveyId();
 
         const maxHeight = $("#in_survey_common").height() - 35 || 400;
-        this.$store.commit("changeMaxHeight", maxHeight);
+        this.maxHeight = maxHeight;
         this.$store.commit("setAllowOrganizer", window.SideMenuData.allowOrganizer);
         this.updatePjaxLinks();
 
