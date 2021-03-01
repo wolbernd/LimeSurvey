@@ -22,6 +22,7 @@ export default {
                 id : 0,
             },
             maxHeight: 0,
+            inSurveyViewHeight: 1000,
         }
     },
     methods: {
