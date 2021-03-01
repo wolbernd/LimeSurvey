@@ -96,12 +96,7 @@ $bInherit = (!empty($aTemplateConfiguration['sid']) || !empty($aTemplateConfigur
                     $iTotalWidth = 0;
                     $iCount = 0;
                     foreach($aOptionAttributes['optionAttributes'] as $attributeKey => $attribute){
-                        //echo '<pre>'; var_dump($oParentOptions); echo '</pre>';die;
                         $sParentOption =  array_key_exists($attributeKey, $oParentOptions) ? $oParentOptions[$attributeKey] : '';
-                        if (!is_string($sParentOption)) {
-                            die('here');
-                            echo '<pre>'; var_dump($sParentOption); echo '</pre>';die;
-                        }
                         if ($attributeKey === 'ajaxmode') {
                             continue;
                         }
@@ -153,16 +148,6 @@ $bInherit = (!empty($aTemplateConfiguration['sid']) || !empty($aTemplateConfigur
                                     }
                                 echo '</div>';
                             } elseif ($attribute['type'] == 'dropdown'){
-                                echo '<pre>'; var_dump($sParentOption); echo '</pre>';die;
-                                if (!is_string($sPackagesToLoad)) {
-                                    echo '<pre>'; var_dump($sPackagesToLoad); echo '</pre>';die;
-                                }
-                                if (!is_string($attributeKey)) {
-                                    echo '<pre>'; var_dump($attributeKey); echo '</pre>';die;
-                                }
-                                if (!is_string($attribute['parent'])) {
-                                    die('here');
-                                }
                                 echo ' <div class="col-sm-12">
                                 <select class="form-control selector_option_value_field selector_radio_childfield selector_image_selector" data-parent="' . $attribute['parent'] . '" data-inheritvalue=\'' . ($attributeKey == 'font' && isset($sPackagesToLoad) ? $sPackagesToLoad : $sParentOption) . '\' id="simple_edit_options_' . $attributeKey . '" name="' . $attributeKey . '"  >';
                                 if ($bInherit){
