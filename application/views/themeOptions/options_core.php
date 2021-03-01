@@ -149,7 +149,12 @@ $bInherit = (!empty($aTemplateConfiguration['sid']) || !empty($aTemplateConfigur
                                 echo '</div>';
                             } elseif ($attribute['type'] == 'dropdown'){
                                 echo ' <div class="col-sm-12">
-                                <select class="form-control selector_option_value_field selector_radio_childfield selector_image_selector" data-parent="' . $attribute['parent'] . '" data-inheritvalue=\'' . ($attributeKey == 'font' && isset($sPackagesToLoad) ? $sPackagesToLoad : $sParentOption) . '\' id="simple_edit_options_' . $attributeKey . '" name="' . $attributeKey . '"  >';
+                                <select
+                                    class="form-control selector_option_value_field selector_radio_childfield selector_image_selector"
+                                    data-parent="' . $attribute['parent'] . '"
+                                    data-inheritvalue=\'' . ($attributeKey == 'font' && isset($sPackagesToLoad) ? $sPackagesToLoad : $sParentOption) . '\'
+                                    id="simple_edit_options_' . $attributeKey . '"
+                                    name="' . $attributeKey . '"  >';
                                 if ($bInherit){
                                     if ($attributeKey == 'backgroundimagefile'){
                                         $inheritedValue = isset($backgroundfileInheritPreview) ? $backgroundfileInheritPreview : '';
