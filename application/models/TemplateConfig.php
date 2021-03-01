@@ -20,7 +20,7 @@
  * Common methods for TemplateConfiguration and TemplateManifest
  *
  */
-class TemplateConfig extends CActiveRecord
+trait TemplateConfig
 {
 
     /** @var string $sTemplateName The template name */
@@ -1016,12 +1016,14 @@ class TemplateConfig extends CActiveRecord
 
     /**
      * Create a new entry in {{templates}} and {{template_configuration}} table using the template manifest
+     * Helper function for TemplateConfiguration.
+     *
      * @param string $sTemplateName the name of the template to import
      * @param array $aDatas
      * @return boolean true on success | exception
      * @throws Exception|InvalidArgumentException
      */
-    public static function importManifest($sTemplateName, $aDatas)
+    public static function importManifestAux($sTemplateName, $aDatas)
     {
         if (empty($aDatas)) {
             throw new InvalidArgumentException('$aDatas cannot be empty');

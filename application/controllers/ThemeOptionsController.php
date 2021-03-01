@@ -700,7 +700,6 @@ class ThemeOptionsController extends LSBaseController
             $oModelWithInheritReplacement->sTemplateName
         );
         $oParentOptions = (array) $oSimpleInheritanceTemplate->oOptions;
-        echo '<pre>'; var_dump($oParentOptions); echo '</pre>';die;
 
         $aData = array(
             'model'              => $model,

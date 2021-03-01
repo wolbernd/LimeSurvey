@@ -38,8 +38,9 @@
  * @package       LimeSurvey
  * @subpackage    Backend
  */
-class TemplateConfiguration extends TemplateConfig
+class TemplateConfiguration extends CActiveRecord
 {
+    use TemplateConfig;
 
     /**
      * @var TemplateConfiguration $oParentTemplate The parent template name
@@ -596,7 +597,7 @@ class TemplateConfiguration extends TemplateConfig
             }
         }
 
-        return parent::importManifest($sTemplateName, $aDatas);
+        return self::importManifestAux($sTemplateName, $aDatas);
     }
 
     /**
@@ -1027,12 +1028,12 @@ class TemplateConfiguration extends TemplateConfig
         $oTemplate->setOptions();
         $oTemplate->setOptionInheritance();
 
-        $oOptions = (array) $oSimpleInheritanceTemplate->oOptions;
+        $aOptions = (array) $oSimpleInheritanceTemplate->oOptions;
 
         //We add some extra values to the option page
         //This is just a dirty hack, and somewhere in the future we will correct it
         $renderArray['oParentOptions'] = array_merge(
-            ($oOptions),
+            ($aOptions),
             array(
                 'packages_to_load' =>  $oTemplate->packages_to_load,
                 'files_css' => $oTemplate->files_css
@@ -1121,7 +1122,7 @@ class TemplateConfiguration extends TemplateConfig
         $files = $oTemplate->$sField;
 
         if (!empty($files)) {
-            $oFiles = json_decode($files, true);
+            $oFiles = json_decode($files);
             if ($oFiles === null) {
                 App()->setFlashMessage(
                     sprintf(
@@ -1265,7 +1266,7 @@ class TemplateConfiguration extends TemplateConfig
     {
         $this->oOptions = new stdClass();
         if (!empty($this->options)) {
-            $this->oOptions = json_decode($this->options, true);
+            $this->oOptions = json_decode($this->options);
         }
         // unset "comment" property which is auto generated from HTML comments in xml file
         unset($this->oOptions->comment);
