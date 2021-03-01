@@ -132,6 +132,8 @@ class TemplateConfig extends CActiveRecord
      */
     public function prepareTemplateRendering($sTemplateName = '', $iSurveyId = '', $bUseMagicInherit = true)
     {
+        // NB: Boolean is 0/1 when used as array access key.
+        $bUseMagicInherit = (int) $bUseMagicInherit;
         if (!empty($sTemplateName) && !empty($iSurveyId)) {
             if (!empty(self::$aPreparedToRender[$sTemplateName])) {
                 if (!empty(self::$aPreparedToRender[$sTemplateName][$iSurveyId])) {
