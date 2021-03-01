@@ -20,6 +20,7 @@ export default {
             applyPjaxMethods: undefined,
             survey: {
                 id : 0,
+                language: '',
             },
             maxHeight: 0,
             inSurveyViewHeight: 1000,
