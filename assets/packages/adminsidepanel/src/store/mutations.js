@@ -2,9 +2,9 @@ export default {
     /** updateSurveyId(state, newSurveyId) {
         state.surveyid = newSurveyId;
     }, */
-    changeLanguage(state, language) {
+    /** changeLanguage(state, language) {
         state.language = language;
-    },
+    }, */
     changeCurrentTab(state, value) {
         state.currentTab = value;
     },
@@ -24,12 +24,12 @@ export default {
     /** changeSideBarHeight(state, newHeight) {
         state.sideBarHeight = newHeight;
     }, */
-    changeInSurveyViewHeight(state, newHeight) {
+    /** changeInSurveyViewHeight(state, newHeight) {
         state.inSurveyViewHeight = newHeight;
-    },
-    changeSideBodyHeight(state, newHeight) {
+    }, */
+    /** changeSideBodyHeight(state, newHeight) {
         state.sideBodyHeight = newHeight+'px' || '100%';
-    },
+    }, */
     changeCurrentUser(state, newUser) {
         state.currentUser = newUser;
     },
