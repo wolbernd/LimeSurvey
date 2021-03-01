@@ -148,6 +148,10 @@ $bInherit = (!empty($aTemplateConfiguration['sid']) || !empty($aTemplateConfigur
                                     }
                                 echo '</div>';
                             } elseif ($attribute['type'] == 'dropdown'){
+                                if (!is_string($sParentOption)) {
+                                    var_dump($sParentOption);
+                                    die;
+                                }
                                 echo ' <div class="col-sm-12">
                                 <select
                                     class="form-control selector_option_value_field selector_radio_childfield selector_image_selector"
