@@ -61,8 +61,6 @@ class TemplateConfig extends CActiveRecord
 
     /** @var object $oOptions The template options */
     public $oOptions;
-    public $oOptionAttributes;
-
 
     /** @var string[] $depends List of all dependencies (could be more that just the config.xml packages) */
     protected $depends = array();
