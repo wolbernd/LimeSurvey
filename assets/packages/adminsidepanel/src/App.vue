@@ -1,6 +1,6 @@
 <template>
     <div id="Application-Side-Menu">
-        <sidebar suvey="survey" landOnTab="landOnSideTab"></sidebar>
+        <sidebar suvey="survey" landOnTab="landOnSideTab" v-model="isCollapsed" isCollapsed="isCollapsed"></sidebar>
     </div>
 </template>
 <script>
@@ -24,6 +24,7 @@ export default {
             },
             maxHeight: 0,
             inSurveyViewHeight: 1000,
+            isCollapsed: false,
         }
     },
     methods: {
@@ -117,8 +118,9 @@ export default {
     },
     created() {
         // TODO: Replave jQuery with plain JavaScript
+        // TODO: This should be part of the sidebar-component!
         $(document).on("vue-sidebar-collapse", () => {
-            this.$store.commit("changeIsCollapsed", true);
+            this.isCollapsed = true;
         });
     },
     mounted() {

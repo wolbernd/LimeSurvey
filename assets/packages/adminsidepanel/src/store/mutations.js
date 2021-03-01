@@ -14,10 +14,10 @@ export default {
     maxSideBarWidth(state, value) {
         state.maximalSidebar = value;
     },
-    changeIsCollapsed(state, value) {
+    /** changeIsCollapsed(state, value) {
         state.isCollapsed = value;
         $(document).trigger('vue-sidemenu-update-link');
-    },
+    },*/
     changeMaxHeight(state, newHeight) {
         state.maxHeight = newHeight;
     },

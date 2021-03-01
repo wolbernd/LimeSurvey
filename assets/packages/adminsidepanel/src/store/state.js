@@ -10,7 +10,7 @@ export default  function(userid) {
         currentTab: 'settings',
         // sidebarwidth: 380,
         maximalSidebar: false,
-        isCollapsed: false,
+        // isCollapsed: false,
         pjax: null,
         pjaxLoading: false,
         lastMenuOpen: false,

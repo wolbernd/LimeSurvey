@@ -10,6 +10,7 @@ export default {
     props: {
         landOnTab: String,
         survey: Object,
+        isCollapsed: Boolean,
     },
     components: {
         questionexplorer: Questionexplorer,
@@ -53,7 +54,7 @@ export default {
             set(tab) { this.$store.commit("changeCurrentTab", tab); }
         },
         getSideBarWidth() {
-            return this.$store.getters.isCollapsed ? "98" : this.sideBarWidth;
+            return this.isCollapsed ? "98" : this.sideBarWidth;
         },
         sortedMenus() {
             return LS.ld.orderBy(
@@ -66,13 +67,13 @@ export default {
         },
         showSideMenu() {
             return (
-                !this.$store.getters.isCollapsed &&
+                !this.isCollapsed &&
                 this.currentTab == "settings"
             );
         },
         showQuestionTree() {
             return (
-                !this.$store.getters.isCollapsed &&
+                !this.isCollapsed &&
                 this.currentTab == "questiontree"
             );
         },
@@ -205,12 +206,12 @@ export default {
             this.$store.commit("closeAllMenus");
             if (
                 lastMenuItemObject != false &&
-                this.$store.getters.isCollapsed != true
+                this.isCollapsed != true
             )
                 this.$store.commit("lastMenuItemOpen", lastMenuItemObject);
             if (
                 lastQuickMenuItemObject != false &&
-                this.$store.getters.isCollapsed == true
+                this.isCollapsed == true
             )
                 this.$store.commit("lastMenuItemOpen", lastQuickMenuItemObject);
             if (lastQuestionObject != false)
@@ -242,11 +243,7 @@ export default {
             this.$emit("menuselected", sId);
         },
         toggleCollapse() {
-            this.$store.commit(
-                "changeIsCollapsed",
-                !this.$store.state.isCollapsed
-            );
-            if (this.$store.getters.isCollapsed) {
+            if (this.isCollapsed) {
                 this.sideBarWidth = "98";
             } else {
                 this.sideBarWidth = this.defaultSideBarWidth;
@@ -257,11 +254,11 @@ export default {
         },
         mousedown(e) {
             if(this.useMobileView) {
-                this.$store.commit("changeIsCollapsed", false);
+                this.isCollapsed = false;
                 this.smallScreenHidden = !this.smallScreenHidden;
             }
 
-            this.isMouseDown = this.$store.getters.isCollapsed ? false : true;
+            this.isMouseDown = this.isCollapsed ? false : true;
             $("#sidebar").removeClass("transition-animate-width");
             $("#pjax-content").removeClass("transition-animate-width");
         },
@@ -270,7 +267,7 @@ export default {
                 this.isMouseDown = false;
                 if (
                     parseInt(this.sideBarWidth) < 250 &&
-                    !this.$store.getters.isCollapsed
+                    !this.isCollapsed
                 ) {
                     this.toggleCollapse();
                     this.sideBarWidth = 340;
@@ -351,12 +348,12 @@ export default {
     created() {
         const self = this;
         if(window.innerWidth < 768) {
-            this.$store.commit("changeIsCollapsed", false);
+            this.isCollapsed = false;
         }
         self.$store.commit('setSurveyActiveState', (parseInt(this.isActive)===1));
         // self.$log.debug(this.$store.state);
         this.activeMenuIndex = this.$store.state.lastMenuOpen;
-        if (this.$store.getters.isCollapsed) {
+        if (this.isCollapsed) {
             this.sideBarWidth = "98";
         }
         LS.ld.each(window.SideMenuData.basemenus, this.setBaseMenuPosition)
@@ -481,7 +478,7 @@ export default {
                     </transition>
                     <transition name="slide-fade">
                         <quickmenu 
-                            v-show="$store.getters.isCollapsed" 
+                            v-show="this.isCollapsed" 
                             :loading="loading" 
                             :style="{'min-height': calculateSideBarMenuHeight}" 
                             @changeLoadingState="applyLoadingState" 
@@ -497,7 +494,7 @@ export default {
             :style="{'height': calculateSideBarMenuHeight, 'max-height': getWindowHeight}" 
         >
             <button 
-                v-show="!$store.getters.isCollapsed" 
+                v-show="!this.isCollapsed" 
                 class="btn btn-default" 
                 @mousedown="mousedown" @click.prevent="()=>{return false;}"
             >
