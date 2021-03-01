@@ -21,7 +21,6 @@ export default  function(userid) {
         questiongroups: [],
         collapsedmenus: null,
         sidemenus: null,
-        topmenus: null,
         surveyActiveState: false,
         toggleKey: Math.floor(Math.random()*10000)+'--key',
         allowOrganizer: true
