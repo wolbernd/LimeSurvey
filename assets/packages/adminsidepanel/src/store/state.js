@@ -4,7 +4,7 @@ export default  function(userid) {
         // language: '',
         // maxHeight: 0,
         // inSurveyViewHeight: 1000,
-        sideBodyHeight: '100%',
+        // sideBodyHeight: '100%', // Never used (mutations, state)
         sideBarHeight: 400,
         currentUser: userid,
         currentTab: 'settings',
