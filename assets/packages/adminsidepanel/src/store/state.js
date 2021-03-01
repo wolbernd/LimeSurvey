@@ -22,7 +22,6 @@ export default  function(userid) {
         collapsedmenus: null,
         sidemenus: null,
         topmenus: null,
-        bottommenus: null,
         surveyActiveState: false,
         toggleKey: Math.floor(Math.random()*10000)+'--key',
         allowOrganizer: true
