@@ -76,7 +76,7 @@ export default {
             );
         },
         calculateSideBarMenuHeight() {
-            let currentSideBar = this.$store.state.sideBarHeight;
+            let currentSideBar = this.sideBarHeight;
             return LS.ld.min(currentSideBar, Math.floor(screen.height * 2)) + "px";
         },
         getWindowHeight() {
@@ -91,10 +91,7 @@ export default {
             this.loading = newState;
         },
         calculateHeight(self) {
-            self.$store.commit(
-                "changeSideBarHeight",
-                $("#in_survey_common").height()
-            );
+            this.sideBarHeight = $("#in_survey_common").height();
         },
         changedQuestionGroupOrder() {
             const self = this;

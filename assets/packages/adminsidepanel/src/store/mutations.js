@@ -21,9 +21,9 @@ export default {
     changeMaxHeight(state, newHeight) {
         state.maxHeight = newHeight;
     },
-    changeSideBarHeight(state, newHeight) {
+    /** changeSideBarHeight(state, newHeight) {
         state.sideBarHeight = newHeight;
-    },
+    }, */
     changeInSurveyViewHeight(state, newHeight) {
         state.inSurveyViewHeight = newHeight;
     },
