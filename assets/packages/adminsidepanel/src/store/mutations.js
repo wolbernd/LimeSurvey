@@ -8,9 +8,9 @@ export default {
     changeCurrentTab(state, value) {
         state.currentTab = value;
     },
-    changeSidebarwidth(state, value) {
+   /** changeSidebarwidth(state, value) {
         state.sidebarwidth = value;
-    },
+    }, */
     maxSideBarWidth(state, value) {
         state.maximalSidebar = value;
     },

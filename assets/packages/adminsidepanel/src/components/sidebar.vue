@@ -24,6 +24,7 @@ export default {
             openSubpanelId: 0,
             menues: [],
             collapsed: false,
+            defaultSideBarWidth: 380,
             sideBarWidth: "315",
             initialPos: { x: 0, y: 0 },
             isMouseDown: false,
@@ -248,7 +249,7 @@ export default {
             if (this.$store.getters.isCollapsed) {
                 this.sideBarWidth = "98";
             } else {
-                this.sideBarWidth = this.$store.state.sidebarwidth;
+                this.sideBarWidth = this.defaultSideBarWidth;
             }
         },
         toggleSmallScreenHide() {
@@ -272,9 +273,7 @@ export default {
                     !this.$store.getters.isCollapsed
                 ) {
                     this.toggleCollapse();
-                    this.$store.commit("changeSidebarwidth", "340");
-                } else {
-                    this.$store.commit("changeSidebarwidth", this.sideBarWidth);
+                    this.sideBarWidth = 340;
                 }
                 $("#sidebar").addClass("transition-animate-width");
                 $("#pjax-content").removeClass("transition-animate-width");
@@ -298,8 +297,7 @@ export default {
                         this.$store.commit("maxSideBarWidth", true);
                         return;
                     }
-                    self.sideBarWidth = (window.innerWidth-e.pageX) - 8 + "px";
-                    this.$store.commit("changeSidebarwidth", self.sideBarWidth);
+                    this.sideBarWidth = (window.innerWidth-e.pageX) - 8 + "px";
                     this.$store.commit("maxSideBarWidth", false);
                 } else {
                     // prevent to emit unwanted value on dragend
@@ -310,8 +308,7 @@ export default {
                         this.$store.commit("maxSideBarWidth", true);
                         return;
                     }
-                    self.sideBarWidth = e.pageX + 8 + "px";
-                    this.$store.commit("changeSidebarwidth", self.sideBarWidth);
+                    this.sideBarWidth = e.pageX + 8 + "px";
                     this.$store.commit("maxSideBarWidth", false);
                 }
                 
@@ -361,8 +358,6 @@ export default {
         this.activeMenuIndex = this.$store.state.lastMenuOpen;
         if (this.$store.getters.isCollapsed) {
             this.sideBarWidth = "98";
-        } else {
-            this.sideBarWidth = self.$store.state.sidebarwidth;
         }
         LS.ld.each(window.SideMenuData.basemenus, this.setBaseMenuPosition)
     },

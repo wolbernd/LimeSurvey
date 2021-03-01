@@ -8,7 +8,7 @@ export default  function(userid) {
         // sideBarHeight: 400,
         currentUser: userid,
         currentTab: 'settings',
-        sidebarwidth: 380,
+        // sidebarwidth: 380,
         maximalSidebar: false,
         isCollapsed: false,
         pjax: null,
