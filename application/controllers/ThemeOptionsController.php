@@ -674,6 +674,7 @@ class ThemeOptionsController extends LSBaseController
 
         $oModelWithInheritReplacement = TemplateConfiguration::model()->findByPk($model->id);
         $aOptionAttributes            = TemplateManifest::getOptionAttributes($oTemplate->path);
+        //echo '<pre>'; var_dump($aOptionAttributes); echo '</pre>';die;
 
         $oTemplate = $oModelWithInheritReplacement->prepareTemplateRendering($oModelWithInheritReplacement->template->name); // Fix empty file lists
         $aTemplateConfiguration = $oTemplate->getOptionPageAttributes();
@@ -699,6 +700,7 @@ class ThemeOptionsController extends LSBaseController
             $oModelWithInheritReplacement->sTemplateName
         );
         $oParentOptions = (array) $oSimpleInheritanceTemplate->oOptions;
+        echo '<pre>'; var_dump($oParentOptions); echo '</pre>';die;
 
         $aData = array(
             'model'              => $model,

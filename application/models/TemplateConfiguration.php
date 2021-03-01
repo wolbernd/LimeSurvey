@@ -209,7 +209,7 @@ class TemplateConfiguration extends TemplateConfig
      * @param integer $iSurveyGroupId
      * @param string $sTemplateName
      * @param boolean $abstractInstance
-     * @return TemplateConfiguration
+     * @return TemplateConfiguration|null
      */
     public static function getInstanceFromSurveyGroup($iSurveyGroupId, $sTemplateName = null, $abstractInstance = false)
     {
@@ -252,7 +252,7 @@ class TemplateConfiguration extends TemplateConfig
      * @param integer $iSurveyId
      * @param string $sTemplateName
      * @param boolean $abstractInstance
-     * @return TemplateConfiguration
+     * @return TemplateConfiguration|null
      */
     public static function getInstanceFromSurveyId($iSurveyId, $sTemplateName = null, $abstractInstance = false)
     {
@@ -339,7 +339,7 @@ class TemplateConfiguration extends TemplateConfig
      * Else, it will create it.
      * @TODO: recursivity for survey group
      * @param int $iSurveyId
-     * @return TemplateConfiguration the template configuration for the survey group
+     * @return TemplateConfiguration|null the template configuration for the survey group
      */
     public static function checkAndcreateSurveyConfig($iSurveyId)
     {
@@ -396,7 +396,7 @@ class TemplateConfiguration extends TemplateConfig
      * @param string $sTemplateName
      * @param integer $iSurveyGroupId
      * @param integer $iSurveyId
-     * @return TemplateConfiguration
+     * @return TemplateConfiguration|null
      */
     public static function getInstance($sTemplateName = null, $iSurveyGroupId = null, $iSurveyId = null, $abstractInstance = false)
     {
@@ -1282,7 +1282,7 @@ class TemplateConfiguration extends TemplateConfig
 
         if (!empty($oOptions)) {
             foreach ($oOptions as $sKey => $sOption) {
-                    $oOptions->$sKey = $this->getOptionKey($sKey);
+                $oOptions->$sKey = $this->getOptionKey($sKey);
             }
         }
     }
@@ -1516,7 +1516,7 @@ class TemplateConfiguration extends TemplateConfig
     /**
      * Get the global template configuration with same name as $this.
      * The global config has no sid, no gsid and no uid.
-     * @return TemplateConfiguration
+     * @return TemplateConfiguration|null
      */
     public function getGlobalParent()
     {
