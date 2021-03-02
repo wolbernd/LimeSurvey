@@ -7,7 +7,7 @@ import VuexPersistence from 'vuex-persist';
 import VueLocalStorage from 'vue-localstorage';
 
 import statePreset from './store/state';
-import getters from './stor/getters';
+import getters from './store/getters';
 import mutations from './store/mutations';
 import actions from './store/actions';
 
@@ -45,7 +45,7 @@ Vue.use(Vuex);
     }
  }); */
 
-const getRandomInt(maximal) = () => {
+const getRandomInt = function (maximal) {
     return Math.floor(Math.random() * Math.floor(maximal));
 };
 
