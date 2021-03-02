@@ -30,9 +30,6 @@ export default {
     /** changeSideBodyHeight(state, newHeight) {
         state.sideBodyHeight = newHeight+'px' || '100%';
     }, */
-    changeCurrentUser(state, newUser) {
-        state.currentUser = newUser;
-    },
     closeAllMenus(state) {
         state.lastMenuOpen = false;
         state.lastMenuItemOpen = false;
