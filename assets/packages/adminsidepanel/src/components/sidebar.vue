@@ -355,7 +355,7 @@ export default {
         if(window.innerWidth < 768) {
             this.isCollapsed = false;
         }
-        self.$store.commit('setSurveyActiveState', (parseInt(this.isActive)===1));
+        this.$store.commit('setSurveyActiveState', (parseInt(this.isActive)===1));
         // self.$log.debug(this.$store.state);
         this.activeMenuIndex = this.$store.state.lastMenuOpen;
         if (this.isCollapsed) {
@@ -366,7 +366,7 @@ export default {
     mounted() {
         const self = this;
 
-        LS.EventBus.$on('updateSideBar', (payload) => {
+        /** LS.EventBus.$on('updateSideBar', (payload) => {
             this.loading = true;
             const promises = [
                 Promise.resolve()
@@ -389,7 +389,7 @@ export default {
                 .finally(() => {
                     this.loading = false;
                 })
-        });
+        }); */
 
 
         $(document).trigger("sidebar:mounted");
