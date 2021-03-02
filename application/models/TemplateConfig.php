@@ -16,9 +16,10 @@
  */
 
 /**
- * Class TemplateConfig
+ * Trait TemplateConfig
  * Common methods for TemplateConfiguration and TemplateManifest
- *
+ * TemplateConfiguration uses this trait, and TemplateManifest extends TemplateConfiguration.
+ * All these methods could perhaps be factored out to one or more service classes.
  */
 trait TemplateConfig
 {
@@ -162,9 +163,9 @@ trait TemplateConfig
      * Can return a 302 redirect (this is not really a throw …
      *
      * @param  string $sFile the  file to look for (must contain relative path, unless it's a view file)
-     * @param TemplateConfig $oRTemplate template from which the recurrence should start
+     * @param TemplateConfiguration $oRTemplate template from which the recurrence should start
      * @param boolean $force file to be in template or mother template
-     * @return TemplateConfig
+     * @return TemplateConfiguration
      */
     public function getTemplateForFile($sFile, $oRTemplate, $force = false)
     {
@@ -177,7 +178,7 @@ trait TemplateConfig
             if (!($oMotherTemplate instanceof TemplateConfiguration)) {
                 if (!$force && App()->twigRenderer->getPathOfFile($sFile)) {
                     // return dummy template , new self broke (No DB : TODO : must fix init of self)
-                    $templateConfig = new TemplateConfig();
+                    $templateConfig = new TemplateConfiguration();
                     $templateConfig->sTemplateName = null;
                     return $templateConfig;
                 }
@@ -268,7 +269,7 @@ trait TemplateConfig
      * It will search for current template and mother templates
      *
      * @param   string $sFile relative path to the file
-     * @param   TemplateConfig $oTemplate the template where to look for (and its mother templates)
+     * @param   TemplateConfiguration $oTemplate the template where to look for (and its mother templates)
      * @return string|false
      */
     protected function getFilePath($sFile, $oTemplate)
