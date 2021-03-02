@@ -1,4 +1,4 @@
-export default  function(userid) {
+export default  function() {
     return {
         // surveyid: 0,
         // language: '',
