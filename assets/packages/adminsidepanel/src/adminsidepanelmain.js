@@ -1,7 +1,16 @@
 //globals formId
 import Vue from "vue";
 import App from "./App.vue";
-import {getAppState} from "./store/vuex-store.js";
+
+import Vuex from "vuex";
+import VuexPersistence from 'vuex-persist';
+import VueLocalStorage from 'vue-localstorage';
+
+import statePreset from './store/state';
+import getters from './stor/getters';
+import mutations from './store/mutations';
+import actions from './store/actions';
+
 // import {PluginLog} from "./mixins/logSystem.js";
 // import Loader from './helperComponents/loader.vue';
 
@@ -9,7 +18,8 @@ import {getAppState} from "./store/vuex-store.js";
 Vue.config.ignoredElements = ["x-test"];
 Vue.config.devtools = true;
 
-Vue.use(getAppState); // Self developed Vuex by previous frontend dev.
+Vue.use(VueLocalStorage);
+Vue.use(Vuex);
 
 // Vue.use(PluginLog);
 
@@ -33,9 +43,31 @@ Vue.use(getAppState); // Self developed Vuex by previous frontend dev.
             return window.SideMenuData.translate[string] || string;
         }
     }
- }); **/
+ }); */
+
+const getRandomInt(maximal) = () => {
+    return Math.floor(Math.random() * Math.floor(maximal));
+};
+
+const AppStateName = 'limesurveyadminsidepanel';
+const randomIntForUserID   = getRandomInt(100);
+const randomIntForSurveyID = getRandomInt(200);
+const vuexLocal = new VuexPersistence({
+    key: AppStateName + '_' + randomIntForUserID + '_' + randomIntForSurveyID,
+    storage: window.sessionStorage
+});
+
+const store = Vuex.Store({
+    state: statePreset(randomIntForUserID),
+    plugins: [
+        vuexLocal.plugin
+    ],
+    getters,
+    mutations,
+    actions
+});
 
 new Vue({
     render: h => h(App),
-    store: getAppState,
+    store: store,
 }).$mount('#vue-sidebar-container');
