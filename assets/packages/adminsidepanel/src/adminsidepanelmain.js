@@ -6,7 +6,7 @@ import Vuex from "vuex";
 import VuexPersistence from 'vuex-persist';
 import VueLocalStorage from 'vue-localstorage';
 
-import statePreset from './store/state';
+import state from './store/state';
 import getters from './store/getters';
 import mutations from './store/mutations';
 import actions from './store/actions';
@@ -58,7 +58,7 @@ const vuexLocal = new VuexPersistence({
 });
 
 const store = Vuex.Store({
-    state: statePreset(randomIntForUserID),
+    state: state,
     plugins: [
         vuexLocal.plugin
     ],
