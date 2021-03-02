@@ -36,5 +36,6 @@ Vue.use(getAppState); // Self developed Vuex by previous frontend dev.
  }); **/
 
 new Vue({
-    render: h => h(App)
+    render: h => h(App),
+    store: getAppState,
 }).$mount('#vue-sidebar-container');
