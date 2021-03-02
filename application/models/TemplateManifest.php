@@ -1367,6 +1367,9 @@ class TemplateManifest extends TemplateConfiguration
 
     /**
      * Get options_page value from template configuration
+     *
+     * @param string $path
+     * @return boolean|array
      */
     public static function getOptionAttributes($path)
     {

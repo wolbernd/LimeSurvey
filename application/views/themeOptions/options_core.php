@@ -2,7 +2,7 @@
 
 $bInherit = (!empty($aTemplateConfiguration['sid']) || !empty($aTemplateConfiguration['gsid']));
 
-$dropdown_options['font'] = ($bInherit ? '<option value="inherit">' . gT("Inherit") . ' [' . gT("inherited value:") . ' ' . (isset($oParentOptions['font']) ? $oParentOptions['font'] : '') . ']</option>' : '');
+$dropdown_options['font'] = ($bInherit ? '<option value="inherit">' . gT("Inherit") . ' [' . gT("inherited value:") . ' ' . (isset($aParentOptions['font']) ? $aParentOptions['font'] : '') . ']</option>' : '');
 
 // background file
 $backgroundImageFile = '';
@@ -20,7 +20,7 @@ foreach ($aTemplateConfiguration['imageFileList'] as $image) {
     }
 
     $backgroundImageFile .= '</optgroup>';
-    if (isset($oParentOptions['backgroundimagefile']) && $oParentOptions['backgroundimagefile'] == $image['filepath']) {
+    if (isset($aParentOptions['backgroundimagefile']) && $aParentOptions['backgroundimagefile'] == $image['filepath']) {
         $backgroundfileInheritPreview = $backgroundimagefileInheritPreview . $image['preview'];
         $backgroundfileInheritFilename = $backgroundimagefileInheritFilename . $image['filename'];
     }
@@ -45,7 +45,7 @@ foreach ($aTemplateConfiguration['imageFileList'] as $image) {
     }
 
     $brandlogo .= '</optgroup>';
-    if ($oParentOptions['brandlogo'] == $image['filepath']) {
+    if ($aParentOptions['brandlogo'] == $image['filepath']) {
         $logofileInheritPreview = $logofileInheritPreview . $image['preview'];
         $logofileInheritFilename = $logofileInheritFilename . $image['filename'];
     }
@@ -94,7 +94,7 @@ $aOptionAttributes['optionAttributes']['brandlogofile']['dropdownoptions'] = $br
                     $iTotalWidth = 0;
                     $iCount = 0;
                     foreach($aOptionAttributes['optionAttributes'] as $attributeKey => $attribute){
-                        $sParentOption =  array_key_exists($attributeKey, $oParentOptions) ? $oParentOptions[$attributeKey] : '';
+                        $sParentOption =  array_key_exists($attributeKey, $aParentOptions) ? $aParentOptions[$attributeKey] : '';
                         if ($attributeKey === 'ajaxmode') {
                             continue;
                         }
@@ -146,10 +146,6 @@ $aOptionAttributes['optionAttributes']['brandlogofile']['dropdownoptions'] = $br
                                     }
                                 echo '</div>';
                             } elseif ($attribute['type'] == 'dropdown'){
-                                if (!is_string($sParentOption)) {
-                                    var_dump($sParentOption);
-                                    die;
-                                }
                                 echo ' <div class="col-sm-12">
                                 <select
                                     class="form-control selector_option_value_field selector_radio_childfield selector_image_selector"

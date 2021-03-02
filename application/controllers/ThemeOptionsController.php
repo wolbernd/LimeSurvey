@@ -669,17 +669,23 @@ class ThemeOptionsController extends LSBaseController
      */
     private function updateCommon(TemplateConfiguration $model, int $sid = null, int $gsid = null)
     {
-        /* init the template to current one if option use some twig function (imageSrc for example) mantis #14363 */
+        /** @var Template init the template to current one if option use some twig function (imageSrc for example) mantis #14363 */
         $oTemplate = Template::model()->getInstance($model->template_name, $sid, $gsid);
 
+        /** @var TemplateConfiguration */
         $oModelWithInheritReplacement = TemplateConfiguration::model()->findByPk($model->id);
-        $aOptionAttributes            = TemplateManifest::getOptionAttributes($oTemplate->path);
-        //echo '<pre>'; var_dump($aOptionAttributes); echo '</pre>';die;
 
+        /** @var array */
+        $aOptionAttributes            = TemplateManifest::getOptionAttributes($oTemplate->path);
+
+        /** @var Template */
         $oTemplate = $oModelWithInheritReplacement->prepareTemplateRendering($oModelWithInheritReplacement->template->name); // Fix empty file lists
+
+        /** @var array */
         $aTemplateConfiguration = $oTemplate->getOptionPageAttributes();
+
         App()->clientScript->registerPackage('bootstrap-switch', LSYii_ClientScript::POS_BEGIN);
-        
+
         if ($aOptionAttributes['optionsPage'] == 'core') {
             App()->clientScript->registerPackage('themeoptions-core');
             $templateOptionPage = '';
@@ -696,10 +702,11 @@ class ThemeOptionsController extends LSBaseController
         );
 
         $oSimpleInheritance->options = 'inherit';
+        /** @var TemplateConfiguration */
         $oSimpleInheritanceTemplate = $oSimpleInheritance->prepareTemplateRendering(
             $oModelWithInheritReplacement->sTemplateName
         );
-        $oParentOptions = (array) $oSimpleInheritanceTemplate->oOptions;
+        $aParentOptions = (array) $oSimpleInheritanceTemplate->oOptions;
 
         $aData = array(
             'model'              => $model,
@@ -710,7 +717,7 @@ class ThemeOptionsController extends LSBaseController
             'aTemplateConfiguration' => $aTemplateConfiguration,
             'aOptionAttributes'      => $aOptionAttributes,
             'sid'             => $sid,
-            'oParentOptions'  => $oParentOptions,
+            'aParentOptions'  => $aParentOptions,
             'sPackagesToLoad' => $oModelWithInheritReplacement->packages_to_load,
             'sid' => $sid,
             'gsid' => $gsid
