@@ -54,7 +54,7 @@ const randomIntForUserID   = getRandomInt(100);
 const randomIntForSurveyID = getRandomInt(200);
 const vuexLocal = new VuexPersistence({
     key: AppStateName + '_' + randomIntForUserID + '_' + randomIntForSurveyID,
-    storage: window.sessionStorage
+    storage: window.localStorage
 });
 
 const store = Vuex.Store({
