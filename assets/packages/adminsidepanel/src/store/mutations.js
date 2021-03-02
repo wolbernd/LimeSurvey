@@ -70,9 +70,9 @@ export default {
     updateCollapsedmenus(state, collapsedmenus) {
         state.collapsedmenus = collapsedmenus;
     },
-    setSurveyActiveState(state, surveyState) {
+   /**  setSurveyActiveState(state, surveyState) {
         state.surveyActiveState = !!surveyState;
-    },
+    }, */
     newToggleKey(state){
         state.toggleKey = Math.floor(Math.random()*10000)+'--key';
     },

@@ -4,7 +4,10 @@ import ajaxMethods from "../../mixins/runAjax.js";
 
 export default {
     mixins: [ajaxMethods],
-    data(){
+    props: {
+        surveyActiveState: Boolean,
+    },
+    data() {
         return {
             active: [],
             questiongroupDragging: false,
@@ -355,7 +358,7 @@ export default {
                                 @dragenter="dragoverQuestion($event, question, questiongroup)"
                             >
                                     <i 
-                                        v-if="!$store.state.surveyActiveState"
+                                        v-if="!this.surveyActiveState"
                                         class="fa fa-bars margin-right bigIcons dragPointer question-question-list-item-drag" 
                                         :class=" allowOrganizer ? '' : 'disabled' "
                                         :draggable="allowOrganizer"

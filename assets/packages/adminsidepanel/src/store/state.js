@@ -19,7 +19,7 @@ export default  function(userid) {
         questiongroups: [],
         collapsedmenus: null,
         sidemenus: null,
-        surveyActiveState: false,
+        // surveyActiveState: false,
         toggleKey: Math.floor(Math.random()*10000)+'--key',
         allowOrganizer: true
     };

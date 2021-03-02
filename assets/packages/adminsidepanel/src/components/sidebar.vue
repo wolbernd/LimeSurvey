@@ -36,6 +36,7 @@ export default {
             hiddenStateToggleDisplay: 'flex',
             smallScreenHidden: false,
             currentTab: "settings",
+            surveyActiveState: false,
         };
     },
     computed: {
@@ -351,12 +352,10 @@ export default {
         }
     },
     created() {
-        const self = this;
         if(window.innerWidth < 768) {
             this.isCollapsed = false;
         }
-        this.$store.commit('setSurveyActiveState', (parseInt(this.isActive)===1));
-        // self.$log.debug(this.$store.state);
+        this.surveyActiveState = (parseInt(this.isActive) === 1);
         this.activeMenuIndex = this.$store.state.lastMenuOpen;
         if (this.isCollapsed) {
             this.sideBarWidth = "98";
@@ -479,6 +478,7 @@ export default {
                             @changeLoadingState="applyLoadingState" 
                             @openentity="openEntity" 
                             @questiongrouporder="changedQuestionGroupOrder"
+                            surveyActiveState="surveyActiveState"
                         />
                     </transition>
                     <transition name="slide-fade">
