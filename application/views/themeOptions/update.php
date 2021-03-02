@@ -107,7 +107,7 @@ echo viewHelper::getViewTestTag('surveyTemplateOptionsUpdate');
                                 $this->renderPartial('./options_core', array(
                                     'aOptionAttributes' => $aOptionAttributes,
                                     'aTemplateConfiguration' => $aTemplateConfiguration,
-                                    'oParentOptions' => $oParentOptions,
+                                    'aParentOptions' => $aParentOptions,
                                     'sPackagesToLoad' => $sPackagesToLoad
                                     )
                                 );
