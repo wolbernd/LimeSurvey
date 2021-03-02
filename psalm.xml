@@ -10,11 +10,9 @@
     <projectFiles>
         <directory name="application/datavalueobjects" />
         <directory name="application/models/services" />
-        <!--
         <file name="application/models/TemplateConfig.php" />
         <file name="application/models/TemplateConfiguration.php" />
         <file name="application/models/TemplateManifest.php" />
-        -->
         <ignoreFiles>
             <directory name="third_party" />
             <directory name="framework" />
