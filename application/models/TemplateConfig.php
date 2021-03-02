@@ -202,68 +202,6 @@ trait TemplateConfig
     }
 
     /**
-     * Create a package for the asset manager.
-     * The asset manager will push to tmp/assets/xyxyxy/ the whole template directory (with css, js, files, etc.)
-     * And it will publish the CSS and the JS defined in config.xml. So CSS can use relative path for pictures.
-     * The publication of the package itself is in LSETwigViewRenderer::renderTemplateFromString()
-     *
-     * @param TemplateConfiguration $oTemplate TemplateManifest
-     */
-    protected function createTemplatePackage($oTemplate)
-    {
-        // Each template in the inheritance tree needs a specific alias
-        $sPathName  = 'survey.template-' . $oTemplate->sTemplateName . '.path';
-        $sViewName  = 'survey.template-' . $oTemplate->sTemplateName . '.viewpath';
-
-        Yii::setPathOfAlias($sPathName, $oTemplate->path);
-        Yii::setPathOfAlias($sViewName, $oTemplate->viewPath);
-
-        // First we add the framework replacement (bootstrap.css must be loaded before template.css)
-        $aCssFiles  = $this->getFrameworkAssetsReplacement('css');
-        $aJsFiles   = $this->getFrameworkAssetsReplacement('js');
-
-        // This variable will be used to add the variation name to the body class
-        // via $aClassAndAttributes['class']['body']
-        $this->aCssFrameworkReplacement = $aCssFiles;
-
-        // Then we add the template config files
-        $aTCssFiles = $this->getFilesToLoad($oTemplate, 'css');
-        $aTJsFiles  = $this->getFilesToLoad($oTemplate, 'js');
-
-        $aCssFiles  = array_merge($aCssFiles, $aTCssFiles);
-        $aJsFiles   = array_merge($aJsFiles, $aTJsFiles);
-
-        // Remove/Replace mother template files
-        if (
-            App()->getConfig('force_xmlsettings_for_survey_rendering') ||
-            ($this->template instanceof Template &&  $this->template->extends) ||
-            !empty($this->config->metadata->extends)
-        ) {
-              $aCssFiles = $this->changeMotherConfiguration('css', $aCssFiles);
-              $aJsFiles  = $this->changeMotherConfiguration('js', $aJsFiles);
-        }
-
-        // Then we add the direction files if they exist
-        // TODO: attribute system rather than specific fields for RTL
-
-        $this->sPackageName = 'survey-template-' . $this->sTemplateName;
-        $sTemplateurl       = $oTemplate->getTemplateURL();
-
-        $aDepends = empty($oTemplate->depends) ? array() : $oTemplate->depends;
-
-        // The package "survey-template-{sTemplateName}" will be available from anywhere in the app now.
-        // To publish it : Yii::app()->clientScript->registerPackage( 'survey-template-{sTemplateName}' );
-        // Depending on settings, it will create the asset directory, and publish the css and js files
-        App()->clientScript->addPackage($this->sPackageName, array(
-            'devBaseUrl'  => $sTemplateurl, // Used when asset manager is off
-            'basePath'    => $sPathName, // Used when asset manager is on
-            'css'         => $aCssFiles,
-            'js'          => $aJsFiles,
-            'depends'     => $aDepends,
-        ));
-    }
-
-    /**
      * Get the file path for a given template.
      * It will check if css/js (relative to path), or view (view path)
      * It will search for current template and mother templates
