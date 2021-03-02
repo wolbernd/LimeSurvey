@@ -11,9 +11,6 @@ export default {
    /** changeSidebarwidth(state, value) {
         state.sidebarwidth = value;
     }, */
-    maxSideBarWidth(state, value) {
-        state.maximalSidebar = value;
-    },
     /** changeIsCollapsed(state, value) {
         state.isCollapsed = value;
         $(document).trigger('vue-sidemenu-update-link');

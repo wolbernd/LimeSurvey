@@ -8,7 +8,6 @@ export default  function(userid) {
         // sideBarHeight: 400,
         // currentTab: 'settings',
         // sidebarwidth: 380,
-        maximalSidebar: false,
         // isCollapsed: false,
         pjax: null,
         pjaxLoading: false,
