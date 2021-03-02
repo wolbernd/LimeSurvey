@@ -1,6 +1,6 @@
 <template>
     <div id="Application-Side-Menu">
-       <!-- <sidebar suvey="survey" landOnTab="landOnSideTab" v-model="isCollapsed" isCollapsed="isCollapsed"></sidebar> -->
+       <sidebar suvey="survey" landOnTab="landOnSideTab" v-model="isCollapsed" isCollapsed="isCollapsed"></sidebar>
     </div>
 </template>
 <script>
@@ -9,7 +9,7 @@ import SideBar from './components/sidebar.vue';
 export default {
     name: 'App',
     components: {
-        'sidebar': SideBar,
+        sidebar: SideBar,
     },
     props: {
         surveyid: Number,
