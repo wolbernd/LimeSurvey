@@ -1250,7 +1250,7 @@ class TemplateManifest extends TemplateConfiguration
         } elseif (!empty($this->oMotherTemplate->oOptions)) {
             $this->oOptions = $this->oMotherTemplate->oOptions;
         } else {
-            $this->oOptions = "";
+            $this->oOptions = new StdClass();
         }
 
         // Not mandatory (use package dependances)
