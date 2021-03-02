@@ -5,9 +5,9 @@ export default {
     /** changeLanguage(state, language) {
         state.language = language;
     }, */
-    changeCurrentTab(state, value) {
+    /** changeCurrentTab(state, value) {
         state.currentTab = value;
-    },
+    }, */
    /** changeSidebarwidth(state, value) {
         state.sidebarwidth = value;
     }, */

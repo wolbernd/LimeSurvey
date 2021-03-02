@@ -80,9 +80,9 @@ export default {
             }).catch((error) => {reject(error)});}
         );
     },
-    changeCurrentTab(context, payload) {
+   /** changeCurrentTab(context, payload) {
         context.commit("changeCurrentTab", payload);
         context.dispatch('collectMenus');
         context.dispatch('getQuestions');
-    }
+    } */
 }

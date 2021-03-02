@@ -40,11 +40,18 @@
 <script>
 export default {
     name: 'sidebar-state-toggle',
+    props: {
+        tab: String,
+    },
     computed: {
         currentKey() { return this.$store.state.toggleKey; },
         currentTab: {
-            get() { return this.$store.state.currentTab; },
-            set(newVal) { this.$store.dispatch("changeCurrentTab", newVal); }
+            get() { 
+                return this.tab;
+            },
+            set(newVal) { 
+                this.tab = newVal;
+            }
         },
     }
 }

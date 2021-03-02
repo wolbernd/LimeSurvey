@@ -34,7 +34,8 @@ export default {
             showLoader: false,
             loading: true,
             hiddenStateToggleDisplay: 'flex',
-            smallScreenHidden: false
+            smallScreenHidden: false,
+            currentTab: "settings",
         };
     },
     computed: {
@@ -50,8 +51,12 @@ export default {
             set(newValue) { this.$store.commit("updateCollapsedmenus", newValue); }
         },
         currentTab: {
-            get() { return this.$store.state.currentTab; },
-            set(tab) { this.$store.commit("changeCurrentTab", tab); }
+            get() { 
+                return this.currentTab;
+            },
+            set(tab) {
+                this.currentTab = tab;
+            }
         },
         getSideBarWidth() {
             return this.isCollapsed ? "98" : this.sideBarWidth;
@@ -457,7 +462,7 @@ export default {
                 key="mainContentContainer"
             >
                 <div class="mainMenu container-fluid col-12 ls-space padding right-0 fill-height">
-                    <sidebar-state-toggle @collapse="toggleCollapse"/>
+                    <sidebar-state-toggle @collapse="toggleCollapse" tab="currentTab"/>
                     <transition name="slide-fade">
                         <sidemenu 
                             v-show="showSideMenu"
