@@ -115,56 +115,6 @@ trait TemplateConfig
 
 
     /**
-     * Prepare all the needed datas to render the temple
-     * If any problem (like template doesn't exist), it will load the default theme configuration
-     * NOTE 1: This function will create/update all the packages needed to render the template, which imply to do the
-     *         same for all mother templates
-     * NOTE 2: So if you just want to access the TemplateConfiguration AR Object, you don't need to call it. Call it
-     *         only before rendering anything related to the template.
-     *
-     * @param  string $sTemplateName the name of the template to load.
-     *                               The string comes from the template selector in survey settings
-     * @param  string $iSurveyId the id of the survey. If
-     * @param bool $bUseMagicInherit
-     * @return $this
-     */
-    public function prepareTemplateRendering($sTemplateName = '', $iSurveyId = '', $bUseMagicInherit = true)
-    {
-        // NB: Boolean is 0/1 when used as array access key.
-        $bUseMagicInherit = (int) $bUseMagicInherit;
-        if (!empty($sTemplateName) && !empty($iSurveyId)) {
-            if (!empty(self::$aPreparedToRender[$sTemplateName])) {
-                if (!empty(self::$aPreparedToRender[$sTemplateName][$iSurveyId])) {
-                    if (!empty(self::$aPreparedToRender[$sTemplateName][$iSurveyId][$bUseMagicInherit])) {
-                        return self::$aPreparedToRender[$sTemplateName][$iSurveyId][$bUseMagicInherit];
-                    } else {
-                        self::$aPreparedToRender[$sTemplateName][$iSurveyId][$bUseMagicInherit] = array();
-                    }
-                } else {
-                    self::$aPreparedToRender[$sTemplateName][$iSurveyId] = array();
-                    self::$aPreparedToRender[$sTemplateName][$iSurveyId][$bUseMagicInherit] = array();
-                }
-            } else {
-                self::$aPreparedToRender = array();
-                self::$aPreparedToRender[$sTemplateName][$iSurveyId] = array();
-                self::$aPreparedToRender[$sTemplateName][$iSurveyId][$bUseMagicInherit] = array();
-            }
-        }
-
-        $this->setBasics($sTemplateName, $iSurveyId, $bUseMagicInherit);
-        $this->setMotherTemplates(); // Recursive mother templates configuration
-        $this->setThisTemplate(); // Set the main config values of this template
-        $this->createTemplatePackage($this); // Create an asset package ready to be loaded
-        $this->removeFiles();
-        $this->getshowpopups();
-
-        if (!empty($sTemplateName) && !empty($iSurveyId)) {
-            self::$aPreparedToRender[$sTemplateName][$iSurveyId][$bUseMagicInherit] = $this;
-        }
-        return $this;
-    }
-
-    /**
      * Remove the css/js files defined in theme config, from any package (even the core ones)
      * The file should have the exact same name as in the package
      * (see: application/config/packages.php and application/config/third_party.php)

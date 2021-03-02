@@ -12,12 +12,13 @@
 * See COPYRIGHT.php for copyright notices and details.
 */
 
-/*
+/**
  * This is the model class for table "{{template_configuration}}".
  *
  * NOTE: if you only need to access to the table, you don't need to call prepareTemplateRendering
  *
  * The followings are the available columns in table '{{template_configuration}}':
+ *
  * @property integer $id Primary key
  * @property string $template_name
  * @property integer $sid Survey ID
@@ -27,6 +28,7 @@
  * @property string $files_js
  * @property string $files_print_css
  * @property string $options
+ * @property string $template_name
  * @property string $cssframework_name
  * @property string $cssframework_css
  * @property string $cssframework_js
@@ -34,7 +36,7 @@
  * @property string $packages_ltr
  * @property string $packages_rtl
  * @property string $packages_rtl
- *
+ * @property Template $template
  * @package       LimeSurvey
  * @subpackage    Backend
  */
@@ -743,15 +745,6 @@ class TemplateConfiguration extends CActiveRecord
             </a>";
 
         $OptionLink = '';
-        if ($this->hasOptionPage) {
-            $OptionLink .= "<a
-                id='template_options_link_" . $this->template_name . "'
-                href='" . $sOptionUrl . "'
-                class='btn btn-default btn-block'>
-                    <span class='fa fa-tachometer'></span>
-                    " . gT('Theme options') . "
-                </a>";
-        }
 
         $sExtendLink = '<a
             id="extendthis_' . $this->template_name . '"
@@ -1020,6 +1013,7 @@ class TemplateConfiguration extends CActiveRecord
         $oSimpleInheritance->options = 'inherit';
         $oSimpleInheritanceTemplate = $oSimpleInheritance->prepareTemplateRendering($this->template->name);
 
+        /** @var Template */
         $oTemplate = $this->prepareTemplateRendering($this->template->name);
 
         $renderArray = array('templateConfiguration' => $oTemplate->getOptionPageAttributes());
@@ -1562,4 +1556,55 @@ class TemplateConfiguration extends CActiveRecord
             $this->options = json_encode($aOptions);
         }
     }
+
+    /**
+     * Prepare all the needed datas to render the temple
+     * If any problem (like template doesn't exist), it will load the default theme configuration
+     * NOTE 1: This function will create/update all the packages needed to render the template, which imply to do the
+     *         same for all mother templates
+     * NOTE 2: So if you just want to access the TemplateConfiguration AR Object, you don't need to call it. Call it
+     *         only before rendering anything related to the template.
+     *
+     * @param  string $sTemplateName the name of the template to load.
+     *                               The string comes from the template selector in survey settings
+     * @param  string $iSurveyId the id of the survey. If
+     * @param bool $bUseMagicInherit
+     * @return static
+     */
+    public function prepareTemplateRendering($sTemplateName = '', $iSurveyId = '', $bUseMagicInherit = true)
+    {
+        // NB: Boolean is 0/1 when used as array access key.
+        $bUseMagicInherit = (int) $bUseMagicInherit;
+        if (!empty($sTemplateName) && !empty($iSurveyId)) {
+            if (!empty(self::$aPreparedToRender[$sTemplateName])) {
+                if (!empty(self::$aPreparedToRender[$sTemplateName][$iSurveyId])) {
+                    if (!empty(self::$aPreparedToRender[$sTemplateName][$iSurveyId][$bUseMagicInherit])) {
+                        return self::$aPreparedToRender[$sTemplateName][$iSurveyId][$bUseMagicInherit];
+                    } else {
+                        self::$aPreparedToRender[$sTemplateName][$iSurveyId][$bUseMagicInherit] = array();
+                    }
+                } else {
+                    self::$aPreparedToRender[$sTemplateName][$iSurveyId] = array();
+                    self::$aPreparedToRender[$sTemplateName][$iSurveyId][$bUseMagicInherit] = array();
+                }
+            } else {
+                self::$aPreparedToRender = array();
+                self::$aPreparedToRender[$sTemplateName][$iSurveyId] = array();
+                self::$aPreparedToRender[$sTemplateName][$iSurveyId][$bUseMagicInherit] = array();
+            }
+        }
+
+        $this->setBasics($sTemplateName, $iSurveyId, $bUseMagicInherit);
+        $this->setMotherTemplates(); // Recursive mother templates configuration
+        $this->setThisTemplate(); // Set the main config values of this template
+        $this->createTemplatePackage($this); // Create an asset package ready to be loaded
+        $this->removeFiles();
+        $this->getshowpopups();
+
+        if (!empty($sTemplateName) && !empty($iSurveyId)) {
+            self::$aPreparedToRender[$sTemplateName][$iSurveyId][$bUseMagicInherit] = $this;
+        }
+        return $this;
+    }
+
 }
