@@ -1,60 +1,58 @@
-<?php 
+<?php
+
 $bInherit = (!empty($aTemplateConfiguration['sid']) || !empty($aTemplateConfiguration['gsid']));
 
+$dropdown_options['font'] = ($bInherit ? '<option value="inherit">' . gT("Inherit") . ' [' . gT("inherited value:") . ' ' . (isset($oParentOptions['font']) ? $oParentOptions['font'] : '') . ']</option>' : '');
 
-
-    $dropdown_options['font'] = ($bInherit ? '<option value="inherit">' . gT("Inherit") . ' [' . gT("inherited value:") . ' ' . (isset($oParentOptions['font']) ? $oParentOptions['font'] : '') . ']</option>' : '');
-    
-    
-    // background file
-    $backgroundImageFile = '';
-    $backgroundfileOptionsInherit = '';
-    $backgroundfileInheritPreview = '';
-    $backgroundfileInheritFilename = '';
-    $optgroup = '';
-    foreach($aTemplateConfiguration['imageFileList'] as $image){
-        if ($image['group'] != $optgroup){
-            if ($optgroup != ''){
-                $backgroundImageFile .=  '</optgroup>';
-            }
-            $backgroundImageFile .= '<optgroup label="' . $image['group'] . '">';
-            $optgroup = $image['group'];
+// background file
+$backgroundImageFile = '';
+$backgroundfileOptionsInherit = '';
+$backgroundfileInheritPreview = '';
+$backgroundfileInheritFilename = '';
+$optgroup = '';
+foreach ($aTemplateConfiguration['imageFileList'] as $image) {
+    if ($image['group'] != $optgroup) {
+        if ($optgroup != '') {
+            $backgroundImageFile .=  '</optgroup>';
         }
-
-        $backgroundImageFile .= '</optgroup>';
-        if (isset($oParentOptions['backgroundimagefile']) && $oParentOptions['backgroundimagefile'] == $image['filepath']){ 
-            $backgroundfileInheritPreview = $backgroundimagefileInheritPreview . $image['preview'];
-            $backgroundfileInheritFilename = $backgroundimagefileInheritFilename . $image['filename']; 
-        }
-        $backgroundImageFile .=  '<option data-lightbox-src="' . $image['preview'] . '" value="' . $image['filepath'] . '">' . $image['filename'] . '</option>';
+        $backgroundImageFile .= '<optgroup label="' . $image['group'] . '">';
+        $optgroup = $image['group'];
     }
 
-    $aOptionAttributes['optionAttributes']['backgroundimagefile']['dropdownoptions'] = $backgroundImageFile;
+    $backgroundImageFile .= '</optgroup>';
+    if (isset($oParentOptions['backgroundimagefile']) && $oParentOptions['backgroundimagefile'] == $image['filepath']) {
+        $backgroundfileInheritPreview = $backgroundimagefileInheritPreview . $image['preview'];
+        $backgroundfileInheritFilename = $backgroundimagefileInheritFilename . $image['filename'];
+    }
+    $backgroundImageFile .=  '<option data-lightbox-src="' . $image['preview'] . '" value="' . $image['filepath'] . '">' . $image['filename'] . '</option>';
+}
 
-    // brand logo file
-    $brandlogo = '';
-    $logofileOptionsInherit = '';
-    $logofileInheritPreview = '';
-    $logofileInheritFilename = '';
-    $optgroup = '';
-    foreach($aTemplateConfiguration['imageFileList'] as $image){
-        if ($image['group'] != $optgroup){
-            if ($optgroup != ''){
-                $brandlogo .=  '</optgroup>';
-            }
-            $brandlogo .= '<optgroup label="' . $image['group'] . '">';
-            $optgroup = $image['group'];
-        }
+$aOptionAttributes['optionAttributes']['backgroundimagefile']['dropdownoptions'] = $backgroundImageFile;
 
-        $brandlogo .= '</optgroup>';
-        if ($oParentOptions['brandlogo'] == $image['filepath']){ 
-            $logofileInheritPreview = $logofileInheritPreview . $image['preview'];
-            $logofileInheritFilename = $logofileInheritFilename . $image['filename']; 
+// brand logo file
+$brandlogo = '';
+$logofileOptionsInherit = '';
+$logofileInheritPreview = '';
+$logofileInheritFilename = '';
+$optgroup = '';
+foreach ($aTemplateConfiguration['imageFileList'] as $image) {
+    if ($image['group'] != $optgroup) {
+        if ($optgroup != '') {
+            $brandlogo .=  '</optgroup>';
         }
-        $brandlogo .=  '<option data-lightbox-src="' . $image['preview'] . '" value="' . $image['filepath'] . '">' . $image['filename'] . '</option>';
+        $brandlogo .= '<optgroup label="' . $image['group'] . '">';
+        $optgroup = $image['group'];
     }
 
-    $aOptionAttributes['optionAttributes']['brandlogofile']['dropdownoptions'] = $brandlogo;
+    $brandlogo .= '</optgroup>';
+    if ($oParentOptions['brandlogo'] == $image['filepath']) {
+        $logofileInheritPreview = $logofileInheritPreview . $image['preview'];
+        $logofileInheritFilename = $logofileInheritFilename . $image['filename'];
+    }
+    $brandlogo .=  '<option data-lightbox-src="' . $image['preview'] . '" value="' . $image['filepath'] . '">' . $image['filename'] . '</option>';
+}
+
+$aOptionAttributes['optionAttributes']['brandlogofile']['dropdownoptions'] = $brandlogo;
 
     foreach($aOptionAttributes['categories'] as $key => $category){ ?>
         <div role="tabpanel" class="CoreThemeOptions--settingsTab tab-pane  <?php echo $key == 0 ? 'active' : ''; ?>" id="category-<?php echo $key; ?>">
