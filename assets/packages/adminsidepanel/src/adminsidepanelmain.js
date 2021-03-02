@@ -1,7 +1,7 @@
 //globals formId
 import Vue from "vue";
 import App from "./App.vue";
-import getAppState from "./store/vuex-store.js";
+import {getAppState} from "./store/vuex-store.js";
 // import {PluginLog} from "./mixins/logSystem.js";
 // import Loader from './helperComponents/loader.vue';
 
