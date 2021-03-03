@@ -42,7 +42,11 @@
         $menuObjectArray[$position] = Survey::model()->findByPk($surveyid)->getSurveyMenus($position);
     }
 
-    $isActive = (Survey::model()->findByPk($surveyid)->isActive ? "true" : "false");
+    $isActive = (Survey::model()->findByPk($surveyid)->isActive);
+    if ($isActive == null) {
+        $isActive = "false";
+    }
+    //$isActive = (Survey::model()->findByPk($surveyid)->isActive ? "true" : "false");
    
     $data = '
     window.SideMenuData = {
