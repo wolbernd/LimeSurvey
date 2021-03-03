@@ -51,7 +51,7 @@
             gid: '.(isset($gid) ? $gid : 'null').',
             options: [],
             surveyid: '.$surveyid.',
-            isActive: (Survey::model()->findByPk($surveyid)->isActive),
+            isActive: '.(Survey::model()->findByPk($surveyid)->isActive ? "true" : "false").',
             basemenus: '.json_encode($menuObjectArray).',
             updateOrderLink: "'.$updateOrderLink.'",
             unlockLockOrganizerUrl: "'.$unlockLockOrganizerUrl.'",
