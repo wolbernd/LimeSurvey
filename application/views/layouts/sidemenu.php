@@ -42,33 +42,37 @@
         $menuObjectArray[$position] = Survey::model()->findByPk($surveyid)->getSurveyMenus($position);
     }
 
-    Yii::app()->getClientScript()->registerScript('SideBarGlobalObject', '
-        window.SideMenuData = {
-            getQuestionsUrl: "'.$getQuestionsUrl.'",
-            getMenuUrl: "'.$getMenuUrl.'",
-            createQuestionGroupLink: "'.$createQuestionGroupLink.'",
-            createQuestionLink: "'.$createQuestionLink.'",
-            gid: '.(isset($gid) ? $gid : 'null').',
-            options: [],
-            surveyid: '.$surveyid.',
-            isActive: '.(Survey::model()->findByPk($surveyid)->isActive ? "true" : "false").',
-            basemenus: '.json_encode($menuObjectArray).',
-            updateOrderLink: "'.$updateOrderLink.'",
-            unlockLockOrganizerUrl: "'.$unlockLockOrganizerUrl.'",
-            allowOrganizer: '.(SettingsUser::getUserSettingValue('lock_organizer') ? '0' : '1').',
-            translate: '
-            .json_encode(
-                [
-                    "settings" => gT("Settings"),
-                    "structure" => gT("Structure"),
-                    "createPage" => gT("Add group"),
-                    "createQuestion" => gT("Add question"),
-                    "lockOrganizerTitle" => gT("Lock question organizer"),
-                    "unlockOrganizerTitle" => gT("Unlock question organizer"),
-                    "collapseAll" => gT("Collapse all question groups"),
-                ]
-            )
-        .'};', 
+    $data =  '
+    window.SideMenuData = {
+        getQuestionsUrl: "'.$getQuestionsUrl.'",
+        getMenuUrl: "'.$getMenuUrl.'",
+        createQuestionGroupLink: "'.$createQuestionGroupLink.'",
+        createQuestionLink: "'.$createQuestionLink.'",
+        gid: '.(isset($gid) ? $gid : 'null').',
+        options: [],
+        surveyid: '.$surveyid.',
+        isActive: '.(Survey::model()->findByPk($surveyid)->isActive ? "true" : "false").',
+        basemenus: '.json_encode($menuObjectArray).',
+        updateOrderLink: "'.$updateOrderLink.'",
+        unlockLockOrganizerUrl: "'.$unlockLockOrganizerUrl.'",
+        allowOrganizer: '.(SettingsUser::getUserSettingValue('lock_organizer') ? '0' : '1').',
+        translate: '
+        .json_encode(
+            [
+                "settings" => gT("Settings"),
+                "structure" => gT("Structure"),
+                "createPage" => gT("Add group"),
+                "createQuestion" => gT("Add question"),
+                "lockOrganizerTitle" => gT("Lock question organizer"),
+                "unlockOrganizerTitle" => gT("Unlock question organizer"),
+                "collapseAll" => gT("Collapse all question groups"),
+            ]
+        )
+    .'};';
+    
+    var_dump($data);
+    
+    Yii::app()->getClientScript()->registerScript('SideBarGlobalObject', $data, 
         LSYii_ClientScript::POS_HEAD
     );
 ?>
