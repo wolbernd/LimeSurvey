@@ -57,7 +57,7 @@ const vuexLocal = new VuexPersistence({
     storage: window.localStorage
 });
 
-const store = Vuex.Store({
+const store = new Vuex.Store({
     state: state,
     plugins: [
         vuexLocal.plugin
