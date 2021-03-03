@@ -78,7 +78,7 @@
 
 <div class="simpleWrapper ls-flex" id="vue-sidebar-container">
     <?php if($landOnSideMenuTab !== ''): ?>
-        <app land-on-side-tab='<?php echo $landOnSideMenuTab ?>' isActive="<?php echo $isActive ?>" />
+        <app land-on-side-tab='<?php echo $landOnSideMenuTab ?>' is-active="<?php echo $isActive ?>" />
     <?php else: ?>
          <app />
     <?php endif; ?>
