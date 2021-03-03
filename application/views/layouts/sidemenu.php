@@ -42,6 +42,8 @@
         $menuObjectArray[$position] = Survey::model()->findByPk($surveyid)->getSurveyMenus($position);
     }
     
+    $isActive =  '.(Survey::model()->findByPk($surveyid)->isActive ? "true" : "false").';
+    var_dump('IsActive: ', $isActive);
 
     Yii::app()->getClientScript()->registerScript('SideBarGlobalObject', '
         window.SideMenuData = {
