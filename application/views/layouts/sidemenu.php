@@ -43,9 +43,7 @@
     }
 
     $isActive = (Survey::model()->findByPk($surveyid)->isActive ? "true" : "false");
-    var_dump('----------------------------------');
-    var_dump($isActive);
-    var_dump('----------------------------------');
+   
     $data = '
     window.SideMenuData = {
         getQuestionsUrl: "'.$getQuestionsUrl.'",
@@ -74,7 +72,7 @@
         )
     .'};';
     
-   // var_dump($data);
+   var_dump($data);
     
     Yii::app()->getClientScript()->registerScript('SideBarGlobalObject', $data, 
         LSYii_ClientScript::POS_HEAD
