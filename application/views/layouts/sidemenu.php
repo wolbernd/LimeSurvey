@@ -43,8 +43,9 @@
     }
 
     $isActive = (Survey::model()->findByPk($surveyid)->isActive);
-    if ($isActive == null) {
+    if ($isActive === null) {
         $isActive = "false";
+        var_dump($isActive);
     }
     //$isActive = (Survey::model()->findByPk($surveyid)->isActive ? "true" : "false");
    
