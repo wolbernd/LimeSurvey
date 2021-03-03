@@ -41,7 +41,13 @@ export default {
     },
     computed: {
         useMobileView() { return window.innerWidth < 768; },
-        isActive(){ return window.SideMenuData.isActive; },
+        isActive() {
+            let isActive = window.SideMenuData.isActive;
+            if (isActive == undefined) {
+                isActive = false;
+            }
+            return isActive;
+        },
         questiongroups() { return this.$store.state.questiongroups },
         sidemenus: {
             get(){return this.$store.state.sidemenus; },

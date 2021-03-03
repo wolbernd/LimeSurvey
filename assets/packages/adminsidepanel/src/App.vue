@@ -1,6 +1,6 @@
 <template>
     <div id="Application-Side-Menu">
-      <!--  <sidebar suvey="survey" landOnTab="landOnSideTab" v-model="isCollapsed" isCollapsed="isCollapsed" /> -->
+      <sidebar suvey="survey" landOnTab="landOnSideTab" v-model="isCollapsed" isCollapsed="isCollapsed" />
     </div>
 </template>
 <script>
