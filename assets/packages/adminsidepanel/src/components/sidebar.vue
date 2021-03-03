@@ -42,9 +42,6 @@ export default {
     },
     computed: {
         useMobileView() { return window.innerWidth < 768; },
-        isActive() {
-            return this.isActive;
-        },
         questiongroups() { return this.$store.state.questiongroups },
         sidemenus: {
             get(){return this.$store.state.sidemenus; },
