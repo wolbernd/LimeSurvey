@@ -1,6 +1,6 @@
 <template>
     <div id="Application-Side-Menu">
-      <sidebar suvey="survey" landOnTab="landOnSideTab" v-model="isCollapsed" isCollapsed="isCollapsed" />
+      <sidebar suvey="survey" landOnTab="landOnSideTab" v-model="isCollapsed" isCollapsed="isCollapsed" isActive="isActive" />
     </div>
 </template>
 <script>
@@ -14,6 +14,7 @@ export default {
     props: {
         surveyid: Number,
         landOnSideTab: String,
+        isActive: Boolean,
     },
     data() {
         return {

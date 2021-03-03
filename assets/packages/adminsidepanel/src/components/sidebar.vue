@@ -42,9 +42,7 @@ export default {
     computed: {
         useMobileView() { return window.innerWidth < 768; },
         isActive() {
-            console.log(window);
-            console.log(window.SideMenuData);
-            let isActive = window.SideMenuData.isActive;
+            let isActive = this.isActive;
             if (isActive == undefined) {
                 isActive = false;
             }
