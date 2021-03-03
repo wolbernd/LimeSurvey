@@ -41,9 +41,6 @@
     foreach ($menuObjectArray as $position => $arr) {
         $menuObjectArray[$position] = Survey::model()->findByPk($surveyid)->getSurveyMenus($position);
     }
-    
-    $isActive = (Survey::model()->findByPk($surveyid)->isActive);
-    var_dump($isActive);
 
     Yii::app()->getClientScript()->registerScript('SideBarGlobalObject', '
         window.SideMenuData = {
@@ -54,7 +51,7 @@
             gid: '.(isset($gid) ? $gid : 'null').',
             options: [],
             surveyid: '.$surveyid.',
-            isActive: $isActive,
+            isActive: (Survey::model()->findByPk($surveyid)->isActive),
             basemenus: '.json_encode($menuObjectArray).',
             updateOrderLink: "'.$updateOrderLink.'",
             unlockLockOrganizerUrl: "'.$unlockLockOrganizerUrl.'",
