@@ -42,7 +42,11 @@
         $menuObjectArray[$position] = Survey::model()->findByPk($surveyid)->getSurveyMenus($position);
     }
 
-    $data =  '
+    $isActive = (Survey::model()->findByPk($surveyid)->isActive ? "true" : "false");
+    var_dump('----------------------------------');
+    var_dump($isActive);
+    var_dump('----------------------------------');
+    $data = '
     window.SideMenuData = {
         getQuestionsUrl: "'.$getQuestionsUrl.'",
         getMenuUrl: "'.$getMenuUrl.'",
@@ -51,7 +55,7 @@
         gid: '.(isset($gid) ? $gid : 'null').',
         options: [],
         surveyid: '.$surveyid.',
-        isActive: '.(Survey::model()->findByPk($surveyid)->isActive ? "true" : "false").',
+        isActive: '.$isActive.',
         basemenus: '.json_encode($menuObjectArray).',
         updateOrderLink: "'.$updateOrderLink.'",
         unlockLockOrganizerUrl: "'.$unlockLockOrganizerUrl.'",
