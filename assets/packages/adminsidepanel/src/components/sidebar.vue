@@ -11,6 +11,7 @@ export default {
         landOnTab: String,
         survey: Object,
         isCollapsed: Boolean,
+        isActive: Boolean
     },
     components: {
         questionexplorer: Questionexplorer,
@@ -42,11 +43,7 @@ export default {
     computed: {
         useMobileView() { return window.innerWidth < 768; },
         isActive() {
-            let isActive = this.isActive;
-            if (isActive == undefined) {
-                isActive = false;
-            }
-            return isActive;
+            return this.isActive;
         },
         questiongroups() { return this.$store.state.questiongroups },
         sidemenus: {
