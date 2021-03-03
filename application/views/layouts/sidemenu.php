@@ -74,7 +74,7 @@
         )
     .'};';
     
-    var_dump($data);
+   // var_dump($data);
     
     Yii::app()->getClientScript()->registerScript('SideBarGlobalObject', $data, 
         LSYii_ClientScript::POS_HEAD
