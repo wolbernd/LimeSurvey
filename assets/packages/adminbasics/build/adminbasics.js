@@ -29522,7 +29522,11 @@
       }
     },
         stopDisplayLoadingState = function stopDisplayLoadingState() {
+<<<<<<< HEAD
       LS.EventBus.$emit('loadingFinished');
+=======
+      LS.EventBus.$emit('loadingFinished'); // $('.lsLoadingStateIndicator').each((i,item) => {$(item).remove();});
+>>>>>>> 4924e5400b (Dev: Built files in adminbasics.)
     },
         //###########PRIVATE
     checks = function checks() {
@@ -31694,6 +31698,10 @@
      * @return
      */
     initNotification = function initNotification() {
+<<<<<<< HEAD
+=======
+      // const self = this;
+>>>>>>> 4924e5400b (Dev: Built files in adminbasics.)
       $('.admin-notification-link').each(function (nr, that) {
         adminCoreLSConsole.log('Number of Notification: ', nr);
         var url = $(that).data('url');
@@ -40465,6 +40473,7 @@
         pageLoadActions: pageLoadActions,
         ld: lodash,
         debug: debug
+<<<<<<< HEAD
       }); // TODO: REMOVE THIS AFTER DEBUGGING.
 
       if (window.LS !== undefined) {
@@ -40472,11 +40481,17 @@
       } else {
         console.log("Window.LS is not defined.");
       }
+=======
+      });
+>>>>>>> 4924e5400b (Dev: Built files in adminbasics.)
       /* Set a variable to test if browser have HTML5 form ability
       * Need to be replaced by some polyfills see #8009
       */
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 4924e5400b (Dev: Built files in adminbasics.)
       window.hasFormValidation = typeof document.createElement('input').checkValidity == 'function';
     };
 
