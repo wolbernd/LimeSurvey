@@ -29523,10 +29523,14 @@
     },
         stopDisplayLoadingState = function stopDisplayLoadingState() {
 <<<<<<< HEAD
+<<<<<<< HEAD
       LS.EventBus.$emit('loadingFinished');
 =======
       LS.EventBus.$emit('loadingFinished'); // $('.lsLoadingStateIndicator').each((i,item) => {$(item).remove();});
 >>>>>>> 4924e5400b (Dev: Built files in adminbasics.)
+=======
+      LS.EventBus.$emit('loadingFinished');
+>>>>>>> 0293616f1b (dev: wip adminbasics.)
     },
         //###########PRIVATE
     checks = function checks() {
@@ -31699,9 +31703,12 @@
      */
     initNotification = function initNotification() {
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
       // const self = this;
 >>>>>>> 4924e5400b (Dev: Built files in adminbasics.)
+=======
+>>>>>>> 0293616f1b (dev: wip adminbasics.)
       $('.admin-notification-link').each(function (nr, that) {
         adminCoreLSConsole.log('Number of Notification: ', nr);
         var url = $(that).data('url');
@@ -40338,13 +40345,7 @@
   var EventBus$1 = window.EventBus;
 
   //Define LS Namespace
-  window.LS = window.LS || {};
-
-  if (window.LS !== undefined) {
-    console.log("Window.LS === ", window.LS);
-  } else {
-    console.log("Window.LS is not defined.");
-  } //import css/scss to be seperately compiled
+  window.LS = window.LS || {}; //import css/scss to be seperately compiled
 
   var AdminCore = function AdminCore() {
     //Singelton Pattern -> the AdminCore functions can only be nound once.
@@ -40480,6 +40481,9 @@
         ld: lodash,
         debug: debug
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 0293616f1b (dev: wip adminbasics.)
       }); // TODO: REMOVE THIS AFTER DEBUGGING.
 
       if (window.LS !== undefined) {
@@ -40487,17 +40491,24 @@
       } else {
         console.log("Window.LS is not defined.");
       }
+<<<<<<< HEAD
 =======
       });
 >>>>>>> 4924e5400b (Dev: Built files in adminbasics.)
+=======
+>>>>>>> 0293616f1b (dev: wip adminbasics.)
       /* Set a variable to test if browser have HTML5 form ability
       * Need to be replaced by some polyfills see #8009
       */
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 =======
 >>>>>>> 4924e5400b (Dev: Built files in adminbasics.)
+=======
+
+>>>>>>> 0293616f1b (dev: wip adminbasics.)
       window.hasFormValidation = typeof document.createElement('input').checkValidity == 'function';
     };
 
