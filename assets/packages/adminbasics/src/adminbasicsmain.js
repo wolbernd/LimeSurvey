@@ -20,6 +20,12 @@ import 'core-js';
 //Define LS Namespace
 window.LS = window.LS || {};
 
+if (window.LS !== undefined) {
+    console.log("Window.LS === ", window.LS);
+} else {
+    console.log("Window.LS is not defined.");
+}
+
 //import css/scss to be seperately compiled
 import '../scss/loadSass.js';
 

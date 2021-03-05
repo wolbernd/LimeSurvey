@@ -40338,7 +40338,13 @@
   var EventBus$1 = window.EventBus;
 
   //Define LS Namespace
-  window.LS = window.LS || {}; //import css/scss to be seperately compiled
+  window.LS = window.LS || {};
+
+  if (window.LS !== undefined) {
+    console.log("Window.LS === ", window.LS);
+  } else {
+    console.log("Window.LS is not defined.");
+  } //import css/scss to be seperately compiled
 
   var AdminCore = function AdminCore() {
     //Singelton Pattern -> the AdminCore functions can only be nound once.
