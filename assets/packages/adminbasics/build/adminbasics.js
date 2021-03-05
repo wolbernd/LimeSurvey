@@ -29522,7 +29522,7 @@
       }
     },
         stopDisplayLoadingState = function stopDisplayLoadingState() {
-      LS.EventBus.$emit('loadingFinished'); // $('.lsLoadingStateIndicator').each((i,item) => {$(item).remove();});
+      LS.EventBus.$emit('loadingFinished');
     },
         //###########PRIVATE
     checks = function checks() {
@@ -31694,7 +31694,6 @@
      * @return
      */
     initNotification = function initNotification() {
-      // const self = this;
       $('.admin-notification-link').each(function (nr, that) {
         adminCoreLSConsole.log('Number of Notification: ', nr);
         var url = $(that).data('url');
@@ -40331,13 +40330,7 @@
   var EventBus$1 = window.EventBus;
 
   //Define LS Namespace
-  window.LS = window.LS || {};
-
-  if (window.LS !== undefined) {
-    console.log("Window.LS === ", window.LS);
-  } else {
-    console.log("Window.LS is not defined.");
-  } //import css/scss to be seperately compiled
+  window.LS = window.LS || {}; //import css/scss to be seperately compiled
 
   var AdminCore = function AdminCore() {
     //Singelton Pattern -> the AdminCore functions can only be nound once.
@@ -40472,10 +40465,17 @@
         pageLoadActions: pageLoadActions,
         ld: lodash,
         debug: debug
-      });
+      }); // TODO: REMOVE THIS AFTER DEBUGGING.
+
+      if (window.LS !== undefined) {
+        console.log("Window.LS === ", window.LS);
+      } else {
+        console.log("Window.LS is not defined.");
+      }
       /* Set a variable to test if browser have HTML5 form ability
       * Need to be replaced by some polyfills see #8009
       */
+
 
       window.hasFormValidation = typeof document.createElement('input').checkValidity == 'function';
     };

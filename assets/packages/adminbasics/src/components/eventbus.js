@@ -11,7 +11,7 @@ class EventBus extends Vue {
     // Override Vue's $emit to call a logger for any event emitted.
     $emit(event, ...args) {
         console.ls.log("Emitting -> ", event, ...args);
-        if(this.eventsBound != undefined && this.eventsBound[event] != undefined) {
+        if (this.eventsBound != undefined && this.eventsBound[event] != undefined) {
             this.eventsBound[event].forEach(element => {
                 // element[0](...args);
             });
@@ -30,7 +30,7 @@ class EventBus extends Vue {
     // Override Vue's $emit to call a logger for any event bound.
     $off(event, ...args) {
         this.eventsBound = this.eventsBound || {};
-        if(this.eventsBound[event] != undefined ) {
+        if (this.eventsBound[event] != undefined ) {
             this.eventsBound[event] = this.eventsBound[event].filter((arg) => {
                 args.indexOf(arg) == -1;
             });

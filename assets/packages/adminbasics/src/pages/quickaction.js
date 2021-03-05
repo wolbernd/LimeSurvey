@@ -14,20 +14,19 @@ const quickActionMethods = {
             dataType : 'json',
             data: {currentState: $self.data('active')},
             // html contains the buttons
-            success : function(data, statut){
+            success : function(data, statut) {
                 const newState = parseInt(data.newState);
                 LOG.log('quickaction resolve', data);
                 LOG.log('quickaction new state', newState);
                 $self.data('active', newState);
-                if(newState === 1){
+                if(newState === 1) {
                     $('#survey-action-container').slideDown(500);
                 } else {
                     $('#survey-action-container').slideUp(500);
                 }
                 $('#survey-action-chevron').find('i').toggleClass('fa-caret-up').toggleClass('fa-caret-down');
-                
             },
-            error :  function(html, statut){
+            error :  function(html, statut) {
                 LOG.error('ERROR!', html, statut);
             }
         });
@@ -49,9 +48,9 @@ const quickActionBindings = ()=>{
             dataType : 'html',
 
             // html contains the buttons
-            success : function(html, statut){
+            success : function(html, statut) {
             },
-            error :  function(html, statut){
+            error :  function(html, statut) {
                 alert('error');
             }
         });

@@ -1,17 +1,13 @@
 import forEach from 'lodash/forEach';
-
 import LOG from '../components/lslog';
 
 const SaveController = () => {
-    
-       let formSubmitting = false;
+    let formSubmitting = false;
 
-        // Attach this <input> tag to form to check for closing after save
-        const closeAfterSaveInput = $("<input>")
-            .attr("type", "hidden")
-            .attr("name", "close-after-save");
-    
-
+    // Attach this <input> tag to form to check for closing after save
+    const closeAfterSaveInput = $("<input>")
+        .attr("type", "hidden")
+        .attr("name", "close-after-save");
 
     /**
      * Helper function for save buttons onclick event
@@ -35,14 +31,13 @@ const SaveController = () => {
     },
     isSubmitting = () => formSubmitting,
     displayLoadingState = (el) => {
-        if($(el).data('form-id') == 'addnewsurvey') {
+        if ($(el).data('form-id') == 'addnewsurvey') {
             const loadingSpinner = '<i class="fa fa-cog fa-spin lsLoadingStateIndicator"></i>';
             $(el).prop('disabled', true).append(loadingSpinner);
         }
     },
     stopDisplayLoadingState = () => {
         LS.EventBus.$emit('loadingFinished');
-        // $('.lsLoadingStateIndicator').each((i,item) => {$(item).remove();});
     },
     //###########PRIVATE
     checks = () => {
@@ -55,7 +50,7 @@ const SaveController = () => {
                     formSubmitting = true;
                     
                     if ($form.data('isvuecomponent') == true) {
-                        LS.EventBus.$emit('componentFormSubmit', button)
+                        LS.EventBus.$emit('componentFormSubmit', button);
                     } else {
                         $form.find('[type="submit"]').first().trigger('click');
                         displayLoadingState(this);

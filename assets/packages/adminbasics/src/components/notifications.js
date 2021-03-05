@@ -62,7 +62,6 @@ const NotifcationSystem  = function (){
             url: url,
             method: 'GET',
         }).done((response) => {
-
             const not = response.result;
 
             $('#admin-notification-modal .modal-title').html(not.title);
@@ -85,11 +84,8 @@ const NotifcationSystem  = function (){
      * Bind onclick and stuff
      * @return
      */
-    initNotification = () => {
-        // const self = this;
-        
+    initNotification = () => {  
         $('.admin-notification-link').each((nr, that) => {
-            
             LOG.log('Number of Notification: ', nr);
 
             const url = $(that).data('url');
@@ -108,7 +104,6 @@ const NotifcationSystem  = function (){
             $(that).on('click.showNotification', () => {
                 __showNotificationModal(that, url);
             });
-
         });
         
     },
@@ -119,7 +114,6 @@ const NotifcationSystem  = function (){
      * @param {boolean} openAfter If notification widget should be opened after load; default to true
      * @return
      */
-    
     updateNotificationWidget = (url, openAfter) => {
         // Make sure menu is open after load
         __updateNotificationWidget(url).then(() =>{

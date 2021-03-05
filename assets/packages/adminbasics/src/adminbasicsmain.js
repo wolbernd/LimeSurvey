@@ -20,12 +20,6 @@ import 'core-js';
 //Define LS Namespace
 window.LS = window.LS || {};
 
-if (window.LS !== undefined) {
-    console.log("Window.LS === ", window.LS);
-} else {
-    console.log("Window.LS is not defined.");
-}
-
 //import css/scss to be seperately compiled
 import '../scss/loadSass.js';
 
@@ -64,9 +58,9 @@ import gridAction from './components/gridAction';
 import EventBus from './components/eventbus';
 import LOG from './components/lslog';
 
-const AdminCore = function(){
+const AdminCore = function() {
     //Singelton Pattern -> the AdminCore functions can only be nound once.
-    if(typeof window.LS.adminCore === 'object') {
+    if (typeof window.LS.adminCore === 'object') {
         window.LS.adminCore.refresh();
         return;
     }
@@ -97,15 +91,18 @@ const AdminCore = function(){
         },
         appendToLoad = (fn, event, root, delay) => {
             event = event || 'pjax:scriptcomplete ready';
-            root = root || 'document';
+            root  = root  || 'document';
             delay = delay || 0;
             eventsBound[root] = eventsBound[root] || [];
 
             if(_.find(eventsBound[root], {fn, event, root, delay}) === undefined) {
                 eventsBound[root].push({fn, event, root, delay});
                 const events = _.map(event.split(' '), (event) => (event !== 'ready' ? event+'.admincore' : 'ready') );
-                const call = delay > 0 ? () => { window.setTimeout(fn, delay); } : fn;
-                if(root == 'document') {
+                const call = delay > 0 ? () => {
+                    window.setTimeout(fn, delay);
+                } : fn;
+
+                if (root == 'document') {
                     $(document).on(events.join(' '), call);
                 } else {
                     $(root).on(events.join(' '), call);
@@ -116,8 +113,10 @@ const AdminCore = function(){
             _.each(eventsBound, (eventMap, root) => {
                 _.each(eventMap, (evItem) => {
                     const events = _.map(evItem.event.split(' '), (event) => (event !== 'ready' ? event+'.admincore' : ''));
-                    const call = evItem.delay > 0 ? () => { window.setTimeout(evItem.fn, evItem.delay); } : evItem.fn;
-                    if(evItem.root !== 'document') {
+                    const call = evItem.delay > 0 ? () => {
+                        window.setTimeout(evItem.fn, evItem.delay);
+                    } : evItem.fn;
+                    if (evItem.root !== 'document') {
                         $(evItem.root).off(events.join(' '));
                         $(evItem.root).on(events.join(' '), call);
                     }
@@ -165,6 +164,13 @@ const AdminCore = function(){
             * Set the namespace to the global variable LS
             */
             window.LS = _.merge(window.LS, LsNameSpace, {pageLoadActions, ld: _, debug});
+            
+            // TODO: REMOVE THIS AFTER DEBUGGING.
+            if (window.LS !== undefined) {
+                console.log("Window.LS === ", window.LS);
+            } else {
+                console.log("Window.LS is not defined.");
+            }
 
             /* Set a variable to test if browser have HTML5 form ability
             * Need to be replaced by some polyfills see #8009
