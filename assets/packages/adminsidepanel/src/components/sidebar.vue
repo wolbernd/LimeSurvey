@@ -9,6 +9,7 @@ import Quickmenu from "./subcomponents/_quickmenu.vue";
 export default {
     props: {
         landOnTab: String,
+        surveyid: Number,
     },
     components: {
         questionexplorer: Questionexplorer,
@@ -123,7 +124,7 @@ export default {
             this.showLoader = true;
             this.post(window.SideMenuData.updateOrderLink, {
                 grouparray: onlyGroupsArray,
-                surveyid: this.$store.surveyid
+                surveyid: this.surveyid
             }).then(
                 result => {
                     self.$log.log("questiongroups updated");
@@ -134,7 +135,7 @@ export default {
                 error => {
                     self.$log.error("questiongroups updating error!");
                     this.post(window.SideMenuData.updateOrderLink, {
-                        surveyid: this.$store.surveyid
+                        surveyid: this.surveyid
                     }).then(()=>{
                         self.getQuestions().then(() => {
                             self.showLoader = false;

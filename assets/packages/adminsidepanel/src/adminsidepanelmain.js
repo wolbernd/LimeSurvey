@@ -34,14 +34,8 @@ Vue.mixin({
 });
 
 const Lsadminsidepanel = (userid, surveyid) => {
-    const AppState = getAppState(userid, surveyid);
+    const AppState = getAppState(userid);
     const panelNameSpace = {};
-
-    const applySurveyId = (store) => {
-        if (surveyid != 0) {
-            store.commit("updateSurveyId", surveyid);
-        }
-    };
 
     const controlWindowSize = () => {
         const adminmenuHeight = $("body").find("nav").first().height();
@@ -76,8 +70,6 @@ const Lsadminsidepanel = (userid, surveyid) => {
                 });
             },
             mounted() {
-                applySurveyId(this.$store);
-
                 const maxHeight = $("#in_survey_common").height() - 35 || 400;
                 this.$store.commit("changeMaxHeight", maxHeight);
                 this.$store.commit("setAllowOrganizer", window.SideMenuData.allowOrganizer);
@@ -170,8 +162,6 @@ const Lsadminsidepanel = (userid, surveyid) => {
     return createPanelAppliance;
 };
 
-
-
 $(document).ready(function(){
     let surveyid = 'newSurvey';
     if(window.LS != undefined) {
@@ -185,4 +175,3 @@ $(document).ready(function(){
 
     window.adminsidepanel();
 });
-

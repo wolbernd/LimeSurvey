@@ -1,12 +1,10 @@
 <script>
 import ajaxMethods from '../../mixins/runAjax.js';
-import Menuicon from './_menuicon.vue';
 import Submenu from './_submenu.vue';
 
 export default {
     name: 'sidemenu',
     components : {
-        'menuicon' : Menuicon,
         'submenu': Submenu
     },
     mixins: [ajaxMethods],
@@ -30,17 +28,14 @@ export default {
     },
     methods:{
         sortedMenuEntries(entries) {
-            const self = this;
             let orderedArray = LS.ld.orderBy(entries,(a)=>{return parseInt((a.ordering || 999999)) }, ['asc']);            
             return orderedArray;
         },
         setActiveMenuIndex(menuItem){
-            let activeMenuIndex = menuItem.id;
             this.$store.commit('lastMenuOpen', menuItem)
             
         },
         setActiveMenuItemIndex(menuItem){
-            let activeMenuIndex = menuItem.id;
             this.$store.commit('lastMenuItemOpen', menuItem)
             
         },
@@ -55,15 +50,14 @@ export default {
     created(){
         this.$store.dispatch('getSidemenus')
         .then(
-            (result) => {},
+            () => {},
             this.$log.error
         )
         .finally(
-            (result) => { this.loadingState = false }
+            () => { this.loadingState = false }
         );
     },
     mounted(){
-        const self = this;
         this.updatePjaxLinks();
 
         $(document).on('vue-reload-remote', ()=>{
