@@ -56,8 +56,12 @@
                     <?= CHtml::textArea(
                         "question_{$oSurvey->language}",
                         $oQuestion->questionl10ns[$oSurvey->language]->question,
-                        array('class'=>'form-control','cols'=>'60','rows'=>'5','id'=>"question_{$oSurvey->language}",
-                        'disabled' => "disabled")
+                        array(
+                            'class'=>'form-control',
+                            'cols'=>'60',
+                            'rows'=>'5',
+                            'id'=>"question_{$oSurvey->language}"
+                        )
                     ); ?>
                 </div>
             </div>
