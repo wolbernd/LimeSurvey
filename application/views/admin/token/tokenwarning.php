@@ -4,6 +4,7 @@
  * @var Survey $oSurvey
  */
 ?>
+<?php if (!$surveyParticipantsIsInitialisedForSurvey): ?>
 <div class='side-body <?php echo getSideBodyClass(false); ?>'>
     <div class="row welcome survey-action">
         <div class="col-sm-12 content-right">
@@ -49,6 +50,8 @@
             </div>
         </div>
 
+
+<?php endif; ?>
 <?php
 // Do not offer old postgres survey participants tables for restore since these are having an issue with missing index
 if ($tcount > 0 
