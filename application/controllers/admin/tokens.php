@@ -38,11 +38,12 @@ class tokens extends Survey_Common_Action
 
         //// TODO : check if it does something different than the model function
         $thissurvey = getSurveyInfo($iSurveyId);
-        if (
-            !Permission::model()->hasSurveyPermission($iSurveyId, 'tokens', 'read') && !Permission::model()->hasSurveyPermission($iSurveyId, 'tokens', 'create') && !Permission::model()->hasSurveyPermission($iSurveyId, 'tokens', 'update')
-            && !Permission::model()->hasSurveyPermission($iSurveyId, 'tokens', 'export') && !Permission::model()->hasSurveyPermission($iSurveyId, 'tokens', 'import')
-            && !Permission::model()->hasSurveyPermission($iSurveyId, 'surveysettings', 'update')
-        ) {
+        if (!Permission::model()->hasSurveyPermission($iSurveyId, 'tokens', 'read') 
+            && !Permission::model()->hasSurveyPermission($iSurveyId, 'tokens', 'create') 
+            && !Permission::model()->hasSurveyPermission($iSurveyId, 'tokens', 'update')
+            && !Permission::model()->hasSurveyPermission($iSurveyId, 'tokens', 'export') 
+            && !Permission::model()->hasSurveyPermission($iSurveyId, 'tokens', 'import')
+            && !Permission::model()->hasSurveyPermission($iSurveyId, 'surveysettings', 'update')) {
             Yii::app()->session['flashmessage'] = gT("You do not have permission to access this page.");
             $this->getController()->redirect(array("/surveyAdministration/view/surveyid/{$iSurveyId}"));
         }
@@ -54,8 +55,8 @@ class tokens extends Survey_Common_Action
         $aData['title_bar']['title'] = $survey->currentLanguageSettings->surveyls_title . " (" . gT("ID") . ":" . $iSurveyId . ")";
         $aData['sidemenu']["token_menu"] = true;
 
-        $aData['topBar']['name'] = 'tokensTopbar_view';
-        $aData['topBar']['leftSideView'] = 'tokensTopbarLeft_view';
+        $aData['topBar']['name']          = 'tokensTopbar_view';
+        $aData['topBar']['leftSideView']  = 'tokensTopbarLeft_view';
         $aData['topBar']['rightSideView'] = 'tokensTopbarRight_view';
         $aData['showDelButton'] = true;
 
@@ -2419,20 +2420,24 @@ class tokens extends Survey_Common_Action
 
     /**
      * Show dialogs and create a new tokens table
-     * @param int $iSurveyId
+     * @param int $iSurveyId Survey ID
      * @return void
      */
     private function _newtokentable($iSurveyId)
     {
         $aSurveyInfo = getSurveyInfo($iSurveyId);
         $survey = Survey::model()->findByPk($iSurveyId);
-        if (!Permission::model()->hasSurveyPermission($iSurveyId, 'surveysettings', 'update') && !Permission::model()->hasSurveyPermission($iSurveyId, 'tokens', 'create')) {
+        $hasUpdateSurveySettingsPermission = Permission::model()->hasSurveyPermission($iSurveyId, 'surveysettings', 'update');
+        $hasCreateTokensPermission = Permission::model()->hasSurveyPermission($iSurveyId, 'tokens', 'create');
+        
+        if (!$hasUpdateSurveySettingsPermission && !$hasCreateTokensPermission) {
             Yii::app()->session['flashmessage'] = gT("Survey participants have not been initialised for this survey.");
             $this->getController()->redirect(array("/surveyAdministration/view/surveyid/{$iSurveyId}"));
         }
 
         //The survey participants table already exist ?
-        if ($survey->hasTokensTable) {
+        $hasTokensTable = $survey->hasTokensTable;
+        if ($hasTokensTable) {
             Yii::app()->session['flashmessage'] = gT("Participant table already exist for this survey.");
             $this->getController()->redirect(array("/surveyAdministration/view/surveyid/{$iSurveyId}"));
         }
@@ -2452,7 +2457,9 @@ class tokens extends Survey_Common_Action
         $aData['topBar']['name'] = 'tokensTopbar_view';
 
         // Update table, must be CRSF controlled
-        if (Yii::app()->request->getPost('createtable') == "Y") {
+        $createTablePost = Yii::app()->request->getPost('createtable');
+        $createTablePostIsEqualsY = ($createTablePost == "Y");
+        if ($createTablePostIsEqualsY) {
             Survey::model()->updateByPk($iSurveyId, array('tokenencryptionoptions' => ls_json_encode($aTokenencryptionoptions)));
             Token::createTable($iSurveyId);
             LimeExpressionManager::SetDirtyFlag(); // LimeExpressionManager needs to know about the new survey participants table
@@ -2475,7 +2482,7 @@ class tokens extends Survey_Common_Action
             foreach ($fields as $fieldname) {
                 $name = $fieldname;
                 if ($fieldname[10] == 'c') {
-//This belongs to a cpdb attribute
+                    //This belongs to a cpdb attribute
                     $cpdbattid = substr($fieldname, 15);
                     $data = ParticipantAttributeName::model()->getAttributeName($cpdbattid, Yii::app()->session['adminlang']);
                     $name = $data['attribute_name'];
