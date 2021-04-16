@@ -51,7 +51,9 @@
 
 <?php
 // Do not offer old postgres survey participants tables for restore since these are having an issue with missing index
-if ($tcount > 0 && (Permission::model()->hasSurveyPermission($oSurvey->sid, 'surveysettings', 'update') || Permission::model()->hasSurveyPermission($oSurvey->sid, 'tokens','create'))):
+if ($tcount > 0 
+    && (Permission::model()->hasSurveyPermission($oSurvey->sid, 'surveysettings', 'update') 
+    || Permission::model()->hasSurveyPermission($oSurvey->sid, 'tokens','create'))):
 ?>
         <div class="col-sm-12 content-right">
             <div class="jumbotron message-box">
