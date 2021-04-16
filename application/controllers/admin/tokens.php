@@ -2518,17 +2518,26 @@ class tokens extends Survey_Common_Action
             LimeExpressionManager::SetDirtyFlag(); // so that knows that survey participants tables have changed
         } else {
             Yii::app()->loadHelper('database');
-            Survey::model()->updateByPk($iSurveyId, array('tokenencryptionoptions' => ls_json_encode($aTokenencryptionoptions)));
-            $result = Yii::app()->db->createCommand(dbSelectTablesLike("{{old_tokens_" . intval($iSurveyId) . "_%}}"))->queryAll();
-            $tcount = count($result);
-            if ($tcount > 0) {
-                foreach ($result as $rows) {
-                    $oldlist[] = reset($rows);
+            Survey::model()->updateByPk(
+                $iSurveyId,
+                array(
+                    'tokenencryptionoptions' => ls_json_encode($aTokenencryptionoptions)
+                )
+            );
+            $oldTokensTablesLikeQuery = dbSelectTablesLike("{{old_tokens_" . intval($iSurveyId) . "_%}}");
+            $allOldTokensTables = Yii::app()->db->createCommand($oldTokensTablesLikeQuery)->queryAll();
+            $tablesCount = count($allOldTokensTables);
+            if ($tablesCount > 0) {
+                foreach ($allOldTokensTables as $table) {
+                    $oldlist[] = reset($table);
                 }
                 $aData['oldlist'] = $oldlist;
             }
 
-            $aData['tcount'] = $tcount;
+            $surveyParticipantsIsInitialsedForSurvey = ($hasUpdateSurveySettingsPermission && $hasCreateTokensPermission);
+        
+            $aData['surveyParticipantsIsInitialisedForSurvey'] = $surveyParticipantsIsInitialsedForSurvey;
+            $aData['tcount'] = $tablesCount;
             $aData['databasetype'] = Yii::app()->db->getDriverName();
             $aData['sidemenu']["token_menu"] = true;
             $aData['topBar']['name'] = 'tokensTopbar_view';
