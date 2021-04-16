@@ -2457,8 +2457,12 @@ class tokens extends Survey_Common_Action
         $aData['topBar']['name'] = 'tokensTopbar_view';
 
         // Update table, must be CRSF controlled
-        $createTablePost = Yii::app()->request->getPost('createtable');
+        $createTablePost          = Yii::app()->request->getPost('createtable');
         $createTablePostIsEqualsY = ($createTablePost == "Y");
+        $globalRestoreTable          = returnGlobal('restoretable');
+        $globalRestoreTableIsEqualsY = ($globalRestoreTable == "Y");
+        $postOldTable = Yii::app()->request->getPost('oldtable');
+        
         if ($createTablePostIsEqualsY) {
             Survey::model()->updateByPk($iSurveyId, array('tokenencryptionoptions' => ls_json_encode($aTokenencryptionoptions)));
             Token::createTable($iSurveyId);
@@ -2471,7 +2475,7 @@ class tokens extends Survey_Common_Action
             )), $aData);
         }
         /* Restore a previously deleted tokens table */
-        elseif (returnGlobal('restoretable') == "Y" && Yii::app()->request->getPost('oldtable')) {
+        elseif ($globalRestoreTableIsEqualsY && $postOldTable) {
             //Rebuild attributedescription value for the surveys table
             $table = Yii::app()->db->schema->getTable(Yii::app()->request->getPost('oldtable'));
             $fields = array_filter(array_keys($table->columns), 'filterForAttributes');
