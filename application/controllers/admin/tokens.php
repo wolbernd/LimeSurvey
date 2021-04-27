@@ -2615,7 +2615,6 @@ class tokens extends Survey_Common_Action
                 && $request->getPost('minreminderdelay') != ''
                 && intval($request->getPost('minreminderdelay')) != 0
             ) {
-                // Yii::app()->request->getPost('minreminderdelay') in days (86400 seconds per day)
                 $timeadjust = Yii::app()->getConfig("timeadjust");
                 $compareddate = dateShift(
                     date(
