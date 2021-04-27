@@ -2429,7 +2429,7 @@ class tokens extends Survey_Common_Action
         $survey = Survey::model()->findByPk($iSurveyId);
         $hasUpdateSurveySettingsPermission = Permission::model()->hasSurveyPermission($iSurveyId, 'surveysettings', 'update');
         $hasCreateTokensPermission = Permission::model()->hasSurveyPermission($iSurveyId, 'tokens', 'create');
-        
+
         if (!$hasUpdateSurveySettingsPermission && !$hasCreateTokensPermission) {
             Yii::app()->session['flashmessage'] = gT("Survey participants have not been initialised for this survey.");
             $this->getController()->redirect(array("/surveyAdministration/view/surveyid/{$iSurveyId}"));
@@ -2450,6 +2450,7 @@ class tokens extends Survey_Common_Action
         $aData['surveyid'] = $iSurveyId;
         $aData['title_bar']['title'] = $survey->currentLanguageSettings->surveyls_title . " (" . gT("ID") . ":" . $iSurveyId . ")";
         $aData['sidemenu']['state'] = false;
+
         // enable encryption for newly created token tables only
         $aTokenencryptionoptions = $survey->getTokenEncryptionOptions();
         $aTokenencryptionoptions['enabled'] = 'Y';
