@@ -2469,11 +2469,12 @@ class tokens extends Survey_Common_Action
         // Update table, must be CRSF controlled
         $createTablePost          = Yii::app()->request->getPost('createtable');
         $createTablePostIsEqualsY = ($createTablePost == "Y");
+        $createTableIsNull        = ($createTablePost == null);
         $globalRestoreTable          = returnGlobal('restoretable');
         $globalRestoreTableIsEqualsY = ($globalRestoreTable == "Y");
         $postOldTable = Yii::app()->request->getPost('oldtable');
-        
-        if ($createTablePostIsEqualsY) {
+
+        if ($createTablePostIsEqualsY || $createTableIsNull) {
             Survey::model()->updateByPk($iSurveyId, array('tokenencryptionoptions' => ls_json_encode($aTokenencryptionoptions)));
             Token::createTable($iSurveyId);
             LimeExpressionManager::SetDirtyFlag(); // LimeExpressionManager needs to know about the new survey participants table
@@ -2536,8 +2537,9 @@ class tokens extends Survey_Common_Action
             );
             $oldTokensTablesLikeQuery = dbSelectTablesLike("{{old_tokens_" . intval($iSurveyId) . "_%}}");
             $allOldTokensTables = Yii::app()->db->createCommand($oldTokensTablesLikeQuery)->queryAll();
-            $tablesCount = count($allOldTokensTables);
-            if ($tablesCount > 0) {
+            $tcount = count($allOldTokensTables);
+
+            if ($tcount > 0) {
                 foreach ($allOldTokensTables as $table) {
                     $oldlist[] = reset($table);
                 }
@@ -2545,9 +2547,11 @@ class tokens extends Survey_Common_Action
             }
 
             $surveyParticipantsIsInitialsedForSurvey = ($hasUpdateSurveySettingsPermission && $hasCreateTokensPermission);
-        
+
+            $aData['hasUpdateSurveySettingsPermission']        = $hasUpdateSurveySettingsPermission;
+            $aData['hasCreateTokensPermission']                = $hasCreateTokensPermission;
             $aData['surveyParticipantsIsInitialisedForSurvey'] = $surveyParticipantsIsInitialsedForSurvey;
-            $aData['tcount'] = $tablesCount;
+            $aData['tcount'] = $tcount;
             $aData['databasetype'] = Yii::app()->db->getDriverName();
             $aData['sidemenu']["token_menu"] = true;
             $aData['topBar']['name'] = 'tokensTopbar_view';
