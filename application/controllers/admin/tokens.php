@@ -38,12 +38,21 @@ class tokens extends Survey_Common_Action
 
         //// TODO : check if it does something different than the model function
         $thissurvey = getSurveyInfo($iSurveyId);
-        if (!Permission::model()->hasSurveyPermission($iSurveyId, 'tokens', 'read') 
-            && !Permission::model()->hasSurveyPermission($iSurveyId, 'tokens', 'create') 
-            && !Permission::model()->hasSurveyPermission($iSurveyId, 'tokens', 'update')
-            && !Permission::model()->hasSurveyPermission($iSurveyId, 'tokens', 'export') 
-            && !Permission::model()->hasSurveyPermission($iSurveyId, 'tokens', 'import')
-            && !Permission::model()->hasSurveyPermission($iSurveyId, 'surveysettings', 'update')) {
+
+        $tokensString = 'tokens';
+        $surveySettingsString = 'surveysettings';
+        $hasTokensReadPermission   = Permission::model()->hasSurveyPermission($iSurveyId, $tokensString, 'read');
+        $hasTokensCreatePermission = Permission::model()->hasSurveyPermission($iSurveyId, $tokensString, 'create');
+        $hasTokensExportPermission = Permission::model()->hasSurveyPermission($iSurveId,  $tokensString, 'export');
+        $hasTokensUpdatePermission = Permission::model()->hasSurveyPermission($iSurveyId, $tokensString, 'update');
+        $hasTokensImportPermission = Permission::model()->hasSurveyPermission($iSurveyId, $tokensString, 'import');
+        $hasSurveySettingsUpdatePermission = Permission::model()->hasSurveyPermission($iSurveyId, $surveySettingsString, 'update');
+        if (!$hasTokensReadPermission 
+            && !$hasTokensCreatePermission 
+            && !$hasTokensUpdatePermission
+            && !$hasTokensExportPermission
+            && !$hasTokensImportPermission
+            && !$hasSurveySettingsUpdatePermission) {
             Yii::app()->session['flashmessage'] = gT("You do not have permission to access this page.");
             $this->getController()->redirect(array("/surveyAdministration/view/surveyid/{$iSurveyId}"));
         }
