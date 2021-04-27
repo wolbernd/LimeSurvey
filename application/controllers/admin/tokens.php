@@ -495,7 +495,7 @@ class tokens extends Survey_Common_Action
 
     /**
      * Add new token form, also adding new participant.
-     *
+     * @todo Split this method into two functions.
      * @param int $iSurveyId
      * @return void
      * @throws CException
