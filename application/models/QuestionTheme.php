@@ -425,7 +425,12 @@ class QuestionTheme extends LSActiveRecord
         if (\PHP_VERSION_ID < 80000) {
             $bOldEntityLoaderState = libxml_disable_entity_loader(true);
         }
+
+        // config.xml can be in custom upload folder. See config userquestionthemerootdir.
         $sQuestionConfigFilePath = App()->getConfig('rootdir') . DIRECTORY_SEPARATOR . $pathToXML . DIRECTORY_SEPARATOR . 'config.xml';
+        if (!file_exists($sQuestionConfigFilePath)) {
+            $sQuestionConfigFilePath = $pathToXML . DIRECTORY_SEPARATOR . 'config.xml';
+        }
         if (!file_exists($sQuestionConfigFilePath)) {
             throw new Exception(gT('Extension configuration file is not valid or missing.'));
         }
@@ -689,7 +694,6 @@ class QuestionTheme extends LSActiveRecord
         //            $criteria->condition = 'extends = :extends';
         $criteria->addCondition('visible = :visible', 'AND');
         $criteria->params = [':visible' => 'Y'];
-
         $baseQuestions = self::model()->query($criteria, true, false);
 
         if (\PHP_VERSION_ID < 80000) {
@@ -699,7 +703,11 @@ class QuestionTheme extends LSActiveRecord
         $baseQuestionsModified = [];
         foreach ($baseQuestions as $baseQuestion) {
             //TODO: should be moved into DB column (question_theme_settings table)
-            $sQuestionConfigFile = file_get_contents(App()->getConfig('rootdir') . DIRECTORY_SEPARATOR . $baseQuestion['xml_path'] . DIRECTORY_SEPARATOR . 'config.xml');  // @see: Now that entity loader is disabled, we can't use simplexml_load_file; so we must read the file with file_get_contents and convert it as a string
+            $configFilePath = App()->getConfig('rootdir') . DIRECTORY_SEPARATOR . $baseQuestion['xml_path'] . DIRECTORY_SEPARATOR . 'config.xml';
+            if (!file_exists($configFilePath)) {
+                $configFilePath = $baseQuestion['xml_path'] . DIRECTORY_SEPARATOR . 'config.xml';
+            }
+            $sQuestionConfigFile = file_get_contents($configFilePath);  // @see: Now that entity loader is disabled, we can't use simplexml_load_file; so we must read the file with file_get_contents and convert it as a string
             $oQuestionConfig = simplexml_load_string($sQuestionConfigFile);
             $questionEngineData = json_decode(json_encode($oQuestionConfig->engine), true);
             $showAsQuestionType = $questionEngineData['show_as_question_type'];
