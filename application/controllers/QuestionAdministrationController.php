@@ -1601,10 +1601,6 @@ class QuestionAdministrationController extends LSBaseController
         $oQuestionGroup = QuestionGroup::model()->find('gid=:gid', array(':gid' => $questionGroupId));
         $aData['surveyid'] = $surveyId; //this is important to load the correct layout (see beforeRender)
 
-       // $aData['sid'] = $surveyId; //important for renderGeneraltopbar(), should not be used anymore
-       // $aData['gid'] = $questionGroupId; //important for renderGeneraltopbar(), should not be used anymore
-       // $aData['qid'] = $questionIdToCopy; //important for renderGeneraltopbar(), should not be used anymore
-        // $aData['topBar']['showSaveButton'] = true;
         //array elements for frontend (topbar etc.)
         $aData['sidemenu']['landOnSideMenuTab'] = 'structure';
         $aData['title_bar']['title'] = $oSurvey->currentLanguageSettings->surveyls_title
