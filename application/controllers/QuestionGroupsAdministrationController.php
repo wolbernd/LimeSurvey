@@ -738,10 +738,6 @@ class QuestionGroupsAdministrationController extends LSBaseController
         if (empty($sScenario)) {
             if (App()->request->getPost('close-after-save', '')) {
                 $sScenario = 'save-and-close';
-            } elseif (App()->request->getPost('saveandnew', '')) {
-                $sScenario = 'save-and-new';
-            } elseif (App()->request->getPost('saveandnewquestion', '')) {
-                $sScenario = 'save-and-new-question';
             } elseif (!empty($isNewGroup)) {
                 $sScenario = 'save-and-close';
             }

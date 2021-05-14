@@ -4,16 +4,10 @@
     <?php eT("Save");?>
 </a>
 
-<!-- Save and new group -->
-<a class="btn btn-default" id='save-and-new-button' role="button">
+<!-- Save and close -->
+<a class="btn btn-default" id='save-and-close-button' role="button">
     <span class="fa fa-plus-square"></span>
-    <?php eT("Save & add new group"); ?>
-</a>
-
-<!-- Save and add question -->
-<a class="btn btn-default" id='save-and-new-question-button' role="button">
-    <span class="fa fa-plus"></span>
-    <?php eT("Save & add new question"); ?>
+    <?php eT("Save and close"); ?>
 </a>
 
 <!-- Close -->
