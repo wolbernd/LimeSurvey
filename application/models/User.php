@@ -936,7 +936,7 @@ class User extends LSActiveRecord
      *
      * @return bool true if validation_key could be saved in db, false otherwise
      */
-    public function setValidationKey(){
+    public function setValidationKey() {
         $this->validation_key = randomChars(self::MAX_VALIDATION_KEY_LENGTH);
 
         return $this->save();
