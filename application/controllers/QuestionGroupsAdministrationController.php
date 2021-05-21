@@ -738,29 +738,9 @@ class QuestionGroupsAdministrationController extends LSBaseController
         if (empty($sScenario)) {
             if (App()->request->getPost('close-after-save', '')) {
                 $sScenario = 'save-and-close';
-            } elseif (!empty($isNewGroup)) {
-                $sScenario = 'save-and-close';
             }
         }
         switch ($sScenario) {
-            case 'save-and-new-question':
-                $sRedirectUrl = $this->createUrl(
-                    // TODO: Double check
-                    'questionAdministration/create/',
-                    [
-                        'surveyid' => $iSurveyId,
-                        'gid' => $oQuestionGroup->gid,
-                    ]
-                );
-                break;
-            case 'save-and-new':
-                $sRedirectUrl = $this->createUrl(
-                    'questionGroupsAdministration/add/',
-                    [
-                        'surveyid' => $iSurveyId,
-                    ]
-                );
-                break;
             case 'save-and-close':
                 $sRedirectUrl = $this->createUrl(
                     'questionGroupsAdministration/view/',
