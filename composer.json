@@ -27,11 +27,13 @@
 			"LimeSurvey\\ExtensionInstaller\\": "application/libraries/ExtensionInstaller/",
 			"LimeSurvey\\Helpers\\": "application/helpers",
 			"LimeSurvey\\Models\\Services\\": "application/models/services",
-			"LimeSurvey\\Datavalueobjects\\": "application/datavalueobjects"
+			"LimeSurvey\\Datavalueobjects\\": "application/datavalueobjects",
+            "LimeSurvey\\Controllers\\": "application/controllers"
 		}
 	},
 	"require": {
-	},
+      "ext-openssl": "*"
+    },
     "config": {
         "vendor-dir": "third_party",
         "bin-dir": "third_party/bin"
