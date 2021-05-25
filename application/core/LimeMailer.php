@@ -554,10 +554,12 @@ class LimeMailer extends \PHPMailer\PHPMailer\PHPMailer
     /**
      * Construct and do what must be done before sending a message
      * @return boolean
+     * @throws \PHPMailer\PHPMailer\Exception
      */
-    public function sendMessage()
+    public function sendMessage(): bool
     {
-        if (Yii::app()->getConfig('demoMode')) {
+        $demoMode = Yii::app()->getConfig('demoMode');
+        if ($demoMode) {
             $this->setError(gT('Email was not sent because demo-mode is activated.'));
             return false;
         }
