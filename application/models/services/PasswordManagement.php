@@ -2,6 +2,12 @@
 
 namespace LimeSurvey\Models\Services;
 
+use LimeMailer;
+use LimeSurvey\Controllers\UserManagementController as Controller;
+use PHPMailer\PHPMailer\Exception;
+use PluginEvent as PluginEvent;
+use User as User;
+
 /**
  * This class contains all functions for the process of password reset and creating new administration users
  * and sending email to those with a link to set the password.
@@ -15,69 +21,81 @@ class PasswordManagement
     const EMAIL_TYPE_REGISTRATION = 'registration';
     const EMAIL_TYPE_RESET_PW = 'resetPassword';
 
-    /** @var $user \User */
-    private $user;
+    /** @var $user User */
+    private User $user;
+
+    /** @var Controller $controller */
+    private Controller $controller;
 
     /**
      * PasswordManagement constructor.
-     * @param $user \User
+     * @param $user       User
+     * @param $controller Controller
      */
-    public function __construct(\User $user)
+    public function __construct(User $user, Controller $controller)
     {
         $this->user = $user;
+        $this->controller = $controller;
+    }
+
+    /**
+     * Destructor.
+     */
+    public function __destruct()
+    {
     }
 
     /**
      * This function prepare the email template to send to the new created user
      *
-     *
-     * @return mixed $aAdminEmail array with subject and email body
+     * @param string $siteName
+     * @param string $adminEmail
+     * @param string $emailSubject
+     * @param string $emailTemplate
+     * @return array $adminCreationEmail array with subject and email body
      */
-    public function generateAdminCreationEmail()
+    public function generateAdminCreationEmail(string $siteName, string $adminEmail, string $emailSubject, string $emailTemplate): array
     {
-        $adminEmail = [];
-        $siteName = \Yii::app()->getConfig("sitename");
+        $adminCreationEmail = [];
         $url = 'admin/authentication/sa/newPassword/param/' . $this->user->validation_key;
-        $loginUrl = \Yii::app()->getController()->createAbsoluteUrl($url);
-        $siteAdminEmail = \Yii::app()->getConfig("siteadminemail");
-        $emailSubject = \Yii::app()->getConfig("admincreationemailsubject");
-        $emailTemplate = \Yii::app()->getConfig("admincreationemailtemplate");
+
+        $loginUrl = $this->controller->createAbsoluteUrl($url);
 
         //Replace placeholder in Email subject
         $emailSubject = str_replace("{SITENAME}", $siteName, $emailSubject);
-        $emailSubject = str_replace("{SITEADMINEMAIL}", $siteAdminEmail, $emailSubject);
+        $emailSubject = str_replace("{SITEADMINEMAIL}", $adminEmail, $emailSubject);
 
         //Replace placeholder in Email body
         $emailTemplate = str_replace("{SITENAME}", $siteName, $emailTemplate);
-        $emailTemplate = str_replace("{SITEADMINEMAIL}", $siteAdminEmail, $emailTemplate);
+        $emailTemplate = str_replace("{SITEADMINEMAIL}", $adminEmail, $emailTemplate);
         $emailTemplate = str_replace("{FULLNAME}", $this->user->full_name, $emailTemplate);
         $emailTemplate = str_replace("{USERNAME}", $this->user->users_name, $emailTemplate);
         $emailTemplate = str_replace("{LOGINURL}", $loginUrl, $emailTemplate);
 
-        $adminEmail['subject'] = $emailSubject;
-        $adminEmail['body'] = $emailTemplate;
+        $adminCreationEmail['subject'] = $emailSubject;
+        $adminCreationEmail['body']    = $emailTemplate;
 
-        return $adminEmail;
+        return $adminCreationEmail;
     }
-
 
     /**
      * Sets the validationKey and the validationKey expiration and
      * sends email to the user, containing the link to set/reset password.
      *
-     * @param string $emailType this could be 'registration' or 'resetPassword' (see const in this class)
-     *
+     * @param string $emailType           this could be 'registration' or 'resetPassword' (see const in this class)
+     * @param User   $currentLoggedInUser Current Logged In User
      * @return array message if sending email to user was successful
      *
-     * @throws \PHPMailer\PHPMailer\Exception
+     * @throws Exception
+     * @throws \CException
      */
-    public function sendPasswordLinkViaEmail(string $emailType): array
+    public function sendPasswordLinkViaEmail(string $emailType, User $currentLoggedInUser): array
     {
-
         $success = true;
         $this->user->setValidationKey();
         $this->user->setValidationExpiration();
-        $mailer = $this->sendAdminMail($emailType);
+
+        $mailer = $this->sendAdminMail($emailType, $currentLoggedInUser);
 
         if ($mailer->getError()) {
             $sReturnMessage = \CHtml::tag("h4", array(), gT("Error"));
@@ -109,10 +127,11 @@ class PasswordManagement
      * Send a link to email of the user to set a new password (forgot password functionality)
      *
      * @return string message for user
+     * @throws \Exception
      */
     public function sendForgotPasswordEmailLink(): string
     {
-        $mailer = new \LimeMailer();
+        $mailer = new LimeMailer();
         $mailer->emailType = 'passwordreminderadminuser';
         $mailer->addAddress($this->user->email, $this->user->full_name);
         $mailer->Subject = gT('User data');
@@ -124,11 +143,13 @@ class PasswordManagement
 
         $linkToResetPage = \Yii::app()->getController()->createAbsoluteUrl('admin/authentication/sa/newPassword/param/' . $this->user->validation_key);
         $linkText = gT("Click here to set your password: ") . $linkToResetPage;
+
         $body   = array();
         $body[] = sprintf(gT('Your link to reset password %s'), \Yii::app()->getConfig('sitename'));
         $body[] = $username;
         $body[] = $linkText;
         $body   = implode("\n", $body);
+
         $mailer->Body = $body;
         /* Go to send email and set password*/
         if ($mailer->sendMessage()) {
@@ -149,9 +170,9 @@ class PasswordManagement
      * @param int $length Length of the password
      * @return string
      */
-    public static function getRandomPassword($length = self::MIN_PASSWORD_LENGTH): string
+    public static function getRandomPassword(int $length = self::MIN_PASSWORD_LENGTH): string
     {
-        $oGetPasswordEvent = new \PluginEvent('createRandomPassword');
+        $oGetPasswordEvent = new PluginEvent('createRandomPassword');
         $oGetPasswordEvent->set('targetSize', $length);
         \Yii::app()->getPluginManager()->dispatchEvent($oGetPasswordEvent);
 
@@ -161,19 +182,20 @@ class PasswordManagement
     /**
      * Send the registration email to a new survey administrator
      *
-     * @param string $type   two types are available 'resetPassword' or 'registration', default is 'registration'
+     * @param string $type                two types are available 'resetPassword' or 'registration', default is 'registration'
+     * @param User   $currentLoggedInUser Current Logged In User which sends the email.
+     * @return LimeMailer if send is successful
      *
-     * @return \LimeMailer if send is successful
-     *
-     * @throws \PHPMailer\PHPMailer\Exception
+     * @throws Exception
+     * @throws \CException
      */
-    private function sendAdminMail($type = self::EMAIL_TYPE_REGISTRATION): \LimeMailer
+    private function sendAdminMail(string $type = self::EMAIL_TYPE_REGISTRATION, User $currentLoggedInUser): LimeMailer
     {
-        $absolutUrl = \Yii::app()->getController()->createAbsoluteUrl("/admin");
+        $absolutUrl = $this->controller->createAbsoluteUrl("/admin");
 
         switch ($type) {
             case self::EMAIL_TYPE_RESET_PW:
-                $passwordResetUrl = \Yii::app()->getController()->createAbsoluteUrl('admin/authentication/sa/newPassword/param/' . $this->user->validation_key);
+                $passwordResetUrl = $this->controller->createAbsoluteUrl('admin/authentication/sa/newPassword/param/' . $this->user->validation_key);
                 $renderArray = [
                     'surveyapplicationname' => \Yii::app()->getConfig("sitename"),
                     'emailMessage' => sprintf(gT("Hello %s,"), $this->user->full_name) . "<br />"
@@ -188,25 +210,30 @@ class PasswordManagement
                     'showPassword' => (\Yii::app()->getConfig("display_user_password_in_email") === true),
                 ];
                 $subject = "[" . \Yii::app()->getConfig("sitename") . "] " . gT("Your login credentials have been reset");
-                $body = \Yii::app()->getController()->renderPartial('partial/usernotificationemail', $renderArray, true);
+                $body = $this->controller->renderPartial('partial/usernotificationemail', $renderArray, true);
                 break;
             case self::EMAIL_TYPE_REGISTRATION:
             default:
                 //Get email template from globalSettings
-                $aAdminEmail = $this->generateAdminCreationEmail();
+                $siteName      = \Yii::app()->getConfig("sitename");
+                $adminEmail    = \Yii::app()->getConfig("siteadminemail");
+                $emailSubject  = \Yii::app()->getConfig("admincreationemailsubject");
+                $emailTemplate = \Yii::app()->getConfig("admincreationemailtemplate");
+
+                $aAdminEmail = $this->generateAdminCreationEmail($siteName, $adminEmail, $emailSubject, $emailTemplate);
+
                 $subject = $aAdminEmail["subject"];
-                $body = $aAdminEmail["body"];
+                $body    = $aAdminEmail["body"];
                 break;
         }
 
         $emailType = "addadminuser";
 
-        $oCurrentlyLoggedInUser = \User::model()->findByPk(\Yii::app()->user->id);
-
-        $mailer = new \LimeMailer();
-        $mailer->addAddress($this->user->email, $this->user->full_name);
+        $mailer = new LimeMailer();
+        $toUser = $this->user;
+        $mailer->addAddress($toUser->email, $toUser->full_name);
         $mailer->Subject = $subject;
-        $mailer->setFrom($oCurrentlyLoggedInUser->email, $oCurrentlyLoggedInUser->users_name);
+        $mailer->setFrom($currentLoggedInUser->email, $currentLoggedInUser->users_name);
         $mailer->Body = $body;
         $mailer->isHtml(true);
         $mailer->emailType = $emailType;
