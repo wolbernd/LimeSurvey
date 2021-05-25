@@ -1,9 +1,32 @@
 <?php
 
+namespace LimeSurvey\Controllers;
+
 //LSYii_Controller
+use CDbCriteria;
+use CException;
+use CHttpException;
+use LimeSurvey\Models\Services\PasswordManagement;
+use LimeSurvey\PluginManager\AuthPluginBase;
+use LimeSurvey\PluginManager\PluginEvent;
+use LSBaseController;
+use Permission;
+use Permissiontemplates;
+use PHPMailer\PHPMailer\Exception;
+use SettingsUser;
+use Survey;
+use Template;
+use User;
+use UserGroup;
+use UserInGroup;
+use UserParser;
+
 class UserManagementController extends LSBaseController
 {
 
+    /**
+     * @return array
+     */
     public function accessRules()
     {
         return array(
@@ -91,7 +114,7 @@ class UserManagementController extends LSBaseController
             );
         }
         $oUser = $userid === null ? new User() : User::model()->findByPk($userid);
-        $randomPassword = \LimeSurvey\Models\Services\PasswordManagement::getRandomPassword();
+        $randomPassword = PasswordManagement::getRandomPassword();
         return $this->renderPartial('partial/addedituser', ['oUser' => $oUser, 'randomPassword' => $randomPassword]);
     }
 
@@ -100,7 +123,7 @@ class UserManagementController extends LSBaseController
      *
      * @return string | JSON
      * @throws CException
-     * @throws \PHPMailer\PHPMailer\Exception
+     * @throws Exception
      */
     public function actionApplyEdit()
     {
@@ -158,20 +181,18 @@ class UserManagementController extends LSBaseController
                 ]
             ]);
         } else {
-
             //generate random password when password is empty
             if (empty($aUser['password'])) {
-                $newPassword = \LimeSurvey\Models\Services\PasswordManagement::getRandomPassword();
+                $newPassword = PasswordManagement::getRandomPassword();
                 $aUser['password'] =  $newPassword;
             }
-            
             //retrive the raw password
             $aUser['rawPassword'] = $aUser['password'];
 
             $passwordSetByUser = Yii::app()->request->getParam('preset_password');
-            if($passwordSetByUser == 0){ //in this case admin has not set a password, email with link will be sent
+            if ($passwordSetByUser == 0) { //in this case admin has not set a password, email with link will be sent
                 $data = $this->createAdminUser($aUser);
-            }else{ //in this case admin has set a password, no email will be send ...just create user with given credentials
+            } else { //in this case admin has set a password, no email will be send ...just create user with given credentials
                 $data = $this->createAdminUser($aUser, false);
             }
 
@@ -187,7 +208,7 @@ class UserManagementController extends LSBaseController
      * @return string
      * @throws CException
      */
-    public function actionAddDummyUser()
+    public function actionAddDummyUser(): string
     {
         return $this->renderPartial('partial/adddummyuser', []);
     }
@@ -234,7 +255,6 @@ class UserManagementController extends LSBaseController
             'html' => $this->renderPartial('partial/createdrandoms', ['randomUsers' => $randomUsers, 'filename' => $prefix], true),
         ]]);
     }
-
 
     /**
      * Deletes a user after  confirmation
@@ -340,7 +360,7 @@ class UserManagementController extends LSBaseController
      * @return string
      * @throws CException
      */
-    public function actionViewUser($userid)
+    public function actionViewUser(int $userid): string
     {
         if (!Permission::model()->hasGlobalPermission('users', 'read')) {
             return $this->renderPartial(
@@ -363,7 +383,7 @@ class UserManagementController extends LSBaseController
      * @return string
      * @throws CException
      */
-    public function actionUserPermissions()
+    public function actionUserPermissions(): string
     {
         if (!Permission::model()->hasGlobalPermission('users', 'update')) {
             return $this->renderPartial(
@@ -450,7 +470,7 @@ class UserManagementController extends LSBaseController
      * @return string
      * @throws CException
      */
-    public function actionUserTemplatePermissions()
+    public function actionUserTemplatePermissions(): string
     {
         if (!Permission::model()->hasGlobalPermission('users', 'update')) {
             return $this->renderPartial(
@@ -516,7 +536,7 @@ class UserManagementController extends LSBaseController
      * @return string
      * @throws CException
      */
-    public function actionAddRole()
+    public function actionAddRole(): string
     {
         $userId = Yii::app()->request->getParam('userid');
         $oUser = User::model()->findByPk($userId);
@@ -548,7 +568,7 @@ class UserManagementController extends LSBaseController
      * @return string
      * @throws CException
      */
-    public function actionSaveRole()
+    public function actionSaveRole(): string
     {
         if (!Permission::model()->hasGlobalPermission('users', 'update')) {
             return $this->renderPartial(
@@ -585,7 +605,7 @@ class UserManagementController extends LSBaseController
      * @return string
      * @throws CException
      */
-    public function actionRenderUserImport(string $importFormat = 'csv')
+    public function actionRenderUserImport(string $importFormat = 'csv'): string
     {
         if (!Permission::model()->hasGlobalPermission('users', 'create')) {
             return $this->renderPartial(
@@ -616,7 +636,7 @@ class UserManagementController extends LSBaseController
      * @return string
      * @throws CException
      */
-    public function actionImportUsers(string $importFormat = 'csv')
+    public function actionImportUsers(string $importFormat = 'csv'): string
     {
         if (!Permission::model()->hasGlobalPermission('users', 'create')) {
             return $this->renderPartial(
@@ -666,7 +686,7 @@ class UserManagementController extends LSBaseController
                     }
                 }
             } else {
-                $password = \LimeSurvey\Models\Services\PasswordManagement::getRandomPassword();
+                $password = PasswordManagement::getRandomPassword();
                 $passwordText = $password;
                 if ($aNewUser['password'] != ' ') {
                     $password = password_hash($aNewUser['password'], PASSWORD_DEFAULT);
@@ -694,7 +714,6 @@ class UserManagementController extends LSBaseController
         Yii::app()->setFlashMessage(gT("Users imported successfully."), 'success');
         $this->redirect('index');
     }
-
 
     /**
      * Export users with specific format (json or csv)
@@ -852,9 +871,9 @@ class UserManagementController extends LSBaseController
      *
      * @return String
      * @throws CException
-     * @throws \PHPMailer\PHPMailer\Exception
+     * @throws Exception
      */
-    public function actionBatchSendAndResetLoginData()
+    public function actionBatchSendAndResetLoginData(): string
     {
         if (!Permission::model()->hasGlobalPermission('users', 'update')) {
             return $this->renderPartial(
@@ -878,8 +897,8 @@ class UserManagementController extends LSBaseController
                 if ($oUser->uid == 1) {
                     $aResults[$user]['error'] = gT("Error! You do not have the permission to edit this user.");
                 } else {
-                    $passwordManagement = new \LimeSurvey\Models\Services\PasswordManagement($oUser);
-                    $successData = $passwordManagement->sendPasswordLinkViaEmail(\LimeSurvey\Models\Services\PasswordManagement::EMAIL_TYPE_RESET_PW);
+                    $passwordManagement = new PasswordManagement($oUser, $this);
+                    $successData = $passwordManagement->sendPasswordLinkViaEmail(PasswordManagement::EMAIL_TYPE_RESET_PW);
                     $success = $successData['success'];
                     $aResults[$user]['result'] = $success;
                 }
@@ -904,7 +923,7 @@ class UserManagementController extends LSBaseController
      * @return string
      * @throws CException
      */
-    public function actionBatchPermissions()
+    public function actionBatchPermissions(): string
     {
         if (!Permission::model()->hasGlobalPermission('users', 'update')) {
             return $this->renderPartial(
@@ -952,7 +971,7 @@ class UserManagementController extends LSBaseController
      * @throws CException
      * @throws CHttpException
      */
-    public function actionBatchAddGroup()
+    public function actionBatchAddGroup(): string
     {
         if (!Permission::model()->hasGlobalPermission('users', 'update')) {
             return $this->renderPartial(
@@ -1006,7 +1025,7 @@ class UserManagementController extends LSBaseController
      * @return string
      * @throws CException
      */
-    public function actionBatchApplyRoles()
+    public function actionBatchApplyRoles(): string
     {
         if (!Permission::model()->hasGlobalPermission('users', 'update')) {
             return $this->renderPartial(
@@ -1074,7 +1093,7 @@ class UserManagementController extends LSBaseController
      * @return boolean
      * @throws CException
      */
-    public function deleteUser(int $uid)
+    public function deleteUser(int $uid): bool
     {
         if (!Permission::model()->hasGlobalPermission('users', 'delete')) {
             return $this->renderPartial(
@@ -1103,7 +1122,7 @@ class UserManagementController extends LSBaseController
      * @return User|null  object
      * @throws CHttpException
      */
-    public function loadModel($id)
+    public function loadModel(int $id): ?User
     {
         $model = User::model()->findByPk($id);
 
@@ -1123,7 +1142,7 @@ class UserManagementController extends LSBaseController
      * @return object user - updated user object
      * @throws CException
      */
-    public function updateAdminUser($aUser)
+    public function updateAdminUser(array $aUser): object
     {
         $oUser = User::model()->findByPk($aUser['uid']);
         //If the user id of the post is spoofed somehow it would be possible to edit superadmin users
@@ -1151,15 +1170,15 @@ class UserManagementController extends LSBaseController
     /**
      * This method creates a new admin user and returns success or error message
      *
-     * @param array $aUser array with attributes from user model
+     * @param array   $aUser     array with attributes from user model
      * @param boolean $sendEmail true if email should be send, false otherwise
      *
      * @return array
      *
      * @throws CException
-     * @throws \PHPMailer\PHPMailer\Exception
+     * @throws Exception
      */
-    private function createAdminUser($aUser, $sendEmail=true)
+    private function createAdminUser(array $aUser, bool $sendEmail = true): array
     {
         if (!isset($aUser['uid']) || $aUser['uid'] == null) {
             $newUser = $this->createNewUser($aUser);
@@ -1168,8 +1187,8 @@ class UserManagementController extends LSBaseController
 
             if (Yii::app()->getConfig("sendadmincreationemail") && $sendEmail) {
                 $user = User::model()->findByPk($newUser['uid']);
-                $passwordManagement = new \LimeSurvey\Models\Services\PasswordManagement($user);
-                $successData = $passwordManagement->sendPasswordLinkViaEmail(\LimeSurvey\Models\Services\PasswordManagement::EMAIL_TYPE_REGISTRATION);
+                $passwordManagement = new PasswordManagement($user, $this);
+                $successData = $passwordManagement->sendPasswordLinkViaEmail(PasswordManagement::EMAIL_TYPE_REGISTRATION);
 
                 $sReturnMessage = $successData['sReturnMessage'];
                 $success = $successData['success'];
@@ -1204,7 +1223,7 @@ class UserManagementController extends LSBaseController
      * @return array returns all attributes from model user as an array
      * @throws CException
      */
-    public function createNewUser($aUser)
+    public function createNewUser(array $aUser): array
     {
         if (!Permission::model()->hasGlobalPermission('users', 'create')) {
             return Yii::app()->getController()->renderPartial('/admin/super/_renderJson', [
@@ -1269,7 +1288,7 @@ class UserManagementController extends LSBaseController
      *
      * @return string $errorDiv
      */
-    private function renderErrors($errors)
+    private function renderErrors(array $errors): string
     {
         $errorDiv = '<ul class="list-unstyled">';
         foreach ($errors as $key => $error) {
@@ -1289,7 +1308,7 @@ class UserManagementController extends LSBaseController
      * @param string $prefix the prefix to be used
      * @return string
      */
-    protected function getRandomUsername($prefix)
+    protected function getRandomUsername(string $prefix): string
     {
         do {
             $rand = $this->getRandomString();
@@ -1306,7 +1325,7 @@ class UserManagementController extends LSBaseController
      *
      * @return string
      */
-    protected function getRandomString()
+    protected function getRandomString(): string
     {
         if (is_callable('openssl_random_pseudo_bytes')) {
             $uiq = openssl_random_pseudo_bytes(128);
@@ -1326,7 +1345,7 @@ class UserManagementController extends LSBaseController
      * @param array $aPermissionArray
      * @return array
      */
-    protected function applyPermissionFromArray($iUserId, $aPermissionArray)
+    protected function applyPermissionFromArray(int $iUserId, array $aPermissionArray): array
     {
         //Delete all current Permissions
         $oCriteria = new CDbCriteria();
