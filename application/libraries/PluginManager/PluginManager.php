@@ -247,7 +247,7 @@ class PluginManager extends \CApplicationComponent
      *
      * @return PluginEvent
      */
-    public function dispatchEvent(PluginEvent $event, $target = array())
+    public function dispatchEvent(PluginEvent $event, $target = array()): PluginEvent
     {
         $eventName = $event->getEventName();
         if (is_string($target)) {
