@@ -18,7 +18,7 @@ class PasswordManagement extends TestBaseClass
     /**
      * Set Up.
      */
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUpBeforeClass();
 
@@ -33,7 +33,7 @@ class PasswordManagement extends TestBaseClass
     /**
      * Tear Down.
      */
-    public function tearDown()
+    public function tearDown(): void
     {
         $this->service->__destruct();
 
