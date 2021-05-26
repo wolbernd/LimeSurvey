@@ -22,6 +22,8 @@ class PasswordManagement extends TestBaseClass
     {
         parent::setUpBeforeClass();
 
+        $_SERVER['SERVER_NAME'] = 'PasswordManagementTestServer';
+
         $controller = new Controller(1, null);
         $user = new User();
         $user->setValidationKey();
@@ -97,6 +99,7 @@ class PasswordManagement extends TestBaseClass
      */
     public function sendForgotPasswordLinkFailure()
     {
+        $this->service->sendForgotPasswordEmailLink();
         $this->markTestIncomplete('This test is incomplete.');
     }
 
@@ -126,26 +129,6 @@ class PasswordManagement extends TestBaseClass
         $actual = $this->service::getRandomPassword($expectedMinimumSize);
 
         $this->assertNotEquals($expected, $actual);
-    }
-
-    /**
-     * Checks if the send admin mail works fine.
-     * @test
-     * @covers \LimeSurvey\Models\Services\PasswordManagement::sendAdminMail
-     */
-    public function sendAdminMailSuccess()
-    {
-        $this->markTestIncomplete('This test is incomplete.');
-    }
-
-    /**
-     * Checks if the send admin mail will fail.
-     * @test
-     * @covers \LimeSurvey\Models\Services\PasswordManagement::sendAdminMail
-     */
-    public function sendAdminMailFailure()
-    {
-        $this->markTestIncomplete('This test is incomplete.');
     }
 
     /**
