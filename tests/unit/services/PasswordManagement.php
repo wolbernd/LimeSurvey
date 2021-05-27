@@ -2,9 +2,11 @@
 
 namespace ls\tests\services;
 
+use LimeSurvey\Core\LimeMailer as Mailer;
 use ls\tests\TestBaseClass;
 use LimeSurvey\Models\Services\PasswordManagement as Service;
 use LimeSurvey\Controllers\UserManagementController as Controller;
+use PHPMailer\PHPMailer\Exception;
 use User as User;
 
 /**
@@ -22,6 +24,7 @@ class PasswordManagement extends TestBaseClass
     {
         parent::setUpBeforeClass();
 
+        // Needs to be set - otherwise tests do not work correctly.
         $_SERVER['SERVER_NAME'] = 'PasswordManagementTestServer';
 
         $controller = new Controller(1, null);
@@ -85,10 +88,24 @@ class PasswordManagement extends TestBaseClass
      * will be successful.
      * @test
      * @covers \LimeSurvey\Models\Services\PasswordManagement::sendForgotPasswordEmailLink
+     * @throws Exception
      */
     public function sendForgotPasswordLinkSuccess()
     {
-        $this->markTestIncomplete('This test is incomplete.');
+        $user = new User();
+        $user->users_name = 'User Forgot Password 01';
+        $user->full_name = 'User 01';
+        $user->setEmail('sendforgotpassword@example.com');
+        $expected = 'If the username and email address is valid and you are allowed to use the internal database authentication a new password has been sent to you.';
+
+        // Mock the Mailer Class.
+        $mailer = $this->createMock(Mailer::class);
+        $mailer->expects($this->once())->method('sendMessage')->with($this->equalTo(true));
+
+        $this->service->setMailer($mailer);
+
+        $actual = $this->service->sendForgotPasswordEmailLink($user);
+        $this->assertEquals($expected, $actual);
     }
 
     /**
@@ -96,11 +113,17 @@ class PasswordManagement extends TestBaseClass
      * will be failing.
      * @test
      * @covers \LimeSurvey\Models\Services\PasswordManagement::sendForgotPasswordEmailLink
+     * @throws Exception
      */
     public function sendForgotPasswordLinkFailure()
     {
-        $this->service->sendForgotPasswordEmailLink();
-        $this->markTestIncomplete('This test is incomplete.');
+        $user = new User();
+        $user->users_name = 'User Forgot Password 02';
+        $user->full_name = 'User 01';
+        $user->setEmail('sendforgotpassword@example.com');
+        $expected = 'Email failed';
+        $actual = $this->service->sendForgotPasswordEmailLink($user);
+        $this->assertEquals($expected, $actual);
     }
 
     /**

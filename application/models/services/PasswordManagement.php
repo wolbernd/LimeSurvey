@@ -2,8 +2,9 @@
 
 namespace LimeSurvey\Models\Services;
 
-use LimeMailer;
+use CException;
 use LimeSurvey\Controllers\UserManagementController as Controller;
+use LimeSurvey\Core\LimeMailer;
 use PHPMailer\PHPMailer\Exception;
 use PluginEvent as PluginEvent;
 use User as User;
@@ -28,21 +29,24 @@ class PasswordManagement
     private Controller $controller;
 
     /**
-     * PasswordManagement constructor.
-     * @param $user       User
-     * @param $controller Controller
+     * @var LimeMailer $mailer
      */
-    public function __construct(User $user, Controller $controller)
+    private LimeMailer $mailer;
+
+    /**
+     * PasswordManagement constructor.
+     * @param User $user
+     * @param Controller $controller
+     * @param LimeMailer|null $mailer
+     */
+    public function __construct(User $user, Controller $controller, LimeMailer $mailer = null)
     {
         $this->user = $user;
         $this->controller = $controller;
-    }
 
-    /**
-     * Destructor.
-     */
-    public function __destruct()
-    {
+        if ($mailer !== null) {
+            $this->mailer = $mailer;
+        }
     }
 
     /**
@@ -87,7 +91,7 @@ class PasswordManagement
      * @return array message if sending email to user was successful
      *
      * @throws Exception
-     * @throws \CException
+     * @throws CException
      */
     public function sendPasswordLinkViaEmail(string $emailType, User $currentLoggedInUser): array
     {
@@ -95,7 +99,7 @@ class PasswordManagement
         $this->user->setValidationKey();
         $this->user->setValidationExpiration();
 
-        $mailer = $this->sendAdminMail($emailType, $currentLoggedInUser);
+        $mailer = $this->sendAdminMail($currentLoggedInUser, $emailType);
 
         if ($mailer->getError()) {
             $sReturnMessage = \CHtml::tag("h4", array(), gT("Error"));
@@ -126,22 +130,24 @@ class PasswordManagement
     /**
      * Send a link to email of the user to set a new password (forgot password functionality)
      *
+     * @param User $userToSend
      * @return string message for user
+     * @throws Exception
      * @throws \Exception
      */
-    public function sendForgotPasswordEmailLink(): string
+    public function sendForgotPasswordEmailLink(User $userToSend): string
     {
-        $mailer = new LimeMailer();
+        $mailer = $this->mailer;
         $mailer->emailType = 'passwordreminderadminuser';
-        $mailer->addAddress($this->user->email, $this->user->full_name);
+        $mailer->addAddress($userToSend->email, $userToSend->full_name);
         $mailer->Subject = gT('User data');
 
         /* Body construct */
-        $this->user->setValidationKey();
-        $this->user->setValidationExpiration();
-        $username = sprintf(gT('Username: %s'), $this->user->users_name);
+        $userToSend->setValidationKey();
+        $userToSend->setValidationExpiration();
+        $username = sprintf(gT('Username: %s'), $userToSend->users_name);
 
-        $linkToResetPage = \Yii::app()->getController()->createAbsoluteUrl('admin/authentication/sa/newPassword/param/' . $this->user->validation_key);
+        $linkToResetPage = $this->controller->createAbsoluteUrl('admin/authentication/sa/newPassword/param/' . $userToSend->validation_key);
         $linkText = gT("Click here to set your password: ") . $linkToResetPage;
 
         $body   = array();
@@ -152,7 +158,8 @@ class PasswordManagement
 
         $mailer->Body = $body;
         /* Go to send email and set password*/
-        if ($mailer->sendMessage()) {
+        $hasSend = $mailer->sendMessage();
+        if ($hasSend) {
             // For security reasons, we don't show a successful message
             $sMessage = gT('If the username and email address is valid and you are allowed to use the internal database authentication a new password has been sent to you.');
         } else {
@@ -182,14 +189,14 @@ class PasswordManagement
     /**
      * Send the registration email to a new survey administrator
      *
-     * @param string $type                two types are available 'resetPassword' or 'registration', default is 'registration'
-     * @param User   $currentLoggedInUser Current Logged In User which sends the email.
+     * @param User $currentLoggedInUser Current Logged In User which sends the email.
+     * @param string $type two types are available 'resetPassword' or 'registration', default is 'registration'
      * @return LimeMailer if send is successful
      *
-     * @throws Exception
-     * @throws \CException
+     * @throws Exception \CException
+     * @throws CException
      */
-    private function sendAdminMail(string $type = self::EMAIL_TYPE_REGISTRATION, User $currentLoggedInUser): LimeMailer
+    private function sendAdminMail(User $currentLoggedInUser, string $type = self::EMAIL_TYPE_REGISTRATION): LimeMailer
     {
         $absolutUrl = $this->controller->createAbsoluteUrl("/admin");
 
@@ -229,7 +236,7 @@ class PasswordManagement
 
         $emailType = "addadminuser";
 
-        $mailer = new LimeMailer();
+        $mailer = $this->mailer;
         $toUser = $this->user;
         $mailer->addAddress($toUser->email, $toUser->full_name);
         $mailer->Subject = $subject;
@@ -239,5 +246,22 @@ class PasswordManagement
         $mailer->emailType = $emailType;
         $mailer->sendMessage();
         return $mailer;
+    }
+
+    /**
+     * Setter for Mailer
+     */
+    public function setMailer(LimeMailer $mailer)
+    {
+        $this->mailer = $mailer;
+    }
+
+    /**
+     * Getter for Mailer
+     * @return LimeMailer
+     */
+    public function getMailer(): LimeMailer
+    {
+        return $this->mailer;
     }
 }
