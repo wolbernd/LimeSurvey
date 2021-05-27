@@ -28,7 +28,8 @@
 			"LimeSurvey\\Helpers\\": "application/helpers",
 			"LimeSurvey\\Models\\Services\\": "application/models/services",
 			"LimeSurvey\\Datavalueobjects\\": "application/datavalueobjects",
-            "LimeSurvey\\Controllers\\": "application/controllers"
+            "LimeSurvey\\Controllers\\": "application/controllers",
+			"LimeSurvey\\Core\\": "application/core"
 		}
 	},
 	"require": {
