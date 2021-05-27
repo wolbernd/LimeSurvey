@@ -1,5 +1,17 @@
 <?php
 
+namespace LimeSurvey\Core;
+
+use CHtml;
+use idna_convert;
+use LimeExpressionManager;
+use LimeSurvey\PluginManager\PluginEvent;
+use LSActiveRecord;
+use Permission;
+use PHPMailer\PHPMailer\Exception;
+use Survey;
+use SurveyLanguageSetting;
+
 require_once(APPPATH . '/third_party/phpmailer/load_phpmailer.php');
 
 /**
@@ -125,33 +137,33 @@ class LimeMailer extends \PHPMailer\PHPMailer\PHPMailer
     {
         parent::__construct($exceptions);
         /* Global configuration for ALL email of this LimeSurvey instance */
-        $emailmethod = Yii::app()->getConfig('emailmethod');
-        $emailsmtphost = Yii::app()->getConfig("emailsmtphost");
-        $emailsmtpuser = Yii::app()->getConfig("emailsmtpuser");
-        $emailsmtppassword = LSActiveRecord::decryptSingle(Yii::app()->getConfig("emailsmtppassword"));
-        $emailsmtpdebug = Yii::app()->getConfig("emailsmtpdebug");
-        $emailsmtpssl = Yii::app()->getConfig("emailsmtpssl");
-        $defaultlang = Yii::app()->getConfig("defaultlang");
-        $emailcharset = Yii::app()->getConfig("emailcharset");
+        $emailmethod = \Yii::app()->getConfig('emailmethod');
+        $emailsmtphost = \Yii::app()->getConfig("emailsmtphost");
+        $emailsmtpuser = \Yii::app()->getConfig("emailsmtpuser");
+        $emailsmtppassword = LSActiveRecord::decryptSingle(\Yii::app()->getConfig("emailsmtppassword"));
+        $emailsmtpdebug = \Yii::app()->getConfig("emailsmtpdebug");
+        $emailsmtpssl = \Yii::app()->getConfig("emailsmtpssl");
+        $defaultlang = \Yii::app()->getConfig("defaultlang");
+        $emailcharset = \Yii::app()->getConfig("emailcharset");
 
         /* Set language for errors */
-        if (!$this->SetLanguage(Yii::app()->getConfig("defaultlang"), APPPATH . '/third_party/phpmailer/language/')) {
+        if (!$this->SetLanguage(\Yii::app()->getConfig("defaultlang"), APPPATH . '/third_party/phpmailer/language/')) {
             $this->SetLanguage('en', APPPATH . '/third_party/phpmailer/language/');
         }
         /* Default language to current one */
-        $this->mailLanguage = Yii::app()->getLanguage();
+        $this->mailLanguage = \Yii::app()->getLanguage();
 
-        $this->SMTPDebug = Yii::app()->getConfig("emailsmtpdebug");
+        $this->SMTPDebug = \Yii::app()->getConfig("emailsmtpdebug");
         $this->Debugoutput = function ($str, $level) {
             $this->addDebug($str);
         };
 
-        if (Yii::app()->getConfig('demoMode')) {
+        if (\Yii::app()->getConfig('demoMode')) {
             /* in demo mode no need to do something else */
             return;
         }
 
-        $this->CharSet = Yii::app()->getConfig("emailcharset");
+        $this->CharSet = \Yii::app()->getConfig("emailcharset");
 
         /* Don't check tls by default : allow own sign certificate */
         $this->SMTPAutoTLS = false;
@@ -190,9 +202,9 @@ class LimeMailer extends \PHPMailer\PHPMailer\PHPMailer
         }
         $this->init();
         /* set default from return path and event , didn't reset when getInstance */
-        $this->setFrom(Yii::app()->getConfig('siteadminemail'), Yii::app()->getConfig('siteadminname'));
-        if (!empty(Yii::app()->getConfig('siteadminbounce'))) {
-            $this->Sender = Yii::app()->getConfig('siteadminbounce');
+        $this->setFrom(\Yii::app()->getConfig('siteadminemail'), \Yii::app()->getConfig('siteadminname'));
+        if (!empty(\Yii::app()->getConfig('siteadminbounce'))) {
+            $this->Sender = \Yii::app()->getConfig('siteadminbounce');
         }
         $this->eventName = 'beforeEmail';
     }
@@ -216,7 +228,7 @@ class LimeMailer extends \PHPMailer\PHPMailer\PHPMailer
         $this->AltBody = "";
         $this->MIMEBody = "";
         $this->MIMEHeader = "";
-        $this->addCustomHeader("X-Surveymailer", Yii::app()->getConfig("sitename") . " Emailer (LimeSurvey.org)");
+        $this->addCustomHeader("X-Surveymailer", \Yii::app()->getConfig("sitename") . " Emailer (LimeSurvey.org)");
     }
 
     /**
@@ -288,6 +300,7 @@ class LimeMailer extends \PHPMailer\PHPMailer\PHPMailer
      * @param string $token
      * @return void
      * @throw CException
+     * @throws \CException
      */
     public function setToken($token)
     {
@@ -317,6 +330,7 @@ class LimeMailer extends \PHPMailer\PHPMailer\PHPMailer
      * See if must throw error without
      * @param string|null $emailType : set the rawSubject and rawBody at same time
      * @param string|null $language forced language
+     * @throws \CException
      */
     public function setTypeWithRaw($emailType, $language = null)
     {
@@ -554,11 +568,11 @@ class LimeMailer extends \PHPMailer\PHPMailer\PHPMailer
     /**
      * Construct and do what must be done before sending a message
      * @return boolean
-     * @throws \PHPMailer\PHPMailer\Exception
+     * @throws Exception
      */
     public function sendMessage(): bool
     {
-        $demoMode = Yii::app()->getConfig('demoMode');
+        $demoMode = \Yii::app()->getConfig('demoMode');
         if ($demoMode) {
             $this->setError(gT('Email was not sent because demo-mode is activated.'));
             return false;
@@ -601,7 +615,7 @@ class LimeMailer extends \PHPMailer\PHPMailer\PHPMailer
      */
     public function Send()
     {
-        if (Yii::app()->getConfig('demoMode')) {
+        if (\Yii::app()->getConfig('demoMode')) {
             $this->setError(gT('Email was not sent because demo-mode is activated.'));
             return false;
         }
@@ -618,7 +632,7 @@ class LimeMailer extends \PHPMailer\PHPMailer\PHPMailer
         if (empty($this->oToken)) { // Did need to check if sent to token ?
             return $aTokenReplacements;
         }
-        $language = Yii::app()->getLanguage();
+        $language = \Yii::app()->getLanguage();
         if (!in_array($language, Survey::model()->findByPk($this->surveyId)->getAllLanguages())) {
             $language = Survey::model()->findByPk($this->surveyId)->language;
         }
@@ -721,17 +735,17 @@ class LimeMailer extends \PHPMailer\PHPMailer\PHPMailer
 
     private function attachementExists($aAttachment)
     {
-        $throwError = (Yii::app()->getConfig('debug') && Permission::model()->hasSurveyPermission($this->surveyId, 'surveylocale', 'update'));
+        $throwError = (\Yii::app()->getConfig('debug') && Permission::model()->hasSurveyPermission($this->surveyId, 'surveylocale', 'update'));
 
-        $isInSurvey = Yii::app()->is_file(
+        $isInSurvey = \Yii::app()->is_file(
             $aAttachment['url'],
-            Yii::app()->getConfig('uploaddir') . DIRECTORY_SEPARATOR . "surveys" . DIRECTORY_SEPARATOR . $this->surveyId,
+            \Yii::app()->getConfig('uploaddir') . DIRECTORY_SEPARATOR . "surveys" . DIRECTORY_SEPARATOR . $this->surveyId,
             false
         );
 
-        $isInGlobal = Yii::app()->is_file(
+        $isInGlobal = \Yii::app()->is_file(
             $aAttachment['url'],
-            Yii::app()->getConfig('uploaddir') . DIRECTORY_SEPARATOR . "global",
+            \Yii::app()->getConfig('uploaddir') . DIRECTORY_SEPARATOR . "global",
             false
         );
 
