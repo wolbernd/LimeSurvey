@@ -6,7 +6,7 @@
     'aliases' => 
     array (
     ),
-    'reference' => 'c467dadabf3057826cb6c3a0171e5d3601a1cfc5',
+    'reference' => 'b2ef4ab6c8209c3bb067bd269c091ded491b4560',
     'name' => 'limesurvey/limesurvey',
   ),
   'versions' => 
@@ -106,7 +106,7 @@
       'aliases' => 
       array (
       ),
-      'reference' => 'c467dadabf3057826cb6c3a0171e5d3601a1cfc5',
+      'reference' => 'b2ef4ab6c8209c3bb067bd269c091ded491b4560',
     ),
     'misantron/dbunit' => 
     array (
