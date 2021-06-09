@@ -1,11 +1,16 @@
 <?php
 
+/**
+ * Class LSSodium
+ */
 class LSSodium
 {
     public $bLibraryExists = false;
     protected $sEncryptionKeypair = null;
     protected $sEncryptionPublicKey = null;
     protected $sEncryptionSecretKey = null;
+    protected $sEncryptionNonce = null;
+    protected $sEncryptionSecretBoxKey = null;
 
     public function init()
     {
@@ -25,7 +30,7 @@ class LSSodium
 
     /**
      * Check if Sodium library is installed
-     * @return bool
+     * @return void
      */
     public function checkIfLibraryExists()
     {
@@ -36,72 +41,101 @@ class LSSodium
 
     /**
      *
-     * Check if encryption key exists in configuration
-     * @return bool Return decrypted value (string or unsezialized object) if suceeded. Return FALSE if an error occurs (bad password/salt given) or inpyt encryptedString
+     * Check if encryption key and nonce exist in configuration and generate it if missing
+     * @return void
+     * @throws SodiumException
      */
     protected function checkIfKeyExists()
     {
-        if (empty(Yii::app()->getConfig('encryptionkeypair'))) {
-            $this->generateEncryptionKeys(); //return false;
+        if (empty(App()->getConfig('encryptionsecretboxkey')) && empty(App()->getConfig('encryptionnonce'))) {
+            $this->generateEncryptionKeys();
         }
-        if ($this->sEncryptionKeypair === null) {
-            $this->sEncryptionKeypair = $this->getEncryptionKey();
+//        if (empty(Yii::app()->getConfig('encryptionkeypair'))) {
+//            $this->generateEncryptionKeys(); //return false;
+//        }
+//        if ($this->sEncryptionKeypair === null) {
+//            $this->sEncryptionKeypair = $this->getEncryptionKey();
+//        }
+//        if ($this->sEncryptionPublicKey === null) {
+//            $this->sEncryptionPublicKey = $this->getEncryptionPublicKey();
+//        }
+//        if ($this->sEncryptionSecretKey === null) {
+//            $this->sEncryptionSecretKey = $this->getEncryptionSecretKey();
+//        }
+        if ($this->sEncryptionNonce === null) {
+            $this->sEncryptionNonce = $this->getEncryptionNonce();
         }
-        if ($this->sEncryptionPublicKey === null) {
-            $this->sEncryptionPublicKey = $this->getEncryptionPublicKey();
-        }
-        if ($this->sEncryptionSecretKey === null) {
-            $this->sEncryptionSecretKey = $this->getEncryptionSecretKey();
+        if ($this->sEncryptionSecretBoxKey === null) {
+            $this->sEncryptionSecretBoxKey = $this->getEncryptionSecretBoxKey();
         }
     }
 
+//    /**
+//     *
+//     * Get encryption key from version.php config file
+//     * @return string Return encryption key string
+//     */
+//    protected function getEncryptionKey()
+//    {
+//        return ParagonIE_Sodium_Compat::hex2bin(Yii::app()->getConfig('encryptionkeypair'));
+//    }
+//
+//    /**
+//     *
+//     * Get encryption key from version.php config file
+//     * @return string Return encryption key string
+//     */
+//    protected function getEncryptionPublicKey()
+//    {
+//        return ParagonIE_Sodium_Compat::hex2bin(Yii::app()->getConfig('encryptionpublickey'));
+//    }
+//
+//    /**
+//     *
+//     * Get encryption key from version.php config file
+//     * @return string Return encryption key string
+//     */
+//    protected function getEncryptionSecretKey()
+//    {
+//        return ParagonIE_Sodium_Compat::hex2bin(Yii::app()->getConfig('encryptionsecretkey'));
+//    }
+
     /**
-     *
-     * Get encryption key from version.php config file
-     * @return string Return encryption key string
+     * @return string
+     * @throws SodiumException
      */
-    protected function getEncryptionKey()
+    protected function getEncryptionNonce()
     {
-        return ParagonIE_Sodium_Compat::hex2bin(Yii::app()->getConfig('encryptionkeypair'));
+        return sodium_hex2bin(Yii::app()->getConfig('encryptionnonce'));
     }
 
     /**
-     *
-     * Get encryption key from version.php config file
-     * @return string Return encryption key string
+     * @return string
+     * @throws SodiumException
      */
-    protected function getEncryptionPublicKey()
+    protected function getEncryptionSecretBoxKey()
     {
-        return ParagonIE_Sodium_Compat::hex2bin(Yii::app()->getConfig('encryptionpublickey'));
-    }
-
-    /**
-     *
-     * Get encryption key from version.php config file
-     * @return string Return encryption key string
-     */
-    protected function getEncryptionSecretKey()
-    {
-        return ParagonIE_Sodium_Compat::hex2bin(Yii::app()->getConfig('encryptionsecretkey'));
+        return sodium_hex2bin(Yii::app()->getConfig('encryptionsecretboxkey'));
     }
 
     /**
      * Encrypt input data using AES256 CBC encryption
-     * @param unknown_type $sDataToEncrypt Data to encrypt. Could be a string or a serializable PHP object
+     * @param string $sDataToEncrypt Data to encrypt. Could be a string or a serializable PHP object
      * @return string Return encrypted AES256 CBC value
      */
     public function encrypt($sDataToEncrypt)
     {
         if ($this->bLibraryExists === true) {
-            if (!empty($sDataToEncrypt)) {
-                $sEncrypted = base64_encode(ParagonIE_Sodium_Compat::crypto_sign((string) $sDataToEncrypt, $this->sEncryptionSecretKey));
+            if ($sDataToEncrypt) {
+                $sEncrypted = base64_encode(ParagonIE_Sodium_Compat::crypto_secretbox((string) $sDataToEncrypt, $this->sEncryptionNonce, $this->sEncryptionSecretBoxKey));
+//                $sEncrypted = base64_encode(ParagonIE_Sodium_Compat::crypto_sign((string) $sDataToEncrypt, $this->sEncryptionSecretKey));
                 return $sEncrypted;
-            } else {
-                return '';
             }
-        } else {
-            return $sDataToEncrypt;
+
+            return '';
         }
+
+        return $sDataToEncrypt;
     }
 
     /**
@@ -110,26 +144,29 @@ class LSSodium
      * @param string $sEncryptedString Encrypted string to decrypt
      * @param bool $bReturnFalseIfError false by default. If TRUE, return false in case of error (bad decryption). Else, return given $encryptedInput value
      * @return string Return decrypted value (string or unsezialized object) if suceeded. Return FALSE if an error occurs (bad password/salt given) or inpyt encryptedString
+     * @throws SodiumException
      */
-    public function decrypt($sEncryptedString, $bReturnFalseIfError = false)
+    public function decrypt($sEncryptedString, $bReturnFalseIfError = false): string
     {
         if ($this->bLibraryExists === true) {
-            if (!empty($sEncryptedString) && $sEncryptedString != 'null') {
-                $plaintext = ParagonIE_Sodium_Compat::crypto_sign_open(base64_decode($sEncryptedString), $this->sEncryptionPublicKey);
+            if (!empty($sEncryptedString) && $sEncryptedString !== 'null') {
+                $plaintext = ParagonIE_Sodium_Compat::crypto_secretbox_open(base64_decode($sEncryptedString), $this->sEncryptionNonce, $this->sEncryptionSecretBoxKey);
+//                $plaintext = ParagonIE_Sodium_Compat::crypto_sign_open(base64_decode($sEncryptedString), $this->sEncryptionPublicKey);
                 if ($plaintext === false) {
                     throw new SodiumException(sprintf(gT("Wrong decryption key! Decryption key has changed since this data were last saved, so data can't be decrypted. Please consult our manual at %s.", 'unescaped'), 'https://manual.limesurvey.org/Data_encryption#Errors'));
                 } else {
                     return $plaintext;
                 }
             }
-        } else {
-            return $sEncryptedString;
         }
+        return $sEncryptedString;
     }
 
     /**
      *
      * Write encryption key to version.php config file
+     * @throws Exception
+     * @return void
      */
     protected function generateEncryptionKeys()
     {
@@ -137,13 +174,15 @@ class LSSodium
             // Never replace an existing file
             throw new CException(500, gT("Configuration file already exist"));
         }
-        $sEncryptionKeypair   = ParagonIE_Sodium_Compat::crypto_sign_keypair();
-        $sEncryptionPublicKey = ParagonIE_Sodium_Compat::bin2hex(ParagonIE_Sodium_Compat::crypto_sign_publickey($sEncryptionKeypair));
-        $sEncryptionSecretKey = ParagonIE_Sodium_Compat::bin2hex(ParagonIE_Sodium_Compat::crypto_sign_secretkey($sEncryptionKeypair));
-        $sEncryptionKeypair   = ParagonIE_Sodium_Compat::bin2hex($sEncryptionKeypair);
+//        $sEncryptionKeypair   = ParagonIE_Sodium_Compat::crypto_sign_keypair();
+//        $sEncryptionPublicKey = ParagonIE_Sodium_Compat::bin2hex(ParagonIE_Sodium_Compat::crypto_sign_publickey($sEncryptionKeypair));
+//        $sEncryptionSecretKey = ParagonIE_Sodium_Compat::bin2hex(ParagonIE_Sodium_Compat::crypto_sign_secretkey($sEncryptionKeypair));
+//        $sEncryptionKeypair   = ParagonIE_Sodium_Compat::bin2hex($sEncryptionKeypair);
+        $sEncryptionNonce = sodium_bin2hex(random_bytes(ParagonIE_Sodium_Compat::CRYPTO_SECRETBOX_NONCEBYTES));
+        $sEncryptionSecretBoxKey = sodium_bin2hex(ParagonIE_Sodium_Compat::crypto_secretbox_keygen());
 
-        if (empty($sEncryptionKeypair)) {
-            return false;
+        if (empty($sEncryptionNonce) || empty($sEncryptionSecretBoxKey)) {
+            return;
         }
 
         $sConfig = "<?php if (!defined('BASEPATH')) exit('No direct script access allowed');" . "\n"
@@ -166,14 +205,18 @@ class LSSodium
             . "*/" . "\n"
             . "\n"
             . "\$config = array();" . "\n"
-            . "\$config['encryptionkeypair'] = '" . $sEncryptionKeypair . "';" . "\n"
-            . "\$config['encryptionpublickey'] = '" . $sEncryptionPublicKey . "';" . "\n"
-            . "\$config['encryptionsecretkey'] = '" . $sEncryptionSecretKey . "';" . "\n"
+//            . "\$config['encryptionkeypair'] = '" . $sEncryptionKeypair . "';" . "\n"
+//            . "\$config['encryptionpublickey'] = '" . $sEncryptionPublicKey . "';" . "\n"
+//            . "\$config['encryptionsecretkey'] = '" . $sEncryptionSecretKey . "';" . "\n"
+            . "\$config['encryptionnonce'] = '" . $sEncryptionNonce . "';" . "\n"
+            . "\$config['encryptionsecretboxkey'] = '" . $sEncryptionSecretBoxKey . "';" . "\n"
             . "return \$config;";
 
-        Yii::app()->setConfig("encryptionkeypair", $sEncryptionKeypair);
-        Yii::app()->setConfig("encryptionpublickey", $sEncryptionPublicKey);
-        Yii::app()->setConfig("encryptionsecretkey", $sEncryptionSecretKey);
+//        Yii::app()->setConfig("encryptionkeypair", $sEncryptionKeypair);
+//        Yii::app()->setConfig("encryptionpublickey", $sEncryptionPublicKey);
+//        Yii::app()->setConfig("encryptionsecretkey", $sEncryptionSecretKey);
+        Yii::app()->setConfig("encryptionnonce", $sEncryptionNonce);
+        Yii::app()->setConfig("encryptionsecretboxkey", $sEncryptionSecretBoxKey);
         if (is_writable(APPPATH . 'config')) {
             file_put_contents(APPPATH . 'config/security.php', $sConfig);
         } else {
