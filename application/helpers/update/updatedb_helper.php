@@ -3478,7 +3478,7 @@ function db_upgrade_all($iOldDBVersion, $bSilent = false)
                         $settings[$attribute] = 'inherit';
                     }
                     $settings['gsid'] = $group;
-                    $oDB->createCommand()->insert("{{surveys_groupsettings}}", $settings->attributes);
+                    $oDB->createCommand()->insert("{{surveys_groupsettings}}", $settings);
                 }
             }
             $oDB->createCommand()->update('{{settings_global}}', array('stg_value' => 412), "stg_name='DBVersion'");
