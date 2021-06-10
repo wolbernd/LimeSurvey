@@ -3454,11 +3454,30 @@ function db_upgrade_all($iOldDBVersion, $bSilent = false)
             $aGroups = $oDB->createCommand($sSurveyGroupQuery)->queryColumn();
             $sSurveyGroupSettingsQuery = "SELECT gsid  from {{surveys_groupsettings}} order by gsid";
             $aGroupSettings = $oDB->createCommand($sSurveyGroupSettingsQuery)->queryColumn();
+
+            // NB: Copied from SurveysGroupsettings, since we can't use models in the update db helper.
+            $optionAttributesInteger  = ['owner_id', 'tokenlength', 'questionindex', 'navigationdelay'];
+            $optionAttributesChar     = ['anonymized', 'savetimings', 'datestamp', 'usecookie', 'allowregister', 'allowsave', 'autoredirect', 'allowprev', 'printanswers',
+                        'ipaddr', 'refurl', 'publicstatistics', 'publicgraphs', 'listpublic', 'htmlemail', 'sendconfirmation', 'tokenanswerspersistence',
+                        'assessments', 'showxquestions', 'showgroupinfo', 'shownoanswer', 'showqnumcode', 'showwelcome', 'showprogress', 'nokeyboard',
+                        'alloweditaftercompletion'];
+            $optionAttributesText     = ['admin', 'adminemail', 'template', 'bounce_email', 'emailresponseto', 'emailnotificationto'];
+
             foreach ($aGroups as $group) {
                 if (!array_key_exists($group, $aGroupSettings)) {
-                    $settings = new SurveysGroupsettings();
-                    $settings->setToInherit();
-                    $settings->gsid = $group;
+                    $settings = [];
+                    $settings['usecaptcha'] = 'E';
+                    $settings['format'] = 'I';
+                    foreach ($optionAttributesInteger as $attribute) {
+                        $settings[$attribute] = -1;
+                    }
+                    foreach ($optionAttributesChar as $attribute) {
+                        $settings[$attribute] = 'I';
+                    }
+                    foreach ($optionAttributesText as $attribute) {
+                        $settings[$attribute] = 'inherit';
+                    }
+                    $settings['gsid'] = $group;
                     $oDB->createCommand()->insert("{{surveys_groupsettings}}", $settings->attributes);
                 }
             }
@@ -5231,32 +5250,30 @@ function createSurveysGroupSettingsTable(CDbConnection $oDB)
     addPrimaryKey('surveys_groupsettings', array('gsid'));
 
     // insert settings for global level
-    $settings1 = new SurveysGroupsettings();
-    $settings1->setToDefault();
-    $settings1->gsid = 0;
+    $settings1 = [];
+    $settings1['owner_id'] = 1;
+    $settings1['usecaptcha'] = 'N';
+    $settings1['format'] = 'G';
+    $settings1['admin'] = App()->getConfig('siteadminname');
+    $settings1['adminemail'] = App()->getConfig('siteadminemail');
+    $settings1['template'] = App()->getConfig('defaulttheme');
+    $settings1['gsid'] = 0;
+
     // get global settings from db
     $globalSetting1 = $oDB->createCommand()->select('stg_value')->from('{{settings_global}}')->where("stg_name=:stg_name", array('stg_name' => 'showqnumcode'))->queryRow();
     $globalSetting2 = $oDB->createCommand()->select('stg_value')->from('{{settings_global}}')->where("stg_name=:stg_name", array('stg_name' => 'showgroupinfo'))->queryRow();
     $globalSetting3 = $oDB->createCommand()->select('stg_value')->from('{{settings_global}}')->where("stg_name=:stg_name", array('stg_name' => 'shownoanswer'))->queryRow();
     $globalSetting4 = $oDB->createCommand()->select('stg_value')->from('{{settings_global}}')->where("stg_name=:stg_name", array('stg_name' => 'showxquestions'))->queryRow();
     // set db values to model
-    $settings1->showqnumcode = ($globalSetting1 === false || $globalSetting1['stg_value'] == 'choose') ? 'X' : str_replace(array('both', 'number', 'code', 'none'), array('B', 'N', 'C', 'X'), $globalSetting1['stg_value']);
-    $settings1->showgroupinfo = ($globalSetting2 === false || $globalSetting2['stg_value'] == 'choose') ? 'B' : str_replace(array('both', 'name', 'description', 'none'), array('B', 'N', 'D', 'X'), $globalSetting2['stg_value']);
-    $settings1->shownoanswer = ($globalSetting3 === false || $globalSetting3['stg_value'] == '2') ? 'Y' : str_replace(array('1', '0'), array('Y', 'N'), $globalSetting3['stg_value']);
-    $settings1->showxquestions = ($globalSetting4 === false || $globalSetting4['stg_value'] == 'choose') ? 'Y' : str_replace(array('show', 'hide'), array('Y', 'N'), $globalSetting4['stg_value']);
+    $settings1['showqnumcode'] = ($globalSetting1 === false || $globalSetting1['stg_value'] == 'choose') ? 'X' : str_replace(array('both', 'number', 'code', 'none'), array('B', 'N', 'C', 'X'), $globalSetting1['stg_value']);
+    $settings1['showgroupinfo'] = ($globalSetting2 === false || $globalSetting2['stg_value'] == 'choose') ? 'B' : str_replace(array('both', 'name', 'description', 'none'), array('B', 'N', 'D', 'X'), $globalSetting2['stg_value']);
+    $settings1['shownoanswer'] = ($globalSetting3 === false || $globalSetting3['stg_value'] == '2') ? 'Y' : str_replace(array('1', '0'), array('Y', 'N'), $globalSetting3['stg_value']);
+    $settings1['showxquestions'] = ($globalSetting4 === false || $globalSetting4['stg_value'] == 'choose') ? 'Y' : str_replace(array('show', 'hide'), array('Y', 'N'), $globalSetting4['stg_value']);
 
     // Quick hack to remote ipanonymize.
-    // TODO: Don't use models in updatedb_helper.
-    $attributes = $settings1->attributes;
-    unset($attributes['ipanonymize']);
+    unset($settings1['ipanonymize']);
 
-    $oDB->createCommand()->insert("{{surveys_groupsettings}}", $attributes);
-
-    //this will fail because of using model in updatedb_helper ...
-    // insert settings for default survey group
-    //$settings2 = new SurveysGroupsettings;
-    //$settings2->gsid = 1;
-    //$settings2->setToInherit(); //we can not use this function because of ipanonymize (again: never use models in update_helper)
+    $oDB->createCommand()->insert("{{surveys_groupsettings}}", $settings1);
 
     $attributes2 =  array(
         "gsid" => 1,
