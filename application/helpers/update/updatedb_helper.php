@@ -4816,7 +4816,7 @@ function extendDatafields429($oDB)
         alterColumn('{{tutorial_entries}}', 'content', "mediumtext");
         alterColumn('{{tutorial_entries}}', 'settings', "mediumtext");
     }
-            alterColumn('{{surveys}}', 'additional_languages', "text");
+    alterColumn('{{surveys}}', 'additional_languages', "text");
 }
 
 
