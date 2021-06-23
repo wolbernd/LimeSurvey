@@ -5039,7 +5039,7 @@ function createFieldMap450($survey): array
 
             $answerColumnDefinition = '';
             if (isset($questionTheme['xml_path'])) {
-                if (\PHP_VERSION_ID < 80000) {
+                if (PHP_VERSION_ID < 80000) {
                     $bOldEntityLoaderState = libxml_disable_entity_loader(true);
                 }
                 $sQuestionConfigFile = file_get_contents(App()->getConfig('rootdir') . DIRECTORY_SEPARATOR . $questionTheme['xml_path'] . DIRECTORY_SEPARATOR . 'config.xml');  // @see: Now that entity loader is disabled, we can't use simplexml_load_file; so we must read the file with file_get_contents and convert it as a string
@@ -5047,7 +5047,7 @@ function createFieldMap450($survey): array
                 if (isset($oQuestionConfig->metadata->answercolumndefinition)) {
                     $answerColumnDefinition = json_decode(json_encode($oQuestionConfig->metadata->answercolumndefinition), true)[0];
                 }
-                if (\PHP_VERSION_ID < 80000) {
+                if (PHP_VERSION_ID < 80000) {
                     libxml_disable_entity_loader($bOldEntityLoaderState);
                 }
             }
@@ -5160,8 +5160,7 @@ function createFieldMap450($survey): array
                     }
                     break;
             }
-        } // For Multi flexi question types
-        elseif ($questionTypeMetaData[$arow['type']]['settings']->subquestions == 2 && $questionTypeMetaData[$arow['type']]['settings']->answerscales == 0) {
+        } elseif ($questionTypeMetaData[$arow['type']]['settings']->subquestions == 2 && $questionTypeMetaData[$arow['type']]['settings']->answerscales == 0) {
             //MULTI FLEXI
             $abrows = getSubQuestions($survey['sid'], $arow['qid'], $survey['language']);
             //Now first process scale=1
@@ -5216,7 +5215,7 @@ function createFieldMap450($survey): array
                 }
             }
             unset($answerset);
-        } elseif ($arow['type'] == Question::QT_1_ARRAY_MULTISCALE) {
+        } elseif ($arow['type'] === Question::QT_1_ARRAY_MULTISCALE) {
             $abrows = getSubQuestions($survey['sid'], $arow['qid'], $survey['language']);
             foreach ($abrows as $abrow) {
                 $fieldname = "{$arow['sid']}X{$arow['gid']}X{$arow['qid']}{$abrow['title']}#0";
@@ -5267,7 +5266,7 @@ function createFieldMap450($survey): array
                     $fieldmap[$fieldname]['groupSeq'] = $groupSeq;
                 }
             }
-        } elseif ($arow['type'] == Question::QT_R_RANKING_STYLE) {
+        } elseif ($arow['type'] === Question::QT_R_RANKING_STYLE) {
             // Sub question by answer number OR attribute
             $answersCount = Yii::app()->db->createCommand()
                 ->select('*')
@@ -5304,7 +5303,7 @@ function createFieldMap450($survey): array
                     $fieldmap[$fieldname]['groupSeq'] = $groupSeq;
                 }
             }
-        } elseif ($arow['type'] == Question::QT_VERTICAL_FILE_UPLOAD) {
+        } elseif ($arow['type'] === Question::QT_VERTICAL_FILE_UPLOAD) {
             $fieldname = "{$arow['sid']}X{$arow['gid']}X{$arow['qid']}";
             $fieldmap[$fieldname] = [
                 "fieldname" => $fieldname,
@@ -5394,7 +5393,7 @@ function createFieldMap450($survey): array
                         $fieldmap[$fieldname]['defaultvalue'] = $defaultValues[$arow['qid'] . '~' . $abrow['qid']];
                     }
                 }
-                if ($arow['type'] == Question::QT_P_MULTIPLE_CHOICE_WITH_COMMENTS) {
+                if ($arow['type'] === Question::QT_P_MULTIPLE_CHOICE_WITH_COMMENTS) {
                     $fieldname = "{$arow['sid']}X{$arow['gid']}X{$arow['qid']}{$abrow['title']}comment";
                     if (isset($fieldmap[$fieldname])) {
                         $aDuplicateQIDs[$arow['qid']] = ['fieldname' => $fieldname, 'question' => $arow['question'], 'gid' => $arow['gid']];
@@ -5418,7 +5417,7 @@ function createFieldMap450($survey): array
                     }
                 }
             }
-            if ($arow['other'] === "Y" && ($arow['type'] == Question::QT_M_MULTIPLE_CHOICE || $arow['type'] == Question::QT_P_MULTIPLE_CHOICE_WITH_COMMENTS)) {
+            if ($arow['other'] === 'Y' && ($arow['type'] === Question::QT_M_MULTIPLE_CHOICE || $arow['type'] === Question::QT_P_MULTIPLE_CHOICE_WITH_COMMENTS)) {
                 $fieldname = "{$arow['sid']}X{$arow['gid']}X{$arow['qid']}other";
                 if (isset($fieldmap[$fieldname])) {
                     $aDuplicateQIDs[$arow['qid']] = ['fieldname' => $fieldname, 'question' => $arow['question'], 'gid' => $arow['gid']];
@@ -5441,7 +5440,7 @@ function createFieldMap450($survey): array
                     $fieldmap[$fieldname]['groupSeq'] = $groupSeq;
                     $fieldmap[$fieldname]['other'] = $arow['other'];
                 }
-                if ($arow['type'] == Question::QT_P_MULTIPLE_CHOICE_WITH_COMMENTS) {
+                if ($arow['type'] === Question::QT_P_MULTIPLE_CHOICE_WITH_COMMENTS) {
                     $fieldname = "{$arow['sid']}X{$arow['gid']}X{$arow['qid']}othercomment";
                     if (isset($fieldmap[$fieldname])) {
                         $aDuplicateQIDs[$arow['qid']] = ['fieldname' => $fieldname, 'question' => $arow['question'], 'gid' => $arow['gid']];
