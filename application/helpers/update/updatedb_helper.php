@@ -4628,6 +4628,14 @@ function db_upgrade_all($iOldDBVersion, $bSilent = false)
             $oDB->createCommand()->update('{{settings_global}}', array('stg_value' => 449), "stg_name='DBVersion'");
             $oTransaction->commit();
         }
+        if ($iOldDBVersion < 450) {
+            $oTransaction = $oDB->beginTransaction();
+
+            updateEncryptedValues450($oDB);
+
+            $oDB->createCommand()->update('{{settings_global}}', array('stg_value' => 450), "stg_name='DBVersion'");
+            $oTransaction->commit();
+        }
     } catch (Exception $e) {
         Yii::app()->setConfig('Updating', false);
         $oTransaction->rollback();
@@ -4699,6 +4707,786 @@ function db_upgrade_all($iOldDBVersion, $bSilent = false)
     return true;
 }
 
+/**
+ * Update previous encrpted values to new encryption
+ * @param CDbConnection $oDB
+ * @throws CException
+ */
+function updateEncryptedValues450(CDbConnection $oDB)
+{
+    Yii::app()->sodium;
+
+    decryptarchivedtables450($oDB);
+    decryptResponseTables450($oDB);
+    decryptParticipantTables450($oDB);
+    decryptCPDBTable450($oDB);
+}
+
+/**
+ * Update encryption for CPDB participants
+ *
+ * @param $oDB
+ * @return void
+ */
+function decryptCPDBTable450($oDB)
+{
+    // decrypt CPDB participants
+    $CPDBParticipants = $oDB->createCommand()
+        ->select('*')
+        ->from('{{participants}}')
+        ->queryAll();
+    $participantAttributeNames = $oDB->createCommand()
+        ->select('*')
+        ->from('{{participant_attribute_names}}')
+        ->queryAll();
+    foreach ($CPDBParticipants as $CPDBParticipant) {
+        $recryptedParticipant = [];
+        foreach ($participantAttributeNames as $participantAttributeName) {
+            if ($participantAttributeName['encrypted'] === 'Y') {
+                $decrypedParticipantAttribute = LSActiveRecord::decryptSingleOld($CPDBParticipant[$participantAttributeName]);
+                $recryptedParticipant[$participantAttributeName] = LSActiveRecord::encryptSingle($decrypedParticipantAttribute);
+            }
+        }
+        if ($recryptedParticipant) {
+            $oDB->createCommand()->update('{{participants}}', $recryptedParticipant, 'participant_id=' . $CPDBParticipant['participant_id']);
+        }
+    }
+}
+
+/**
+ * Update encryption for survey participants
+ * @param $oDB
+ * @return void
+ */
+function decryptParticipantTables450($oDB)
+{
+    // decrypt survey participants
+    $surveys = $oDB->createCommand()
+        ->select('*')
+        ->from('{{surveys}}')
+        ->queryAll();
+    foreach ($surveys as $survey) {
+        $tokens = $oDB->createCommand()
+            ->select('*')
+            ->from("{{tokens_{$survey['sid']}}}")
+            ->queryAll();
+        $tokenencryptionoptions = json_decode($survey['tokenencryptionoptions']);
+        // default attributes
+        foreach ($tokenencryptionoptions['columns'] as $column => $attributeName) {
+            $columnEncryptions[$column]['encrypted'] = $tokenencryptionoptions['columns'][$column];
+
+            $tokenencryptionoptions[$column] = [
+                'encrypted' => $tokenencryptionoptions[$column]['encrypted'] === 'Y' ? 'Y' : 'N',
+            ];
+
+            $aTokenencryptionoptions['columns'][$column] = $tokenencryptionoptions[$column]['encrypted'];
+        }
+
+        // find custom attribute column names
+        $table = $oDB->schema->getTable("{{survey_{$survey['sid']}}}");
+        if (!$table) {
+            $aCustomAttributes = [];
+        } else {
+            $aCustomAttributes = array_filter(array_keys($table->columns), 'filterForAttributes');
+        }
+
+        // custom attributes
+        foreach ($aCustomAttributes as $attributeName) {
+            if (isset(json_decode($survey['attributedescriptions'])->$attributeName->encrypted)) {
+                $columnEncryptions[$attributeName]['encrypted'] = json_decode($survey['attributedescriptions'])[$attributeName]['encrypted'];
+            } else {
+                $columnEncryptions[$attributeName]['encrypted'] = 'N';
+            }
+            $tokenencryptionoptions[$attributeName] = [
+                'encrypted' => $tokenencryptionoptions[$attributeName]['encrypted'] === 'Y' ? 'Y' : 'N',
+            ];
+        }
+
+        if (isset($columnEncryptions) && $columnEncryptions) {
+            foreach ($tokens as $token) {
+                $recryptedToken = [];
+                foreach ($tokenencryptionoptions as $column => $value) {
+                    if ($columnEncryptions[$column]['encrypted'] === 'Y' && $tokenencryptionoptions[$column]['encrypted'] === 'N') {
+                        $decryptedTokenColumn = LSActiveRecord::decryptSingleOld($token[$column]);
+                        $recryptedToken[$column] = LSActiveRecord::encryptSingle($decryptedTokenColumn);
+                    }
+                }
+                if ($recryptedToken) {
+                    $oDB->createCommand()->update("{{survey_{$survey['sid']}}}", $recryptedToken, 'tid=' . $token['tid']);
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Update encryption for survey responses
+ *
+ * @param $oDB
+ * @return void
+ * @throws CException
+ */
+function decryptResponseTables450($oDB)
+{
+    $surveys = $oDB->createCommand()
+        ->select('*')
+        ->from('{{surveys}}')
+        ->queryAll();
+    foreach ($surveys as $survey) {
+        $responses = $oDB->createCommand()
+            ->select('*')
+            ->from("{{survey_{$survey['sid']}}}")
+            ->queryAll();
+        $fieldmapFields = createFieldMap450($survey);
+        foreach ($responses as $key => $response) {
+            $recryptedResponse = [];
+            foreach ($fieldmapFields as $field) {
+                if (array_key_exists('encrypted', $field) && $field['encrypted'] === 'Y') {
+                    $decryptedResponseField = LSActiveRecord::decryptSingleOld($response[$field]);
+                    $recryptedResponse[$field] = LSActiveRecord::encryptSingle($decryptedResponseField);
+                }
+            }
+            if ($recryptedResponse) {
+                $oDB->createCommand()->update("{{survey_{$survey['sid']}}}", $recryptedResponse, 'id=' . $response['id']);
+            }
+        }
+    }
+}
+
+/**
+ * Update Encryption for archived tables
+ *
+ * @param $oDB
+ * @return void
+ */
+function decryptArchivedTables450($oDB)
+{
+    $archivedTablesSettings = $oDB->createCommand('SELECT * FROM {{archived_table_settings}}')->queryAll();
+    foreach ($archivedTablesSettings as $archivedTableSettings) {
+        $surveyId = $archivedTableSettings['survey_id'];
+        $archivedTableRows = $oDB
+            ->createCommand()
+            ->select('*')
+            ->from("{{{$archivedTableSettings['tbl_name']}}}")
+            ->queryAll();
+        $survey = $oDB
+            ->createCommand()
+            ->select('*')
+            ->from('{{surveys}}')
+            ->where('sid=:sid', ['sid' => $surveyId])
+            ->queryRow();
+        // if the encryption status is unknown
+        $archivedTableSettingsArray = json_decode($archivedTableSettings['properties'], true);
+        foreach ($archivedTableSettingsArray as $archivedTableSetting) {
+            if ($archivedTableSetting === 'unknown') {
+                continue;
+            }
+        }
+        if ($archivedTableSettings['tbl_type'] === 'token') {
+            if ($archivedTableSettings['properties']) {
+                $tokenencryptionoptions = json_decode($archivedTableSettings['properties']);
+
+                // default attributes
+                foreach ($tokenencryptionoptions['columns'] as $column => $attributeName) {
+                    $columnEncryptions[$column]['encrypted'] = $tokenencryptionoptions['columns'][$column];
+
+                    $tokenencryptionoptions[$column] = [
+                        'encrypted' => $tokenencryptionoptions[$column]['encrypted'] === 'Y' ? 'Y' : 'N',
+                    ];
+
+                    $aTokenencryptionoptions['columns'][$column] = $tokenencryptionoptions[$column]['encrypted'];
+                }
+
+                // find custom attribute column names
+                $table = $oDB->schema->getTable($archivedTableSettings['tbl_name']);
+                if (!$table) {
+                    $aCustomAttributes = [];
+                } else {
+                    $aCustomAttributes = array_filter(array_keys($table->columns), 'filterForAttributes');
+                }
+
+                // custom attributes
+                foreach ($aCustomAttributes as $attributeName) {
+                    if (isset(json_decode($survey['attributedescriptions'])->$attributeName->encrypted)) {
+                        $columnEncryptions[$attributeName]['encrypted'] = json_decode($survey['attributedescriptions'])[$attributeName]['encrypted'];
+                    } else {
+                        $columnEncryptions[$attributeName]['encrypted'] = 'N';
+                    }
+                    $tokenencryptionoptions[$attributeName] = [
+                        'encrypted' => $tokenencryptionoptions[$attributeName]['encrypted'] === 'Y' ? 'Y' : 'N',
+                    ];
+                }
+                if (isset($columnEncryptions) && $columnEncryptions) {
+                    foreach ($archivedTableRows as $archivedToken) {
+                        $recryptedTokenColumns = [];
+                        foreach ($tokenencryptionoptions as $column => $value) {
+                            if ($columnEncryptions[$column]['encrypted'] === 'Y' && $tokenencryptionoptions[$column]['encrypted'] === 'N') {
+                                $decryptedColumnValue = LSActiveRecord::decryptSingleOld($archivedToken[$column]);
+                                $recryptedTokenColumns[$column] = LSActiveRecord::encryptSingle($decryptedColumnValue);
+                            }
+                        }
+                        if ($recryptedTokenColumns) {
+                            $oDB->createCommand()->update("{{{$archivedTableSettings['tbl_name']}}}", $recryptedTokenColumns, 'tid=' . $archivedToken['tid']);
+                        }
+                    }
+                }
+            }
+        }
+
+        if ($archivedTableSettings['tbl_type'] === 'response') {
+            $responseTableSchema = $oDB->schema->getTable("{{{$archivedTableSettings['tbl_name']}}}");
+            $encryptedResponseAttributes = json_decode($archivedTableSettings['properties']);
+
+            $fieldMap = [];
+            foreach ($responseTableSchema->getColumnNames() as $name) {
+                // Skip id field.
+                if ($name === 'id') {
+                    continue;
+                }
+                $fieldMap[$name] = $name;
+            }
+            foreach ($archivedTableRows as $archivedResponse) {
+                $recryptedResponseValues = [];
+                foreach ($fieldMap as $column) {
+                    if (in_array($column, $encryptedResponseAttributes, false)) {
+                        $decryptedColumnValue = LSActiveRecord::decryptSingleOld($archivedResponse[$column]);
+                        $recryptedResponseValues[$column] = LSActiveRecord::encryptSingle($decryptedColumnValue);
+                    }
+                }
+                if ($recryptedResponseValues) {
+                    $oDB->createCommand()->update("{{{$archivedTableSettings['tbl_name']}}}", $recryptedResponseValues, 'id=' . $archivedResponse['id']);
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Returns the fieldmap for responses
+ *
+ * @param $survey
+ * @return array
+ * @throws CException
+ */
+function createFieldMap450($survey): array
+{
+    // Main query
+    $style = 'full';
+    $quotedGroups = Yii::app()->db->quoteTableName('{{groups}}');
+    $aquery = 'SELECT g.*, q.*, gls.*, qls.*, qa.attribute, qa.value'
+        . " FROM $quotedGroups g"
+        . ' JOIN {{questions}} q on q.gid=g.gid '
+        . ' JOIN {{group_l10ns}} gls on gls.gid=g.gid '
+        . ' JOIN {{question_l10ns}} qls on qls.qid=q.qid '
+        . " LEFT JOIN {{question_attributes}} qa ON qa.qid=q.qid AND qa.attribute='question_template' "
+        . " WHERE qls.language='{$survey['language']}' and gls.language='{$survey['language']}' AND"
+        . " g.sid={$survey['sid']} AND"
+        . ' q.parent_qid=0'
+        . ' ORDER BY group_order, question_order';
+    $questions = Yii::app()->db->createCommand($aquery)->queryAll();
+    $questionSeq = -1; // this is incremental question sequence across all groups
+    $groupSeq = -1;
+    $_groupOrder = -1;
+
+    //getting all question_types which are NOT extended
+    $baseQuestions = Yii::app()->db->createCommand()
+        ->select('*')
+        ->from('{{question_themes}}')
+        ->where('extends = :extends', ['extends' => ''])
+        ->queryAll();
+    $questionTypeMetaData = [];
+    foreach ($baseQuestions as $baseQuestion) {
+        $baseQuestion['settings'] = json_decode($baseQuestion['settings']);
+        $questionTypeMetaData[$baseQuestion['question_type']] = $baseQuestion;
+    }
+
+    foreach ($questions as $arow) {
+        //For each question, create the appropriate field(s))
+
+        ++$questionSeq;
+
+        // fix fact that the group_order may have gaps
+        if ($_groupOrder !== $arow['group_order']) {
+            $_groupOrder = $arow['group_order'];
+            ++$groupSeq;
+        }
+        // Condition indicators are obsolete with EM.  However, they are so tightly coupled into LS code that easider to just set values to 'N' for now and refactor later.
+        $conditions = 'N';
+        $usedinconditions = 'N';
+
+        // Check if answertable has custom setting for current question
+        if (isset($arow['attribute']) && isset($arow['type']) && $arow['attribute'] === 'question_template') {
+            // cache the value between function calls
+            static $cacheMemo = [];
+            $cacheKey = $arow['value'] . '_' . $arow['type'];
+            if (isset($cacheMemo[$cacheKey])) {
+                return $cacheMemo[$cacheKey];
+            }
+
+            if ($arow['value'] === 'core') {
+                $questionTheme = Yii::app()->db->createCommand()
+                    ->select('*')
+                    ->from('{{question_themes}}')
+                    ->where('question_type=:question_type AND extends=:extends', ['question_type' => $arow['type'], 'extends' => ''])
+                    ->queryAll();
+            } else {
+                $questionTheme = Yii::app()->db->createCommand()
+                    ->select('*')
+                    ->from('{{question_themes}}')
+                    ->where('name=:name AND question_type=:question_type', ['name' => $arow['value'], 'question_type' => $arow['type']])
+                    ->queryAll();
+            }
+
+            $answerColumnDefinition = '';
+            if (isset($questionTheme['xml_path'])) {
+                if (\PHP_VERSION_ID < 80000) {
+                    $bOldEntityLoaderState = libxml_disable_entity_loader(true);
+                }
+                $sQuestionConfigFile = file_get_contents(App()->getConfig('rootdir') . DIRECTORY_SEPARATOR . $questionTheme['xml_path'] . DIRECTORY_SEPARATOR . 'config.xml');  // @see: Now that entity loader is disabled, we can't use simplexml_load_file; so we must read the file with file_get_contents and convert it as a string
+                $oQuestionConfig = simplexml_load_string($sQuestionConfigFile);
+                if (isset($oQuestionConfig->metadata->answercolumndefinition)) {
+                    $answerColumnDefinition = json_decode(json_encode($oQuestionConfig->metadata->answercolumndefinition), true)[0];
+                }
+                if (\PHP_VERSION_ID < 80000) {
+                    libxml_disable_entity_loader($bOldEntityLoaderState);
+                }
+            }
+
+            $cacheMemo[$cacheKey] = $answerColumnDefinition;
+        }
+
+        // Field identifier
+        // GXQXSXA
+        // G=Group  Q=Question S=Subquestion A=Answer Option
+        // If S or A don't exist then set it to 0
+        // Implicit (subqestion intermal to a question type ) or explicit qubquestions/answer count starts at 1
+
+        // Types "L", "!", "O", "D", "G", "N", "X", "Y", "5", "S", "T", "U"
+        $fieldname = "{$arow['sid']}X{$arow['gid']}X{$arow['qid']}";
+
+        if ($questionTypeMetaData[$arow['type']]['settings']->subquestions == 0 && $arow['type'] != Question::QT_R_RANKING_STYLE && $arow['type'] != Question::QT_VERTICAL_FILE_UPLOAD) {
+            if (isset($fieldmap[$fieldname])) {
+                $aDuplicateQIDs[$arow['qid']] = ['fieldname' => $fieldname, 'question' => $arow['question'], 'gid' => $arow['gid']];
+            }
+
+            $fieldmap[$fieldname] = ["fieldname" => $fieldname, 'type' => "{$arow['type']}", 'sid' => $survey['sid'], "gid" => $arow['gid'], "qid" => $arow['qid'], "aid" => ""];
+            if (isset($answerColumnDefinition)) {
+                $fieldmap[$fieldname]['answertabledefinition'] = $answerColumnDefinition;
+            }
+
+            if ($style === 'full') {
+                $fieldmap[$fieldname]['title'] = $arow['title'];
+                $fieldmap[$fieldname]['question'] = $arow['question'];
+                $fieldmap[$fieldname]['group_name'] = $arow['group_name'];
+                $fieldmap[$fieldname]['mandatory'] = $arow['mandatory'];
+                $fieldmap[$fieldname]['encrypted'] = $arow['encrypted'];
+                $fieldmap[$fieldname]['hasconditions'] = $conditions;
+                $fieldmap[$fieldname]['usedinconditions'] = $usedinconditions;
+                $fieldmap[$fieldname]['questionSeq'] = $questionSeq;
+                $fieldmap[$fieldname]['groupSeq'] = $groupSeq;
+                if (isset($defaultValues[$arow['qid'] . '~0'])) {
+                    $fieldmap[$fieldname]['defaultvalue'] = $defaultValues[$arow['qid'] . '~0'];
+                }
+            }
+            switch ($arow['type']) {
+                case Question::QT_L_LIST_DROPDOWN:  //RADIO LIST
+                case Question::QT_EXCLAMATION_LIST_DROPDOWN:  //DROPDOWN LIST
+                    if ($arow['other'] === 'Y') {
+                        $fieldname = "{$arow['sid']}X{$arow['gid']}X{$arow['qid']}other";
+                        if (isset($fieldmap[$fieldname])) {
+                            $aDuplicateQIDs[$arow['qid']] = ['fieldname' => $fieldname, 'question' => $arow['question'], 'gid' => $arow['gid']];
+                        }
+
+                        $fieldmap[$fieldname] = [
+                            "fieldname" => $fieldname,
+                            'type'      => $arow['type'],
+                            'sid'       => $survey['sid'],
+                            "gid"       => $arow['gid'],
+                            "qid"       => $arow['qid'],
+                            "aid"       => "other"
+                        ];
+                        if (isset($answerColumnDefinition)) {
+                            $fieldmap[$fieldname]['answertabledefinition'] = $answerColumnDefinition;
+                        }
+
+                        // dgk bug fix line above. aid should be set to "other" for export to append to the field name in the header line.
+                        if ($style === 'full') {
+                            $fieldmap[$fieldname]['title'] = $arow['title'];
+                            $fieldmap[$fieldname]['question'] = $arow['question'];
+                            $fieldmap[$fieldname]['subquestion'] = gT("Other");
+                            $fieldmap[$fieldname]['group_name'] = $arow['group_name'];
+                            $fieldmap[$fieldname]['mandatory'] = $arow['mandatory'];
+                            $fieldmap[$fieldname]['encrypted'] = $arow['encrypted'];
+                            $fieldmap[$fieldname]['hasconditions'] = $conditions;
+                            $fieldmap[$fieldname]['usedinconditions'] = $usedinconditions;
+                            $fieldmap[$fieldname]['questionSeq'] = $questionSeq;
+                            $fieldmap[$fieldname]['groupSeq'] = $groupSeq;
+                            if (isset($defaultValues[$arow['qid'] . '~other'])) {
+                                $fieldmap[$fieldname]['defaultvalue'] = $defaultValues[$arow['qid'] . '~other'];
+                            }
+                        }
+                    }
+                    break;
+                case Question::QT_O_LIST_WITH_COMMENT: //DROPDOWN LIST WITH COMMENT
+                    $fieldname = "{$arow['sid']}X{$arow['gid']}X{$arow['qid']}comment";
+                    if (isset($fieldmap[$fieldname])) {
+                        $aDuplicateQIDs[$arow['qid']] = ['fieldname' => $fieldname, 'question' => $arow['question'], 'gid' => $arow['gid']];
+                    }
+
+                    $fieldmap[$fieldname] = [
+                        "fieldname" => $fieldname,
+                        'type'      => $arow['type'],
+                        'sid'       => $survey['sid'],
+                        "gid"       => $arow['gid'],
+                        "qid"       => $arow['qid'],
+                        "aid"       => "comment"
+                    ];
+                    if (isset($answerColumnDefinition)) {
+                        $fieldmap[$fieldname]['answertabledefinition'] = $answerColumnDefinition;
+                    }
+
+                    // dgk bug fix line below. aid should be set to "comment" for export to append to the field name in the header line. Also needed set the type element correctly.
+                    if ($style === 'full') {
+                        $fieldmap[$fieldname]['title'] = $arow['title'];
+                        $fieldmap[$fieldname]['question'] = $arow['question'];
+                        $fieldmap[$fieldname]['subquestion'] = gT("Comment");
+                        $fieldmap[$fieldname]['group_name'] = $arow['group_name'];
+                        $fieldmap[$fieldname]['mandatory'] = $arow['mandatory'];
+                        $fieldmap[$fieldname]['encrypted'] = $arow['encrypted'];
+                        $fieldmap[$fieldname]['hasconditions'] = $conditions;
+                        $fieldmap[$fieldname]['usedinconditions'] = $usedinconditions;
+                        $fieldmap[$fieldname]['questionSeq'] = $questionSeq;
+                        $fieldmap[$fieldname]['groupSeq'] = $groupSeq;
+                    }
+                    break;
+            }
+        } // For Multi flexi question types
+        elseif ($questionTypeMetaData[$arow['type']]['settings']->subquestions == 2 && $questionTypeMetaData[$arow['type']]['settings']->answerscales == 0) {
+            //MULTI FLEXI
+            $abrows = getSubQuestions($survey['sid'], $arow['qid'], $survey['language']);
+            //Now first process scale=1
+            $answerset = [];
+            $answerList = [];
+            foreach ($abrows as $key => $abrow) {
+                if ($abrow['scale_id'] == 1) {
+                    $answerset[] = $abrow;
+                    $answerList[] = [
+                        'code'   => $abrow['title'],
+                        'answer' => $abrow['question'],
+                    ];
+                    unset($abrows[$key]);
+                }
+            }
+            reset($abrows);
+            foreach ($abrows as $abrow) {
+                foreach ($answerset as $answer) {
+                    $fieldname = "{$arow['sid']}X{$arow['gid']}X{$arow['qid']}{$abrow['title']}_{$answer['title']}";
+                    if (isset($fieldmap[$fieldname])) {
+                        $aDuplicateQIDs[$arow['qid']] = ['fieldname' => $fieldname, 'question' => $arow['question'], 'gid' => $arow['gid']];
+                    }
+                    $fieldmap[$fieldname] = [
+                        "fieldname" => $fieldname,
+                        'type'      => $arow['type'],
+                        'sid'       => $survey['sid'],
+                        "gid"       => $arow['gid'],
+                        "qid"       => $arow['qid'],
+                        "aid"       => $abrow['title'] . "_" . $answer['title'],
+                        "sqid"      => $abrow['qid']
+                    ];
+                    if (isset($answerColumnDefinition)) {
+                        $fieldmap[$fieldname]['answertabledefinition'] = $answerColumnDefinition;
+                    }
+
+                    if ($style === 'full') {
+                        $fieldmap[$fieldname]['title'] = $arow['title'];
+                        $fieldmap[$fieldname]['question'] = $arow['question'];
+                        $fieldmap[$fieldname]['subquestion1'] = $abrow['question'];
+                        $fieldmap[$fieldname]['subquestion2'] = $answer['question'];
+                        $fieldmap[$fieldname]['group_name'] = $arow['group_name'];
+                        $fieldmap[$fieldname]['mandatory'] = $arow['mandatory'];
+                        $fieldmap[$fieldname]['encrypted'] = $arow['encrypted'];
+                        $fieldmap[$fieldname]['hasconditions'] = $conditions;
+                        $fieldmap[$fieldname]['usedinconditions'] = $usedinconditions;
+                        $fieldmap[$fieldname]['questionSeq'] = $questionSeq;
+                        $fieldmap[$fieldname]['groupSeq'] = $groupSeq;
+                        $fieldmap[$fieldname]['preg'] = $arow['preg'];
+                        $fieldmap[$fieldname]['answerList'] = $answerList;
+                        $fieldmap[$fieldname]['SQrelevance'] = $abrow['relevance'];
+                    }
+                }
+            }
+            unset($answerset);
+        } elseif ($arow['type'] == Question::QT_1_ARRAY_MULTISCALE) {
+            $abrows = getSubQuestions($survey['sid'], $arow['qid'], $survey['language']);
+            foreach ($abrows as $abrow) {
+                $fieldname = "{$arow['sid']}X{$arow['gid']}X{$arow['qid']}{$abrow['title']}#0";
+                if (isset($fieldmap[$fieldname])) {
+                    $aDuplicateQIDs[$arow['qid']] = ['fieldname' => $fieldname, 'question' => $arow['question'], 'gid' => $arow['gid']];
+                }
+
+                $fieldmap[$fieldname] = ["fieldname" => $fieldname, 'type' => $arow['type'], 'sid' => $survey['sid'], "gid" => $arow['gid'], "qid" => $arow['qid'], "aid" => $abrow['title'], "scale_id" => 0];
+                if (isset($answerColumnDefinition)) {
+                    $fieldmap[$fieldname]['answertabledefinition'] = $answerColumnDefinition;
+                }
+
+                if ($style === 'full') {
+                    $fieldmap[$fieldname]['title'] = $arow['title'];
+                    $fieldmap[$fieldname]['question'] = $arow['question'];
+                    $fieldmap[$fieldname]['subquestion'] = $abrow['question'];
+                    $fieldmap[$fieldname]['group_name'] = $arow['group_name'];
+                    $fieldmap[$fieldname]['scale'] = gT('Scale 1');
+                    $fieldmap[$fieldname]['mandatory'] = $arow['mandatory'];
+                    $fieldmap[$fieldname]['encrypted'] = $arow['encrypted'];
+                    $fieldmap[$fieldname]['hasconditions'] = $conditions;
+                    $fieldmap[$fieldname]['usedinconditions'] = $usedinconditions;
+                    $fieldmap[$fieldname]['questionSeq'] = $questionSeq;
+                    $fieldmap[$fieldname]['groupSeq'] = $groupSeq;
+                    $fieldmap[$fieldname]['SQrelevance'] = $abrow['relevance'];
+                }
+
+                $fieldname = "{$arow['sid']}X{$arow['gid']}X{$arow['qid']}{$abrow['title']}#1";
+                if (isset($fieldmap[$fieldname])) {
+                    $aDuplicateQIDs[$arow['qid']] = ['fieldname' => $fieldname, 'question' => $arow['question'], 'gid' => $arow['gid']];
+                }
+                $fieldmap[$fieldname] = ["fieldname" => $fieldname, 'type' => $arow['type'], 'sid' => $survey['sid'], "gid" => $arow['gid'], "qid" => $arow['qid'], "aid" => $abrow['title'], "scale_id" => 1];
+                if (isset($answerColumnDefinition)) {
+                    $fieldmap[$fieldname]['answertabledefinition'] = $answerColumnDefinition;
+                }
+
+                if ($style === 'full') {
+                    $fieldmap[$fieldname]['title'] = $arow['title'];
+                    $fieldmap[$fieldname]['question'] = $arow['question'];
+                    $fieldmap[$fieldname]['subquestion'] = $abrow['question'];
+                    $fieldmap[$fieldname]['group_name'] = $arow['group_name'];
+                    $fieldmap[$fieldname]['scale'] = gT('Scale 2');
+                    $fieldmap[$fieldname]['mandatory'] = $arow['mandatory'];
+                    $fieldmap[$fieldname]['encrypted'] = $arow['encrypted'];
+                    $fieldmap[$fieldname]['hasconditions'] = $conditions;
+                    $fieldmap[$fieldname]['usedinconditions'] = $usedinconditions;
+                    $fieldmap[$fieldname]['questionSeq'] = $questionSeq;
+                    $fieldmap[$fieldname]['groupSeq'] = $groupSeq;
+                }
+            }
+        } elseif ($arow['type'] == Question::QT_R_RANKING_STYLE) {
+            // Sub question by answer number OR attribute
+            $answersCount = Yii::app()->db->createCommand()
+                ->select('*')
+                ->from('{{answers}}')
+                ->where('qid', $arow['qid'])
+                ->queryAll()->count();
+            $maxDbAnswer = Yii::app()->db->createCommand()
+                ->select('*')
+                ->from('{{question_attributes}}')
+                ->where("qid = :qid AND attribute = 'max_subquestions'", [':qid' => $arow['qid']])
+                ->queryRow();
+            $columnsCount = (!$maxDbAnswer || (int)$maxDbAnswer['value'] < 1) ? $answersCount : (int)$maxDbAnswer['value'];
+            $columnsCount = min($columnsCount, $answersCount); // Can not be upper than current answers #14899
+            for ($i = 1; $i <= $columnsCount; $i++) {
+                $fieldname = "{$arow['sid']}X{$arow['gid']}X{$arow['qid']}$i";
+                if (isset($fieldmap[$fieldname])) {
+                    $aDuplicateQIDs[$arow['qid']] = ['fieldname' => $fieldname, 'question' => $arow['question'], 'gid' => $arow['gid']];
+                }
+                $fieldmap[$fieldname] = ["fieldname" => $fieldname, 'type' => $arow['type'], 'sid' => $survey['sid'], "gid" => $arow['gid'], "qid" => $arow['qid'], "aid" => $i];
+                if (isset($answerColumnDefinition)) {
+                    $fieldmap[$fieldname]['answertabledefinition'] = $answerColumnDefinition;
+                }
+
+                if ($style === 'full') {
+                    $fieldmap[$fieldname]['title'] = $arow['title'];
+                    $fieldmap[$fieldname]['question'] = $arow['question'];
+                    $fieldmap[$fieldname]['subquestion'] = sprintf(gT('Rank %s'), $i);
+                    $fieldmap[$fieldname]['group_name'] = $arow['group_name'];
+                    $fieldmap[$fieldname]['mandatory'] = $arow['mandatory'];
+                    $fieldmap[$fieldname]['encrypted'] = $arow['encrypted'];
+                    $fieldmap[$fieldname]['hasconditions'] = $conditions;
+                    $fieldmap[$fieldname]['usedinconditions'] = $usedinconditions;
+                    $fieldmap[$fieldname]['questionSeq'] = $questionSeq;
+                    $fieldmap[$fieldname]['groupSeq'] = $groupSeq;
+                }
+            }
+        } elseif ($arow['type'] == Question::QT_VERTICAL_FILE_UPLOAD) {
+            $fieldname = "{$arow['sid']}X{$arow['gid']}X{$arow['qid']}";
+            $fieldmap[$fieldname] = [
+                "fieldname" => $fieldname,
+                'type'      => $arow['type'],
+                'sid'       => $survey['sid'],
+                "gid"       => $arow['gid'],
+                "qid"       => $arow['qid'],
+                "aid"       => ''
+            ];
+            if (isset($answerColumnDefinition)) {
+                $fieldmap[$fieldname]['answertabledefinition'] = $answerColumnDefinition;
+            }
+
+            if ($style === 'full') {
+                $fieldmap[$fieldname]['title'] = $arow['title'];
+                $fieldmap[$fieldname]['question'] = $arow['question'];
+                $fieldmap[$fieldname]['group_name'] = $arow['group_name'];
+                $fieldmap[$fieldname]['mandatory'] = $arow['mandatory'];
+                $fieldmap[$fieldname]['encrypted'] = $arow['encrypted'];
+                $fieldmap[$fieldname]['hasconditions'] = $conditions;
+                $fieldmap[$fieldname]['usedinconditions'] = $usedinconditions;
+                $fieldmap[$fieldname]['questionSeq'] = $questionSeq;
+                $fieldmap[$fieldname]['groupSeq'] = $groupSeq;
+            }
+            $fieldname = "{$arow['sid']}X{$arow['gid']}X{$arow['qid']}" . "_filecount";
+            $fieldmap[$fieldname] = [
+                "fieldname" => $fieldname,
+                'type'      => $arow['type'],
+                'sid'       => $survey['sid'],
+                "gid"       => $arow['gid'],
+                "qid"       => $arow['qid'],
+                "aid"       => "filecount"
+            ];
+            if (isset($answerColumnDefinition)) {
+                $fieldmap[$fieldname]['answertabledefinition'] = $answerColumnDefinition;
+            }
+
+            if ($style === 'full') {
+                $fieldmap[$fieldname]['title'] = $arow['title'];
+                $fieldmap[$fieldname]['question'] = "filecount - " . $arow['question'];
+                $fieldmap[$fieldname]['group_name'] = $arow['group_name'];
+                $fieldmap[$fieldname]['mandatory'] = $arow['mandatory'];
+                $fieldmap[$fieldname]['encrypted'] = $arow['encrypted'];
+                $fieldmap[$fieldname]['hasconditions'] = $conditions;
+                $fieldmap[$fieldname]['usedinconditions'] = $usedinconditions;
+                $fieldmap[$fieldname]['questionSeq'] = $questionSeq;
+                $fieldmap[$fieldname]['groupSeq'] = $groupSeq;
+            }
+        } else {
+            // Question types with subquestions and one answer per subquestion  (M/A/B/C/E/F/H/P)
+            //MULTI ENTRY
+            $abrows = getSubQuestions($survey['sid'], $arow['qid'], $survey['language']);
+            foreach ($abrows as $abrow) {
+                $fieldname = "{$arow['sid']}X{$arow['gid']}X{$arow['qid']}{$abrow['title']}";
+
+                if (isset($fieldmap[$fieldname])) {
+                    $aDuplicateQIDs[$arow['qid']] = ['fieldname' => $fieldname, 'question' => $arow['question'], 'gid' => $arow['gid']];
+                }
+                $fieldmap[$fieldname] = [
+                    "fieldname" => $fieldname,
+                    'type'      => $arow['type'],
+                    'sid'       => $survey['sid'],
+                    'gid'       => $arow['gid'],
+                    'qid'       => $arow['qid'],
+                    'aid'       => $abrow['title'],
+                    'sqid'      => $abrow['qid']
+                ];
+                if (isset($answerColumnDefinition)) {
+                    $fieldmap[$fieldname]['answertabledefinition'] = $answerColumnDefinition;
+                }
+
+                if ($style === 'full') {
+                    $fieldmap[$fieldname]['title'] = $arow['title'];
+                    $fieldmap[$fieldname]['question'] = $arow['question'];
+                    $fieldmap[$fieldname]['subquestion'] = $abrow['question'];
+                    $fieldmap[$fieldname]['group_name'] = $arow['group_name'];
+                    $fieldmap[$fieldname]['mandatory'] = $arow['mandatory'];
+                    $fieldmap[$fieldname]['encrypted'] = $arow['encrypted'];
+                    $fieldmap[$fieldname]['hasconditions'] = $conditions;
+                    $fieldmap[$fieldname]['usedinconditions'] = $usedinconditions;
+                    $fieldmap[$fieldname]['questionSeq'] = $questionSeq;
+                    $fieldmap[$fieldname]['groupSeq'] = $groupSeq;
+                    $fieldmap[$fieldname]['preg'] = $arow['preg'];
+                    // get SQrelevance from DB
+                    $fieldmap[$fieldname]['SQrelevance'] = $abrow['relevance'];
+                    if (isset($defaultValues[$arow['qid'] . '~' . $abrow['qid']])) {
+                        $fieldmap[$fieldname]['defaultvalue'] = $defaultValues[$arow['qid'] . '~' . $abrow['qid']];
+                    }
+                }
+                if ($arow['type'] == Question::QT_P_MULTIPLE_CHOICE_WITH_COMMENTS) {
+                    $fieldname = "{$arow['sid']}X{$arow['gid']}X{$arow['qid']}{$abrow['title']}comment";
+                    if (isset($fieldmap[$fieldname])) {
+                        $aDuplicateQIDs[$arow['qid']] = ['fieldname' => $fieldname, 'question' => $arow['question'], 'gid' => $arow['gid']];
+                    }
+                    $fieldmap[$fieldname] = ["fieldname" => $fieldname, 'type' => $arow['type'], 'sid' => $survey['sid'], "gid" => $arow['gid'], "qid" => $arow['qid'], "aid" => $abrow['title'] . "comment"];
+                    if (isset($answerColumnDefinition)) {
+                        $fieldmap[$fieldname]['answertabledefinition'] = $answerColumnDefinition;
+                    }
+                    if ($style === 'full') {
+                        $fieldmap[$fieldname]['title'] = $arow['title'];
+                        $fieldmap[$fieldname]['question'] = $arow['question'];
+                        $fieldmap[$fieldname]['subquestion1'] = gT('Comment');
+                        $fieldmap[$fieldname]['subquestion'] = $abrow['question'];
+                        $fieldmap[$fieldname]['group_name'] = $arow['group_name'];
+                        $fieldmap[$fieldname]['mandatory'] = $arow['mandatory'];
+                        $fieldmap[$fieldname]['encrypted'] = $arow['encrypted'];
+                        $fieldmap[$fieldname]['hasconditions'] = $conditions;
+                        $fieldmap[$fieldname]['usedinconditions'] = $usedinconditions;
+                        $fieldmap[$fieldname]['questionSeq'] = $questionSeq;
+                        $fieldmap[$fieldname]['groupSeq'] = $groupSeq;
+                    }
+                }
+            }
+            if ($arow['other'] === "Y" && ($arow['type'] == Question::QT_M_MULTIPLE_CHOICE || $arow['type'] == Question::QT_P_MULTIPLE_CHOICE_WITH_COMMENTS)) {
+                $fieldname = "{$arow['sid']}X{$arow['gid']}X{$arow['qid']}other";
+                if (isset($fieldmap[$fieldname])) {
+                    $aDuplicateQIDs[$arow['qid']] = ['fieldname' => $fieldname, 'question' => $arow['question'], 'gid' => $arow['gid']];
+                }
+                $fieldmap[$fieldname] = ["fieldname" => $fieldname, 'type' => $arow['type'], 'sid' => $survey['sid'], "gid" => $arow['gid'], "qid" => $arow['qid'], "aid" => "other"];
+                if (isset($answerColumnDefinition)) {
+                    $fieldmap[$fieldname]['answertabledefinition'] = $answerColumnDefinition;
+                }
+
+                if ($style === 'full') {
+                    $fieldmap[$fieldname]['title'] = $arow['title'];
+                    $fieldmap[$fieldname]['question'] = $arow['question'];
+                    $fieldmap[$fieldname]['subquestion'] = gT('Other');
+                    $fieldmap[$fieldname]['group_name'] = $arow['group_name'];
+                    $fieldmap[$fieldname]['mandatory'] = $arow['mandatory'];
+                    $fieldmap[$fieldname]['encrypted'] = $arow['encrypted'];
+                    $fieldmap[$fieldname]['hasconditions'] = $conditions;
+                    $fieldmap[$fieldname]['usedinconditions'] = $usedinconditions;
+                    $fieldmap[$fieldname]['questionSeq'] = $questionSeq;
+                    $fieldmap[$fieldname]['groupSeq'] = $groupSeq;
+                    $fieldmap[$fieldname]['other'] = $arow['other'];
+                }
+                if ($arow['type'] == Question::QT_P_MULTIPLE_CHOICE_WITH_COMMENTS) {
+                    $fieldname = "{$arow['sid']}X{$arow['gid']}X{$arow['qid']}othercomment";
+                    if (isset($fieldmap[$fieldname])) {
+                        $aDuplicateQIDs[$arow['qid']] = ['fieldname' => $fieldname, 'question' => $arow['question'], 'gid' => $arow['gid']];
+                    }
+                    $fieldmap[$fieldname] = ["fieldname" => $fieldname, 'type' => $arow['type'], 'sid' => $survey['sid'], "gid" => $arow['gid'], "qid" => $arow['qid'], "aid" => "othercomment"];
+                    if (isset($answerColumnDefinition)) {
+                        $fieldmap[$fieldname]['answertabledefinition'] = $answerColumnDefinition;
+                    }
+
+                    if ($style === 'full') {
+                        $fieldmap[$fieldname]['title'] = $arow['title'];
+                        $fieldmap[$fieldname]['question'] = $arow['question'];
+                        $fieldmap[$fieldname]['subquestion'] = gT('Other comment');
+                        $fieldmap[$fieldname]['group_name'] = $arow['group_name'];
+                        $fieldmap[$fieldname]['mandatory'] = $arow['mandatory'];
+                        $fieldmap[$fieldname]['encrypted'] = $arow['encrypted'];
+                        $fieldmap[$fieldname]['hasconditions'] = $conditions;
+                        $fieldmap[$fieldname]['usedinconditions'] = $usedinconditions;
+                        $fieldmap[$fieldname]['questionSeq'] = $questionSeq;
+                        $fieldmap[$fieldname]['groupSeq'] = $groupSeq;
+                        $fieldmap[$fieldname]['other'] = $arow['other'];
+                    }
+                }
+            }
+        }
+        if (isset($fieldmap[$fieldname])) {
+            //set question relevance (uses last SQ's relevance field for question relevance)
+            $fieldmap[$fieldname]['relevance'] = $arow['relevance'];
+            $fieldmap[$fieldname]['grelevance'] = $arow['grelevance'];
+            $fieldmap[$fieldname]['questionSeq'] = $questionSeq;
+            $fieldmap[$fieldname]['groupSeq'] = $groupSeq;
+            $fieldmap[$fieldname]['preg'] = $arow['preg'];
+            $fieldmap[$fieldname]['other'] = $arow['other'];
+            $fieldmap[$fieldname]['help'] = $arow['help'];
+            // Set typeName
+        } else {
+            --$questionSeq; // didn't generate a valid $fieldmap entry, so decrement the question counter to ensure they are sequential
+        }
+
+        if (isset($fieldmap[$fieldname]['typename'])) {
+            $fieldmap[$fieldname]['typename'] = $typename[$fieldname] = $arow['typename'];
+        }
+    }
+    return $fieldmap;
+}
 
 /**
  * Import previously archived tables to ArchivedTableSettings
