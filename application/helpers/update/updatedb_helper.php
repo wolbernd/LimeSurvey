@@ -4724,7 +4724,7 @@ function updateEncryptedValues450(CDbConnection $oDB)
 /**
  * Update encryption for CPDB participants
  *
- * @param $oDB
+ * @param CDbConnection $oDB
  * @return void
  */
 function decryptCPDBTable450($oDB)
@@ -4824,7 +4824,7 @@ function decryptParticipantTables450($oDB)
 /**
  * Update encryption for survey responses
  *
- * @param $oDB
+ * @param CDbConnection $oDB
  * @return void
  * @throws CException
  */
@@ -4863,8 +4863,10 @@ function decryptResponseTables450($oDB)
 /**
  * Update Encryption for archived tables
  *
- * @param $oDB
+ * @param CDbConnection $oDB
  * @return void
+ * @throws CDbException
+ * @throws CException
  */
 function decryptArchivedTables450($oDB)
 {
@@ -4900,7 +4902,6 @@ function decryptArchivedTables450($oDB)
                 // default attributes
                 foreach ($tokenencryptionoptions['columns'] as $column => $encrypted) {
                     $columnEncryptions[$column]['encrypted'] = $encrypted;
-                    $tokenencryptionoptions[$column]['encrypted'] = $encrypted === 'Y' ? 'Y' : 'N';
                 }
 
                 // find custom attribute column names
@@ -4918,7 +4919,6 @@ function decryptArchivedTables450($oDB)
                     } else {
                         $columnEncryptions[$attributeName]['encrypted'] = 'N';
                     }
-                    $tokenencryptionoptions[$attributeName]['encrypted'] = $tokenencryptionoptions[$attributeName]['encrypted'] === 'Y' ? 'Y' : 'N';
                 }
                 if (isset($columnEncryptions) && $columnEncryptions) {
                     foreach ($archivedTableRows as $archivedToken) {
