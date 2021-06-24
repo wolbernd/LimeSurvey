@@ -156,10 +156,10 @@ class LSSodium
      */
     protected function generateEncryptionKeys()
     {
-        if (is_file(APPPATH . 'config/security.php')) {
-            // Never replace an existing file
-            throw new CException(500, gT("Configuration file already exist"));
-        }
+//        if (is_file(APPPATH . 'config/security.php')) {
+//            // Never replace an existing file
+//            throw new CException(500, gT("Configuration file already exist"));
+//        }
         $sEncryptionNonce = sodium_bin2hex(random_bytes(ParagonIE_Sodium_Compat::CRYPTO_SECRETBOX_NONCEBYTES));
         $sEncryptionSecretBoxKey = sodium_bin2hex(ParagonIE_Sodium_Compat::crypto_secretbox_keygen());
         $sEncryptionKeypair = $this->getEncryptionKey();

@@ -4715,7 +4715,6 @@ function db_upgrade_all($iOldDBVersion, $bSilent = false)
 function updateEncryptedValues450(CDbConnection $oDB)
 {
     Yii::app()->sodium;
-
     decryptarchivedtables450($oDB);
     decryptResponseTables450($oDB);
     decryptParticipantTables450($oDB);
@@ -4755,7 +4754,7 @@ function decryptCPDBTable450($oDB)
 
 /**
  * Update encryption for survey participants
- * @param $oDB
+ * @param CDbConnection $oDB
  * @return void
  */
 function decryptParticipantTables450($oDB)
@@ -4766,11 +4765,16 @@ function decryptParticipantTables450($oDB)
         ->from('{{surveys}}')
         ->queryAll();
     foreach ($surveys as $survey) {
+        $tableSchema = $oDB->getSchema()->getTable("{{tokens_{$survey['sid']}}}");
+        if (!isset($tableSchema)) {
+            continue;
+        }
+        $oDB->getSchema()->getTable("{{tokens_{$survey['sid']}}}");
         $tokens = $oDB->createCommand()
             ->select('*')
             ->from("{{tokens_{$survey['sid']}}}")
             ->queryAll();
-        $tokenencryptionoptions = json_decode($survey['tokenencryptionoptions']);
+        $tokenencryptionoptions = json_decode($survey['tokenencryptionoptions'], true);
         // default attributes
         foreach ($tokenencryptionoptions['columns'] as $column => $attributeName) {
             $columnEncryptions[$column]['encrypted'] = $tokenencryptionoptions['columns'][$column];
@@ -4778,8 +4782,6 @@ function decryptParticipantTables450($oDB)
             $tokenencryptionoptions[$column] = [
                 'encrypted' => $tokenencryptionoptions[$column]['encrypted'] === 'Y' ? 'Y' : 'N',
             ];
-
-            $aTokenencryptionoptions['columns'][$column] = $tokenencryptionoptions[$column]['encrypted'];
         }
 
         // find custom attribute column names
@@ -4793,7 +4795,7 @@ function decryptParticipantTables450($oDB)
         // custom attributes
         foreach ($aCustomAttributes as $attributeName) {
             if (isset(json_decode($survey['attributedescriptions'])->$attributeName->encrypted)) {
-                $columnEncryptions[$attributeName]['encrypted'] = json_decode($survey['attributedescriptions'])[$attributeName]['encrypted'];
+                $columnEncryptions[$attributeName]['encrypted'] = json_decode($survey['attributedescriptions'], true)[$attributeName]['encrypted'];
             } else {
                 $columnEncryptions[$attributeName]['encrypted'] = 'N';
             }
@@ -4831,8 +4833,13 @@ function decryptResponseTables450($oDB)
     $surveys = $oDB->createCommand()
         ->select('*')
         ->from('{{surveys}}')
+        ->where('active =:active', ['active' => 'Y'])
         ->queryAll();
     foreach ($surveys as $survey) {
+        $tableSchema = $oDB->getSchema()->getTable("{{survey_{$survey['sid']}}}");
+        if (!isset($tableSchema)) {
+            continue;
+        }
         $responses = $oDB->createCommand()
             ->select('*')
             ->from("{{survey_{$survey['sid']}}}")
@@ -4863,6 +4870,10 @@ function decryptArchivedTables450($oDB)
 {
     $archivedTablesSettings = $oDB->createCommand('SELECT * FROM {{archived_table_settings}}')->queryAll();
     foreach ($archivedTablesSettings as $archivedTableSettings) {
+        $tableSchema = $oDB->getSchema()->getTable("{{{$archivedTableSettings['tbl_name']}}}");
+        if (!isset($tableSchema)) {
+            continue;
+        }
         $surveyId = $archivedTableSettings['survey_id'];
         $archivedTableRows = $oDB
             ->createCommand()
@@ -4879,26 +4890,21 @@ function decryptArchivedTables450($oDB)
         $archivedTableSettingsArray = json_decode($archivedTableSettings['properties'], true);
         foreach ($archivedTableSettingsArray as $archivedTableSetting) {
             if ($archivedTableSetting === 'unknown') {
-                continue;
+                continue 2;
             }
         }
         if ($archivedTableSettings['tbl_type'] === 'token') {
             if ($archivedTableSettings['properties']) {
-                $tokenencryptionoptions = json_decode($archivedTableSettings['properties']);
+                $tokenencryptionoptions = json_decode($archivedTableSettings['properties'], true);
 
                 // default attributes
-                foreach ($tokenencryptionoptions['columns'] as $column => $attributeName) {
-                    $columnEncryptions[$column]['encrypted'] = $tokenencryptionoptions['columns'][$column];
-
-                    $tokenencryptionoptions[$column] = [
-                        'encrypted' => $tokenencryptionoptions[$column]['encrypted'] === 'Y' ? 'Y' : 'N',
-                    ];
-
-                    $aTokenencryptionoptions['columns'][$column] = $tokenencryptionoptions[$column]['encrypted'];
+                foreach ($tokenencryptionoptions['columns'] as $column => $encrypted) {
+                    $columnEncryptions[$column]['encrypted'] = $encrypted;
+                    $tokenencryptionoptions[$column]['encrypted'] = $encrypted === 'Y' ? 'Y' : 'N';
                 }
 
                 // find custom attribute column names
-                $table = $oDB->schema->getTable($archivedTableSettings['tbl_name']);
+                $table = $oDB->schema->getTable("{{{$archivedTableSettings['tbl_name']}}}");
                 if (!$table) {
                     $aCustomAttributes = [];
                 } else {
@@ -4908,13 +4914,11 @@ function decryptArchivedTables450($oDB)
                 // custom attributes
                 foreach ($aCustomAttributes as $attributeName) {
                     if (isset(json_decode($survey['attributedescriptions'])->$attributeName->encrypted)) {
-                        $columnEncryptions[$attributeName]['encrypted'] = json_decode($survey['attributedescriptions'])[$attributeName]['encrypted'];
+                        $columnEncryptions[$attributeName]['encrypted'] = json_decode($survey['attributedescriptions'], true)[$attributeName]['encrypted'];
                     } else {
                         $columnEncryptions[$attributeName]['encrypted'] = 'N';
                     }
-                    $tokenencryptionoptions[$attributeName] = [
-                        'encrypted' => $tokenencryptionoptions[$attributeName]['encrypted'] === 'Y' ? 'Y' : 'N',
-                    ];
+                    $tokenencryptionoptions[$attributeName]['encrypted'] = $tokenencryptionoptions[$attributeName]['encrypted'] === 'Y' ? 'Y' : 'N';
                 }
                 if (isset($columnEncryptions) && $columnEncryptions) {
                     foreach ($archivedTableRows as $archivedToken) {
@@ -4935,7 +4939,7 @@ function decryptArchivedTables450($oDB)
 
         if ($archivedTableSettings['tbl_type'] === 'response') {
             $responseTableSchema = $oDB->schema->getTable("{{{$archivedTableSettings['tbl_name']}}}");
-            $encryptedResponseAttributes = json_decode($archivedTableSettings['properties']);
+            $encryptedResponseAttributes = json_decode($archivedTableSettings['properties'], true);
 
             $fieldMap = [];
             foreach ($responseTableSchema->getColumnNames() as $name) {
