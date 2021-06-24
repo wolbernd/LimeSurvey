@@ -162,9 +162,9 @@ class LSSodium
 //        }
         $sEncryptionNonce = sodium_bin2hex(random_bytes(ParagonIE_Sodium_Compat::CRYPTO_SECRETBOX_NONCEBYTES));
         $sEncryptionSecretBoxKey = sodium_bin2hex(ParagonIE_Sodium_Compat::crypto_secretbox_keygen());
-        $sEncryptionKeypair = $this->getEncryptionKey();
-        $sEncryptionPublicKey = $this->getEncryptionPublicKey();
-        $sEncryptionSecretKey = $this->getEncryptionSecretKey();
+        $sEncryptionKeypair = sodium_bin2hex($this->getEncryptionKey());
+        $sEncryptionPublicKey = sodium_bin2hex($this->getEncryptionPublicKey());
+        $sEncryptionSecretKey = sodium_bin2hex($this->getEncryptionSecretKey());
 
         if (empty($sEncryptionNonce) || empty($sEncryptionSecretBoxKey)) {
             return;
@@ -191,13 +191,13 @@ class LSSodium
             . "\n"
             . "\$config = array();" . "\n";
         if ($sEncryptionKeypair) {
-            $sConfig .= "//\$config['encryptionkeypair'] = '" . $sEncryptionKeypair . "';" . "\n";
+            $sConfig .= "\$config['encryptionkeypair'] = '" . $sEncryptionKeypair . "';" . "\n";
         }
         if ($sEncryptionPublicKey) {
-            $sConfig .= "//\$config['encryptionpublickey'] = '" . $sEncryptionPublicKey . "';" . "\n";
+            $sConfig .= "\$config['encryptionpublickey'] = '" . $sEncryptionPublicKey . "';" . "\n";
         }
         if ($sEncryptionSecretKey) {
-            $sConfig .= "//\$config['encryptionsecretkey'] = '" . $sEncryptionSecretKey . "';" . "\n";
+            $sConfig .= "\$config['encryptionsecretkey'] = '" . $sEncryptionSecretKey . "';" . "\n";
         }
         $sConfig .= "\$config['encryptionnonce'] = '" . $sEncryptionNonce . "';" . "\n"
             . "\$config['encryptionsecretboxkey'] = '" . $sEncryptionSecretBoxKey . "';" . "\n"
