@@ -4845,11 +4845,11 @@ function decryptResponseTables450($oDB)
             ->from("{{survey_{$survey['sid']}}}")
             ->queryAll();
         $fieldmapFields = createFieldMap450($survey);
-        foreach ($responses as $key => $response) {
+        foreach ($responses as $response) {
             $recryptedResponse = [];
-            foreach ($fieldmapFields as $field) {
+            foreach ($fieldmapFields as $fieldname => $field) {
                 if (array_key_exists('encrypted', $field) && $field['encrypted'] === 'Y') {
-                    $decryptedResponseField = LSActiveRecord::decryptSingleOld($response[$field]);
+                    $decryptedResponseField = LSActiveRecord::decryptSingleOld($response[$fieldname]);
                     $recryptedResponse[$field] = LSActiveRecord::encryptSingle($decryptedResponseField);
                 }
             }
@@ -5272,11 +5272,11 @@ function createFieldMap450($survey): array
             }
         } elseif ($arow['type'] === Question::QT_R_RANKING_STYLE) {
             // Sub question by answer number OR attribute
-            $answersCount = Yii::app()->db->createCommand()
+            $answersCount = count(Yii::app()->db->createCommand()
                 ->select('*')
                 ->from('{{answers}}')
-                ->where('qid', $arow['qid'])
-                ->queryAll()->count();
+                ->where('qid = :qid', ['qid' => $arow['qid']])
+                ->queryAll());
             $maxDbAnswer = Yii::app()->db->createCommand()
                 ->select('*')
                 ->from('{{question_attributes}}')
