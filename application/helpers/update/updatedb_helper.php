@@ -4740,14 +4740,14 @@ function decryptCPDBTable450($oDB)
         ->queryAll();
     foreach ($CPDBParticipants as $CPDBParticipant) {
         $recryptedParticipant = [];
-        foreach ($participantAttributeNames as $participantAttributeName) {
-            if ($participantAttributeName['encrypted'] === 'Y') {
-                $decrypedParticipantAttribute = LSActiveRecord::decryptSingleOld($CPDBParticipant[$participantAttributeName]);
-                $recryptedParticipant[$participantAttributeName] = LSActiveRecord::encryptSingle($decrypedParticipantAttribute);
+        foreach ($participantAttributeNames as $participantAttributeName => $participantAttributeValue) {
+            if ($participantAttributeValue['encrypted'] === 'Y') {
+                $decrypedParticipantAttribute = LSActiveRecord::decryptSingleOld($CPDBParticipant[$participantAttributeValue['defaultname']]);
+                $recryptedParticipant[$participantAttributeValue['defaultname']] = LSActiveRecord::encryptSingle($decrypedParticipantAttribute);
             }
         }
         if ($recryptedParticipant) {
-            $oDB->createCommand()->update('{{participants}}', $recryptedParticipant, 'participant_id=' . $CPDBParticipant['participant_id']);
+            $oDB->createCommand()->update('{{participants}}', $recryptedParticipant, 'participant_id=' . $oDB->quoteValue($CPDBParticipant['participant_id']));
         }
     }
 }
@@ -4769,23 +4769,19 @@ function decryptParticipantTables450($oDB)
         if (!isset($tableSchema)) {
             continue;
         }
-        $oDB->getSchema()->getTable("{{tokens_{$survey['sid']}}}");
         $tokens = $oDB->createCommand()
             ->select('*')
             ->from("{{tokens_{$survey['sid']}}}")
             ->queryAll();
         $tokenencryptionoptions = json_decode($survey['tokenencryptionoptions'], true);
-        // default attributes
-        foreach ($tokenencryptionoptions['columns'] as $column => $attributeName) {
-            $columnEncryptions[$column]['encrypted'] = $tokenencryptionoptions['columns'][$column];
 
-            $tokenencryptionoptions[$column] = [
-                'encrypted' => $tokenencryptionoptions[$column]['encrypted'] === 'Y' ? 'Y' : 'N',
-            ];
+        // default attributes
+        foreach ($tokenencryptionoptions['columns'] as $column => $encrypted) {
+            $columnEncryptions[$column]['encrypted'] = $encrypted;
         }
 
         // find custom attribute column names
-        $table = $oDB->schema->getTable("{{survey_{$survey['sid']}}}");
+        $table = $oDB->schema->getTable("{{tokens_{$survey['sid']}}}");
         if (!$table) {
             $aCustomAttributes = [];
         } else {
@@ -4799,22 +4795,19 @@ function decryptParticipantTables450($oDB)
             } else {
                 $columnEncryptions[$attributeName]['encrypted'] = 'N';
             }
-            $tokenencryptionoptions[$attributeName] = [
-                'encrypted' => $tokenencryptionoptions[$attributeName]['encrypted'] === 'Y' ? 'Y' : 'N',
-            ];
         }
 
         if (isset($columnEncryptions) && $columnEncryptions) {
             foreach ($tokens as $token) {
                 $recryptedToken = [];
-                foreach ($tokenencryptionoptions as $column => $value) {
-                    if ($columnEncryptions[$column]['encrypted'] === 'Y' && $tokenencryptionoptions[$column]['encrypted'] === 'N') {
+                foreach ($columnEncryptions as $column => $value) {
+                    if ($columnEncryptions[$column]['encrypted'] === 'Y') {
                         $decryptedTokenColumn = LSActiveRecord::decryptSingleOld($token[$column]);
                         $recryptedToken[$column] = LSActiveRecord::encryptSingle($decryptedTokenColumn);
                     }
                 }
                 if ($recryptedToken) {
-                    $oDB->createCommand()->update("{{survey_{$survey['sid']}}}", $recryptedToken, 'tid=' . $token['tid']);
+                    $oDB->createCommand()->update("{{tokens_{$survey['sid']}}}", $recryptedToken, 'tid=' . $token['tid']);
                 }
             }
         }
@@ -4850,11 +4843,13 @@ function decryptResponseTables450($oDB)
             foreach ($fieldmapFields as $fieldname => $field) {
                 if (array_key_exists('encrypted', $field) && $field['encrypted'] === 'Y') {
                     $decryptedResponseField = LSActiveRecord::decryptSingleOld($response[$fieldname]);
-                    $recryptedResponse[$field] = LSActiveRecord::encryptSingle($decryptedResponseField);
+                    $recryptedResponse[$fieldname] = LSActiveRecord::encryptSingle($decryptedResponseField);
                 }
             }
             if ($recryptedResponse) {
-                $oDB->createCommand()->update("{{survey_{$survey['sid']}}}", $recryptedResponse, 'id=' . $response['id']);
+                // use createUpdateCommand() because the update() function does not properly escape auto generated params causing errors
+                $criteria = $oDB->getCommandBuilder()->createCriteria('id=:id', ['id' => $response['id']]);
+                $oDB->getCommandBuilder()->createUpdateCommand("{{survey_{$survey['sid']}}}", $recryptedResponse, $criteria)->execute();
             }
         }
     }
@@ -4922,15 +4917,15 @@ function decryptArchivedTables450($oDB)
                 }
                 if (isset($columnEncryptions) && $columnEncryptions) {
                     foreach ($archivedTableRows as $archivedToken) {
-                        $recryptedTokenColumns = [];
-                        foreach ($tokenencryptionoptions as $column => $value) {
-                            if ($columnEncryptions[$column]['encrypted'] === 'Y' && $tokenencryptionoptions[$column]['encrypted'] === 'N') {
-                                $decryptedColumnValue = LSActiveRecord::decryptSingleOld($archivedToken[$column]);
-                                $recryptedTokenColumns[$column] = LSActiveRecord::encryptSingle($decryptedColumnValue);
+                        $recryptedToken = [];
+                        foreach ($columnEncryptions as $column => $value) {
+                            if ($columnEncryptions[$column]['encrypted'] === 'Y') {
+                                $decryptedTokenColumn = LSActiveRecord::decryptSingleOld($archivedToken[$column]);
+                                $recryptedToken[$column] = LSActiveRecord::encryptSingle($decryptedTokenColumn);
                             }
                         }
-                        if ($recryptedTokenColumns) {
-                            $oDB->createCommand()->update("{{{$archivedTableSettings['tbl_name']}}}", $recryptedTokenColumns, 'tid=' . $archivedToken['tid']);
+                        if ($recryptedToken) {
+                            $oDB->createCommand()->update("{{{$archivedTableSettings['tbl_name']}}}", $recryptedToken, 'tid=' . $archivedToken['tid']);
                         }
                     }
                 }
@@ -4955,10 +4950,13 @@ function decryptArchivedTables450($oDB)
                     if (in_array($column, $encryptedResponseAttributes, false)) {
                         $decryptedColumnValue = LSActiveRecord::decryptSingleOld($archivedResponse[$column]);
                         $recryptedResponseValues[$column] = LSActiveRecord::encryptSingle($decryptedColumnValue);
+
                     }
                 }
                 if ($recryptedResponseValues) {
-                    $oDB->createCommand()->update("{{{$archivedTableSettings['tbl_name']}}}", $recryptedResponseValues, 'id=' . $archivedResponse['id']);
+                    // use createUpdateCommand() because the update() function does not properly escape auto generated params causing errors
+                    $criteria = $oDB->getCommandBuilder()->createCriteria('id=:id', ['id' => $archivedResponse['id']]);
+                    $oDB->getCommandBuilder()->createUpdateCommand("{{{$archivedTableSettings['tbl_name']}}}", $recryptedResponseValues, $criteria)->execute();
                 }
             }
         }
@@ -5024,39 +5022,38 @@ function createFieldMap450($survey): array
             static $cacheMemo = [];
             $cacheKey = $arow['value'] . '_' . $arow['type'];
             if (isset($cacheMemo[$cacheKey])) {
-                return $cacheMemo[$cacheKey];
-            }
-
-            if ($arow['value'] === 'core') {
-                $questionTheme = Yii::app()->db->createCommand()
-                    ->select('*')
-                    ->from('{{question_themes}}')
-                    ->where('question_type=:question_type AND extends=:extends', ['question_type' => $arow['type'], 'extends' => ''])
-                    ->queryAll();
+                $answerColumnDefinition = $cacheMemo[$cacheKey];
             } else {
-                $questionTheme = Yii::app()->db->createCommand()
-                    ->select('*')
-                    ->from('{{question_themes}}')
-                    ->where('name=:name AND question_type=:question_type', ['name' => $arow['value'], 'question_type' => $arow['type']])
-                    ->queryAll();
-            }
+                if ($arow['value'] === 'core') {
+                    $questionTheme = Yii::app()->db->createCommand()
+                        ->select('*')
+                        ->from('{{question_themes}}')
+                        ->where('question_type=:question_type AND extends=:extends', ['question_type' => $arow['type'], 'extends' => ''])
+                        ->queryAll();
+                } else {
+                    $questionTheme = Yii::app()->db->createCommand()
+                        ->select('*')
+                        ->from('{{question_themes}}')
+                        ->where('name=:name AND question_type=:question_type', ['name' => $arow['value'], 'question_type' => $arow['type']])
+                        ->queryAll();
+                }
 
-            $answerColumnDefinition = '';
-            if (isset($questionTheme['xml_path'])) {
-                if (PHP_VERSION_ID < 80000) {
-                    $bOldEntityLoaderState = libxml_disable_entity_loader(true);
+                $answerColumnDefinition = '';
+                if (isset($questionTheme['xml_path'])) {
+                    if (PHP_VERSION_ID < 80000) {
+                        $bOldEntityLoaderState = libxml_disable_entity_loader(true);
+                    }
+                    $sQuestionConfigFile = file_get_contents(App()->getConfig('rootdir') . DIRECTORY_SEPARATOR . $questionTheme['xml_path'] . DIRECTORY_SEPARATOR . 'config.xml');  // @see: Now that entity loader is disabled, we can't use simplexml_load_file; so we must read the file with file_get_contents and convert it as a string
+                    $oQuestionConfig = simplexml_load_string($sQuestionConfigFile);
+                    if (isset($oQuestionConfig->metadata->answercolumndefinition)) {
+                        $answerColumnDefinition = json_decode(json_encode($oQuestionConfig->metadata->answercolumndefinition), true)[0];
+                    }
+                    if (PHP_VERSION_ID < 80000) {
+                        libxml_disable_entity_loader($bOldEntityLoaderState);
+                    }
                 }
-                $sQuestionConfigFile = file_get_contents(App()->getConfig('rootdir') . DIRECTORY_SEPARATOR . $questionTheme['xml_path'] . DIRECTORY_SEPARATOR . 'config.xml');  // @see: Now that entity loader is disabled, we can't use simplexml_load_file; so we must read the file with file_get_contents and convert it as a string
-                $oQuestionConfig = simplexml_load_string($sQuestionConfigFile);
-                if (isset($oQuestionConfig->metadata->answercolumndefinition)) {
-                    $answerColumnDefinition = json_decode(json_encode($oQuestionConfig->metadata->answercolumndefinition), true)[0];
-                }
-                if (PHP_VERSION_ID < 80000) {
-                    libxml_disable_entity_loader($bOldEntityLoaderState);
-                }
+                $cacheMemo[$cacheKey] = $answerColumnDefinition;
             }
-
-            $cacheMemo[$cacheKey] = $answerColumnDefinition;
         }
 
         // Field identifier
