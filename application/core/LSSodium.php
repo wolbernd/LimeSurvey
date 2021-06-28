@@ -156,12 +156,14 @@ class LSSodium
      */
     protected function generateEncryptionKeys()
     {
+        // commented out to be able to generate new keys for encryption update, also this function will only be executed if no key is available and is redundant.
 //        if (is_file(APPPATH . 'config/security.php')) {
 //            // Never replace an existing file
 //            throw new CException(500, gT("Configuration file already exist"));
 //        }
         $sEncryptionNonce = sodium_bin2hex(random_bytes(ParagonIE_Sodium_Compat::CRYPTO_SECRETBOX_NONCEBYTES));
         $sEncryptionSecretBoxKey = sodium_bin2hex(ParagonIE_Sodium_Compat::crypto_secretbox_keygen());
+        // old keys used for encryption are still available as a backup if they have been used before
         $sEncryptionKeypair = sodium_bin2hex($this->getEncryptionKey());
         $sEncryptionPublicKey = sodium_bin2hex($this->getEncryptionPublicKey());
         $sEncryptionSecretKey = sodium_bin2hex($this->getEncryptionSecretKey());

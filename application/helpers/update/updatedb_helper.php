@@ -4781,11 +4781,10 @@ function decryptParticipantTables450($oDB)
         }
 
         // find custom attribute column names
-        $table = $oDB->schema->getTable("{{tokens_{$survey['sid']}}}");
-        if (!$table) {
+        if (!$tableSchema) {
             $aCustomAttributes = [];
         } else {
-            $aCustomAttributes = array_filter(array_keys($table->columns), 'filterForAttributes');
+            $aCustomAttributes = array_filter(array_keys($tableSchema->columns), 'filterForAttributes');
         }
 
         // custom attributes
@@ -5269,11 +5268,11 @@ function createFieldMap450($survey): array
             }
         } elseif ($arow['type'] === Question::QT_R_RANKING_STYLE) {
             // Sub question by answer number OR attribute
-            $answersCount = count(Yii::app()->db->createCommand()
-                ->select('*')
+            $answersCount = Yii::app()->db->createCommand()
+                ->select('count(*)')
                 ->from('{{answers}}')
                 ->where('qid = :qid', ['qid' => $arow['qid']])
-                ->queryAll());
+                ->queryScalar();
             $maxDbAnswer = Yii::app()->db->createCommand()
                 ->select('*')
                 ->from('{{question_attributes}}')
