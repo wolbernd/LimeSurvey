@@ -4949,7 +4949,6 @@ function decryptArchivedTables450($oDB)
                     if (in_array($column, $encryptedResponseAttributes, false)) {
                         $decryptedColumnValue = LSActiveRecord::decryptSingleOld($archivedResponse[$column]);
                         $recryptedResponseValues[$column] = LSActiveRecord::encryptSingle($decryptedColumnValue);
-
                     }
                 }
                 if ($recryptedResponseValues) {
