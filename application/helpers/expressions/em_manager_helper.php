@@ -36,6 +36,7 @@ Yii::import('application.helpers.expressions.warnings.EMWarningHTMLBaker', true)
 Yii::app()->loadHelper('database');
 Yii::app()->loadHelper('frontend');
 Yii::app()->loadHelper('surveytranslator');
+Yii::import("application.libraries.Date_Time_Converter");
 Yii::import('application.helpers.expressions.emcache.em_cache_exception', true);
 Yii::import('application.helpers.expressions.emcache.em_cache_helper', true);
 define('LEM_DEBUG_TIMING', 1);
@@ -3377,7 +3378,7 @@ class LimeExpressionManager
         $this->runtimeTimings[] = [__METHOD__ . ' - question_attributes_model->getQuestionAttributesForEM', (microtime(true) - $now)];
         $now = microtime(true);
 
-        $this->qans = $this->getAnswerSetsForEM($surveyid, null, $_SESSION['LEMlang']);
+        $this->qans = $this->getAnswerSetsForEM($surveyid, $_SESSION['LEMlang']);
 
         $this->runtimeTimings[] = [__METHOD__ . ' - answers_model->getAnswerSetsForEM', (microtime(true) - $now)];
         $now = microtime(true);
@@ -4648,8 +4649,8 @@ class LimeExpressionManager
                         } else {
                             // We don't really validate date here, anyone can send anything : forced too
                             $dateformatdatat = getDateFormatData($LEM->surveyOptions['surveyls_dateformat']);
-                            $datetimeobj = DateTime::createFromFormat($dateformatdatat['phpdate'], $value);
-                            $value = $datetimeobj->format("Y-m-d H:i");
+                            $datetimeobj = new Date_Time_Converter($value, $dateformatdatat['phpdate']);
+                            $value = $datetimeobj->convert("Y-m-d H:i");
                         }
                         break;
                     case Question::QT_N_NUMERICAL: //NUMERICAL QUESTION TYPE
@@ -8268,7 +8269,7 @@ report~numKids > 0~message~{name}, you said you are {age} and that you have {num
             $where .= " and a.qid = q.qid and q.sid = " . $surveyid;
         }
         if (!is_null($lang)) {
-            $where .= " and a.language='" . $lang . "'";
+            $where .= " and l.language='" . $lang . "'";
         }
 
         $sQuery = "SELECT a.qid, a.code, l.answer, a.scale_id, a.assessment_value"
@@ -8417,8 +8418,6 @@ report~numKids > 0~message~{name}, you said you are {age} and that you have {num
                                     /* @todo : test to reviewed : need to disable move */
                                 } else {
                                     $newValue = $dateTime->format("Y-m-d H:i");
-                                    // For an explanation about the exclamation mark, see this thread:
-                                    // http://stackoverflow.com/questions/43740037/datetime-converts-wrong-when-system-time-is-30-march                                $dateTime = DateTime::createFromFormat('!' . $aDateFormatData['phpdate'], trim($value));
                                     $newDateTime = DateTime::createFromFormat("!Y-m-d H:i", $newValue);
                                     if ($value == $newDateTime->format($aDateFormatData['phpdate'])) { // control if inverse function original value
                                         $value = $newValue;
@@ -9030,6 +9029,7 @@ report~numKids > 0~message~{name}, you said you are {age} and that you have {num
             </tr>\n";
 
         $_gseq = -1;
+        $baseQuestionThemes = QuestionTheme::findQuestionMetaDataForAllTypes();
         foreach ($LEM->currentQset as $q) {
             $gseq = $q['info']['gseq'];
             $gid = $q['info']['gid'];
@@ -9081,9 +9081,7 @@ report~numKids > 0~message~{name}, you said you are {age} and that you have {num
             //////
             $mandatory = (($q['info']['mandatory'] == 'Y' || $q['info']['mandatory'] == 'S') ? "<span class='mandatory'>*</span>" : '');
             $type = $q['info']['type'];
-            //$qtypes = Question::typeList();
-            $questionThemeMetaData = QuestionTheme::findQuestionMetaDataForAllTypes();
-            $typedesc = $questionThemeMetaData[$type]->title;
+            $typedesc = $baseQuestionThemes[$type]->title;
             $sgqas = explode('|', $q['sgqa']);
             $qReplacement = array_merge(
                 $standardsReplacementFields,

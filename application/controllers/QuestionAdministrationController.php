@@ -1194,7 +1194,8 @@ class QuestionAdministrationController extends LSBaseController
         $gid = (int)$gid;
         $qid = (int)$qid;
         $oQuestion = Question::model()->findByAttributes(['qid' => $qid, 'gid' => $gid,]);
-       // $aQuestionTypeMetadata = QuestionType::modelsAttributes();  this is old!
+        // $aQuestionTypeMetadata = QuestionType::modelsAttributes();  this is old!
+        // TODO: $questionMetaData should be $questionThemeSettings
         $questionMetaData = QuestionTheme::findQuestionMetaData($oQuestion->type)['settings'];
         $oSurvey = Survey::model()->findByPk($iSurveyID);
 
@@ -2987,22 +2988,23 @@ class QuestionAdministrationController extends LSBaseController
     }
 
     /**
-     * @param array $aQuestionTypeList Question Type List as Array
+     * @param QuestionTheme[] $questionThemes Question theme List
      * @return array
+     * @todo Move to PreviewModalWidget?
      */
-    private function getQuestionTypeGroups($aQuestionTypeList)
+    private function getQuestionTypeGroups(array $questionThemes)
     {
         $aQuestionTypeGroups = [];
 
-        uasort($aQuestionTypeList, "questionTitleSort");
-        foreach ($aQuestionTypeList as $questionType) {
-            $htmlReadyGroup = str_replace(' ', '_', strtolower($questionType['group']));
+        uasort($questionThemes, "questionTitleSort");
+        foreach ($questionThemes as $questionTheme) {
+            $htmlReadyGroup = str_replace(' ', '_', strtolower($questionTheme->group));
             if (!isset($aQuestionTypeGroups[$htmlReadyGroup])) {
                 $aQuestionTypeGroups[$htmlReadyGroup] = array(
-                    'questionGroupName' => $questionType['group']
+                    'questionGroupName' => $questionTheme->group
                 );
             }
-            $imageName = $questionType['question_type'];
+            $imageName = $questionTheme->question_type;
             if ($imageName == ":") {
                 $imageName = "COLON";
             } elseif ($imageName == "|") {
@@ -3010,19 +3012,22 @@ class QuestionAdministrationController extends LSBaseController
             } elseif ($imageName == "*") {
                 $imageName = "EQUATION";
             }
-            $questionType['type'] = $questionType['question_type'];
-            $questionType['detailpage'] = '
+            $questionThemeData = [];
+            $questionThemeData['title'] = $questionTheme->title;
+            $questionThemeData['name'] = $questionTheme->name;
+            $questionThemeData['type'] = $questionTheme->question_type;
+            $questionThemeData['detailpage'] = '
                 <div class="col-sm-12 currentImageContainer">
-                <img src="' . $questionType['image_path'] . '" />
+                <img src="' . $questionTheme->image_path . '" />
                 </div>';
             if ($imageName == 'S') {
-                $questionType['detailpage'] = '
+                $questionThemeData['detailpage'] = '
                     <div class="col-sm-12 currentImageContainer">
                     <img src="' . App()->getConfig('imageurl') . '/screenshots/' . $imageName . '.png" />
                     <img src="' . App()->getConfig('imageurl') . '/screenshots/' . $imageName . '2.png" />
                     </div>';
             }
-            $aQuestionTypeGroups[$htmlReadyGroup]['questionTypes'][] = $questionType;
+            $aQuestionTypeGroups[$htmlReadyGroup]['questionTypes'][] = $questionThemeData;
         }
         return $aQuestionTypeGroups;
     }
@@ -3100,5 +3105,48 @@ class QuestionAdministrationController extends LSBaseController
             echo $count > 0 ? 'false' : 'true';
         }
         Yii::app()->end();
+    }
+
+    /**
+     * Get HTML for question summary.
+     * Called with Ajax after question is saved.
+     *
+     * @param int $questionId
+     * @return void
+     */
+    public function actionGetSummaryHTML(int $questionId)
+    {
+        $question = Question::model()->findByPk($questionId);
+        if (empty($question)) {
+            throw new CHttpException(404, gT("Invalid question id"));
+        }
+        if (!Permission::model()->hasSurveyPermission($question->sid, 'surveycontent', 'read')) {
+            throw new CHttpException(403, gT('No permission'));
+        }
+
+        /** @var string */
+        $questionThemeName = $question->getQuestionAttribute('question_template');
+
+        /** @var QuestionTheme */
+        $questionTheme = QuestionTheme::findQuestionMetaData($question->type, $questionThemeName);
+        if (empty($questionTheme['extends'])) {
+            $questionTheme['name'] = 'core';    // Temporary solution for the issue 17346
+        }
+
+        /** @var array<string,array<mixed>> */
+        $advancedSettings = $this->getAdvancedOptions($question->qid, $question->type, $questionThemeName);
+        // Remove general settings from this array.
+        unset($advancedSettings['Attribute']);
+
+        $this->renderPartial(
+            "questionSummary",
+            [
+                'survey' => $question->survey,
+                'question' => $question,
+                'questionTheme' => $questionTheme,
+                'advancedSettings' => $advancedSettings,
+                'overviewVisibility' => false,  // Hidden by default
+            ]
+        );
     }
 }
