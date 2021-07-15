@@ -27,16 +27,15 @@ echo viewHelper::getViewTestTag('listSurveys');
         </div>
 
         <div id="surveygroups" class="tab-pane">
-            <div class="pagetitle h3 ls-space margin top-25"><?php eT('Survey groups'); ?></div>
             <div class="row">
-                <div class="col-sm-12 content-right">
+                <div class="col-sm-12 content-left">
                     <?php
                     $this->widget('bootstrap.widgets.TbGridView', array(
                         'dataProvider' => $groupModel->search(),
                         'columns' => $groupModel->columns,
                         'summaryText'=>gT('Displaying {start}-{end} of {count} result(s).').' ',
                         'itemsCssClass' =>'table-striped',
-                        'htmlOptions'=>array('style'=>'cursor: pointer;', 'class'=>'hoverAction grid-view'),
+                        'htmlOptions'=>array('class'=>'grid-view'),
                         'selectionChanged'=>"function(id){window.location='" . Yii::app()->urlManager->createUrl("admin/surveysgroups/sa/update/id" ) . '/' . "' + $.fn.yiiGridView.getSelection(id.split(',', 1));}",
                     ));
                     ?>
