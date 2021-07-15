@@ -35,20 +35,19 @@
                             ))),
 
                 'columns' => array(
-
                     array(
-                        'header'      => gT('User group ID'),
-                        'name'        => 'usergroup_id',
-                        'value'       => '$data->ugid',
-                        'htmlOptions' => array('class' => 'col-md-2'),
-                    ),
-
-                     array(
                         'header'      => gT('Actions'),
                         'name'        => 'actions',
                         'type'        => 'raw',
                         'value'       => '$data->buttons',
                         'htmlOptions' => array('class' => 'col-md-2 col-xs-1 text-left'),
+                    ),
+                    
+                    array(
+                        'header'      => gT('User group ID'),
+                        'name'        => 'usergroup_id',
+                        'value'       => '$data->ugid',
+                        'htmlOptions' => array('class' => 'col-md-2'),
                     ),
 
                     array(
