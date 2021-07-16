@@ -35,7 +35,7 @@
                 <?php endif; ?>
             <?php endif; ?>
 
-            <!-- List Surveys - Create a new Survey -->
+            <!-- List Surveys - Create Survey -->
             <?php if(isset($fullpagebar['listSurveys']['buttons']['createSurvey']) &&
                 Permission::model()->hasGlobalPermission('surveys','create')):?>
                 <a class="btn btn-default tab-dependent-button"
@@ -44,11 +44,11 @@
                    role="button"
                    style="margin-top: 10px; margin-bottom: 10px; display: none;">
                     <span class="icon-add text-success"></span>
-                    <?php eT("Create a new survey");?>
+                    <?php eT("Create survey");?>
                 </a>
             <?php endif;?>
 
-            <!-- List Surveys - Create a new Survey group -->
+            <!-- List Surveys - Create new Survey group -->
             <?php if(isset($fullpagebar['listSurveys']['buttons']['createSurveyGroup']) &&
                 Permission::model()->hasGlobalPermission('surveysgroups','create')):?>
                 <a class="btn btn-default tab-dependent-button"
@@ -57,7 +57,7 @@
                    role="button"
                    style="margin-top: 10px; margin-bottom: 10px; display: none;">
                     <span class="icon-add text-success"></span>
-                    <?php eT("Create a new survey group");?>
+                    <?php eT("Create survey group");?>
                 </a>
             <?php endif;?>
         </div>
