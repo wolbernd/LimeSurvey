@@ -321,7 +321,7 @@ class SurveysGroups extends LSActiveRecord implements PermissionInterface
         
         /* Can not delete group #1 + with survey (or move it to hasPermission function ?) */
         if ($this->gsid != 1 && !$this->hasSurveys && $this->hasPermission('group', 'delete')) {
-            $button .= '<a class="btn btn-default" href="#" data-href="' . $sDeleteUrl . '" data-target="#confirmation-modal" role="button" data-toggle="modal" data-message="' . gT('Do you want to continue?') . '" data-tooltip="true" title="' . gT('Delete survey group') . '"><i class="fa fa-trash text-danger " aria-hidden="true"></i><span class="sr-only">' . gT('Delete survey group') . '</span></a>';
+            $button .= '<a class="btn btn-default" href="#" data-href="' . $sDeleteUrl . '" data-target="#confirmation-modal" role="button" data-toggle="modal" data-message="' . gT('Do you want to continue?') . '" data-tooltip="true" title="' . gT('Delete survey group') . '"><i class="fa fa-trash red-border " aria-hidden="true"></i><span class="sr-only">' . gT('Delete survey group') . '</span></a>';
         }
 
         return $button;
