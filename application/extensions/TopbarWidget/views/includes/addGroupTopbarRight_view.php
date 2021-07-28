@@ -1,5 +1,5 @@
 <!-- Save -->
-<a id="save-button" style="margin-left: 5px;" class="btn btn-success pull-right" role="button">
+<a id="save-button" class="btn btn-success pull-right" role="button">
     <i class="fa fa-check"></i>
     <?php eT("Save"); ?>
 </a>
