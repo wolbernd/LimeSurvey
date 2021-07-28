@@ -11,7 +11,7 @@
     <a class="btn btn-default" 
        href="<?php echo $closeUrl; ?>"
        role="button" 
-       id="save-and-close-form-button"
+       id="save-and-close-button"
        onclick="$(this).addClass('disabled').attr('onclick', 'return false;');">
             <span class="fa fa-saved"></span>
             <?php eT("Save and close");?>
@@ -23,7 +23,7 @@
     <a class="btn btn-success" 
        href="<?php echo $closeUrl; ?>"
        role="button" 
-       id="save-and-close-form-button"
+       id="save-and-close-button"
        onclick="$(this).addClass('disabled').attr('onclick', 'return false;');">
             <span class="fa fa-saved"></span>
             <?php eT("Save and close");?>
