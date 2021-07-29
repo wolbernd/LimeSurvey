@@ -48,7 +48,7 @@ echo viewHelper::getViewTestTag('surveyMenuEntries');
   <!-- modal! -->
 
   <div class="modal fade" id="editcreatemenuentry" tabindex="-1" role="dialog">
-    <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-dialog" role="document">
       <div class="modal-content">
       </div>
     </div>
@@ -57,9 +57,11 @@ echo viewHelper::getViewTestTag('surveyMenuEntries');
   <div class="modal fade" id="deletemodal" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
-        <div class="modal-header">
-          <h4 class="modal-title"><?php eT("Really delete this survey menu entry?");?></h4>
-        </div>
+         <?php Yii::app()->getController()->renderPartial(
+          '/layouts/partial_modals/modal_header',
+          ['modalTitle' => gt('Really delete this survey menu entry').'?']
+          );
+         ?>
         <div class="modal-body">
           <?php eT("Please be careful - if you delete default entries you may not be able access some parts of the application."); ?>
         </div>
