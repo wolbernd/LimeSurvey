@@ -77,9 +77,11 @@ class TwoFactorAdminLogin extends AuthPluginBase
         ),
     );
 
+    /**
+     * Init
+     */
     public function init()
     {
-
         //System events
         $this->subscribe('direct');
         $this->subscribe('newDirectRequest');
@@ -277,6 +279,7 @@ class TwoFactorAdminLogin extends AuthPluginBase
         $aData = [
             'model' => $model,
             'pageSize' => $iPageSize,
+            'pageTitle' => gT('2-Factor-Authentication | User management'),
         ];
         $this->pageScripts();
 
@@ -404,7 +407,7 @@ class TwoFactorAdminLogin extends AuthPluginBase
      * Returns a String
      *
      * @param PluginEvent $oEvent
-     * @param string $sOption
+     * @param string $iUserId
      * @return string
      */
     public function deleteKeyForUserId($oEvent, $iUserId)
@@ -503,7 +506,6 @@ class TwoFactorAdminLogin extends AuthPluginBase
      */
     protected function pageScripts()
     {
-
         $assetsUrl = Yii::app()->assetManager->publish(dirname(__FILE__) . '/assets');
         Yii::app()->clientScript->registerScriptFile($assetsUrl . '/tfaScripts.js', LSYii_ClientScript::POS_HEAD);
         Yii::app()->clientScript->registerCssFile($assetsUrl . '/tfaStyles.css');

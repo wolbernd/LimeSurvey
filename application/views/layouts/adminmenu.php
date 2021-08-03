@@ -125,9 +125,6 @@
                 </li>
             <?php endforeach; ?>
 
-            <!-- Admin notification system -->
-            <?php echo $adminNotifications; ?>
-
             <li class="dropdown">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false" ><span class="icon-user" ></span> <?php echo Yii::app()->session['user'];?> <span class="caret"></span></a>
                 <ul class="dropdown-menu" role="menu">
@@ -136,17 +133,54 @@
                     </li>
 
                     <li class="divider"></li>
-
+                    
+                    <!-- 2FA Auth Plugin enabled -->
+                    <?php foreach ($extraMenus as $menu): ?>
+                                <li class="dropdown">
+                                    <?php if ($menu->isDropDown()): ?>
+                                        <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                                            <?php echo $menu->getLabel(); ?>
+                                                    &nbsp;
+                                                    <span class="caret"></span>
+                                        </a>
+                                            <ul class="dropdown-menu" role="menu">
+                                                <?php foreach ($menu->getMenuItems() as $menuItem): ?>
+                                                    <?php if ($menuItem->isDivider()): ?>
+                                                        <li class="divider"></li>
+                                                    <?php elseif ($menuItem->isSmallText()): ?>
+                                                        <li class="dropdown-header"><?php echo $menuItem->getLabel();?></li>
+                                                    <?php else: ?>
+                                                        <li>
+                                                            <a href="<?php echo $menuItem->getHref(); ?>">
+                                                                <!-- Spit out icon if present -->
+                                                                <?php if ($menuItem->getIconClass() != ''): ?>
+                                                                <span class="<?php echo $menuItem->getIconClass(); ?>">&nbsp;</span>
+                                                                <?php endif; ?>
+                                                                <?php echo $menuItem->getLabel(); ?>
+                                                            </a>
+                                                        </li>
+                                                    <?php endif; ?>
+                                                <?php endforeach; ?>
+                                            </ul>
+                                        </li>
+                                        <?php else: ?>
+                                        <li>
+                                            <a href="<?php echo $menu->getHref(); ?>"><?php echo $menu->getLabel(); ?></a>
+                                        </li>
+                                    <?php endif; ?>
+                                </li>
+                        <?php endforeach; ?>  
+                    
+                    <li class="divider"></li>
+                    
                     <!-- Logout -->
                     <li>
                         <a href="<?php echo $this->createUrl("admin/authentication/sa/logout"); ?>">
                             <?php eT("Logout");?>
                         </a>
                     </li>
-                </ul>
-            </li>
-
-        </ul>
+            <!-- Admin notification system -->
+            <?php echo $adminNotifications; ?>
     </div><!-- /.nav-collapse -->
 
     <!-- Maintenance mode -->

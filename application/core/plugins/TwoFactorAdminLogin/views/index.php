@@ -20,7 +20,7 @@ echo viewHelper::getViewTestTag('2faUsersIndex');
     App()->getClientScript()->registerScript('TFA-Management-wrap', 'window.TFA = window.TFA || new TFAUserManagementClass();', LSYii_ClientScript::POS_BEGIN);
 ?>
 
-<div class="container-fluid ls-space padding left-50 right-50">
+<div class="container-fluid ls-space padding">
     <div class="row">
         <div class="col-xs-12 h1 pagetitle">
             2-Factor-Authentication | User management
@@ -33,7 +33,7 @@ echo viewHelper::getViewTestTag('2faUsersIndex');
                 <?php
                     $this->widget('bootstrap.widgets.TbGridView', array(
                         'id' => 'tfa-usermanagement-gridPanel',
-                        'itemsCssClass' => 'table table-striped items',
+                        'itemsCssClass' => 'table table-hover',
                         'dataProvider' => $model->search(),
                         'columns' => $model->colums,
                         'filter' => $model,
