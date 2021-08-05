@@ -1115,6 +1115,7 @@ function populateDatabase($oDB)
             'tbl_type' => "string(10) NOT NULL",
             'created' => "datetime NOT NULL",
             'properties' => "text NOT NULL",
+            'attributes' => "text NULL",
         ], $options);
 
         // Install default plugins.

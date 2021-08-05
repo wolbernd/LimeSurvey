@@ -4633,6 +4633,13 @@ function db_upgrade_all($iOldDBVersion, $bSilent = false)
         if ($iOldDBVersion < 450) {
             $oTransaction = $oDB->beginTransaction();
 
+            $oDB->createCommand()->addColumn('{{archived_table_settings}}', 'attributes', 'text NULL');
+            $archivedTableSettings = Yii::app()->db->createCommand("SELECT * FROM {{archived_table_settings}}")->queryAll();
+            foreach ($archivedTableSettings as $archivedTableSetting) {
+                if ($archivedTableSetting['type'] === 'token') {
+                    $oDB->createCommand()->update('{{archived_table_settings}}', ['attributes' => json_encode(['unknown'])], 'id = :id', ['id' => $archivedTableSetting['id']]);
+                }
+            }
             updateEncryptedValues450($oDB);
 
             $oDB->createCommand()->update('{{settings_global}}', array('stg_value' => 450), "stg_name='DBVersion'");
@@ -4702,6 +4709,23 @@ function db_upgrade_all($iOldDBVersion, $bSilent = false)
             }
 
             $oDB->createCommand()->update('{{settings_global}}', ['stg_value' => 452], "stg_name='DBVersion'");
+            $oTransaction->commit();
+        }
+        if ($iOldDBVersion < 453) {
+            $oTransaction = $oDB->beginTransaction();
+
+            $columnSchema = $oDB->getSchema()->getTable('{{archived_table_settings}}')->getColumn('attributes');
+            if ($columnSchema === null) {
+                $oDB->createCommand()->addColumn('{{archived_table_settings}}', 'attributes', 'text NULL');
+            }
+            $archivedTableSettings = Yii::app()->db->createCommand("SELECT * FROM {{archived_table_settings}}")->queryAll();
+            foreach ($archivedTableSettings as $archivedTableSetting) {
+                if ($archivedTableSetting['tbl_type'] === 'token') {
+                    $oDB->createCommand()->update('{{archived_table_settings}}', ['attributes' => json_encode(['unknown'])], 'id = :id', ['id' => $archivedTableSetting['id']]);
+                }
+            }
+
+            $oDB->createCommand()->update('{{settings_global}}', ['stg_value' => 453], "stg_name='DBVersion'");
             $oTransaction->commit();
         }
     } catch (Exception $e) {
@@ -4864,8 +4888,10 @@ function decryptParticipantTables450($oDB)
         $tokenencryptionoptions = json_decode($survey['tokenencryptionoptions'], true);
 
         // default attributes
-        foreach ($tokenencryptionoptions['columns'] as $column => $encrypted) {
-            $columnEncryptions[$column]['encrypted'] = $encrypted;
+        if (!empty($tokenencryptionoptions)) {
+            foreach ($tokenencryptionoptions['columns'] as $column => $encrypted) {
+                $columnEncryptions[$column]['encrypted'] = $encrypted;
+            }
         }
 
         // find custom attribute column names
@@ -4980,9 +5006,18 @@ function decryptArchivedTables450($oDB)
             ->where('sid=:sid', ['sid' => $surveyId])
             ->queryRow();
         // if the encryption status is unknown
-        $archivedTableSettingsArray = json_decode($archivedTableSettings['properties'], true);
-        foreach ($archivedTableSettingsArray as $archivedTableSetting) {
-            if ($archivedTableSetting === 'unknown') {
+        $archivedTableSettingsProperties = json_decode($archivedTableSettings['properties'], true);
+        $archivedTableSettingsAttributes = json_decode($archivedTableSettings['attributes'], true);
+        if (!empty($archivedTableSettingsProperties['columns'])) {
+            continue;
+        }
+        foreach ($archivedTableSettingsProperties as $archivedTableProperty) {
+            if ($archivedTableProperty === 'unknown') {
+                continue 2;
+            }
+        }
+        foreach ($archivedTableSettingsAttributes as $archivedTableSettingsAttribute) {
+            if ($archivedTableSettingsAttribute === 'unknown') {
                 continue 2;
             }
         }

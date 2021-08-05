@@ -1576,6 +1576,7 @@ class SurveyAdministrationController extends LSBaseController
                     $archivedTokenSettings->tbl_type = 'token';
                     $archivedTokenSettings->created = $DBDate;
                     $archivedTokenSettings->properties = $aData['aSurveysettings']['tokenencryptionoptions'];
+                    $archivedTokenSettings->attributes = $aData['thissurvey']['attributedescriptions'];
                     $archivedTokenSettings->save();
 
                     $aData['tnewtable'] = $tnewtable;
