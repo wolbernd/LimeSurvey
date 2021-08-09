@@ -2560,7 +2560,7 @@ class tokens extends Survey_Common_Action
                     // if the encryption status is unknown
                     if ($tokenencryptionoption === 'unknown') {
                         $tokenencryptionoptions = json_encode($tokenencryptionoptionsOld);
-                        $tokenencryptionoptionsArray = $tokenencryptionoptions;
+                        $tokenencryptionoptionsArray = $tokenencryptionoptionsOld;
                     }
                 }
                 $attributedescriptions = $archivedTableSettings->attributes;
