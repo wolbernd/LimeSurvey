@@ -2611,6 +2611,18 @@ class tokens extends Survey_Common_Action
                 }
 
                 LimeExpressionManager::SetDirtyFlag(); // so that knows that survey participants tables have changed
+            } else {
+                $this->_renderWrappedTemplate(
+                    'token',
+                    [
+                        'message' => [
+                            'class' => 'message-box-error',
+                            'title'   => gT("Import failed"),
+                            'message' => gT("There are no matching settings to start the restore of the tokens table Error: 1628493792215")
+                        ]
+                    ],
+                    $aData
+                );
             }
         } else {
             Yii::app()->loadHelper('database');
