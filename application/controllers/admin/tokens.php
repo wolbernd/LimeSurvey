@@ -1253,18 +1253,19 @@ class tokens extends Survey_Common_Action
             $aTokenencryptionoptions['columns'][$column] = $aEncryptionSettings[$column]['encrypted'];
         }
 
-        // find custom attribute column names
-        $aCustomAttributes = getAttributeFieldNames($iSurveyId);
         // custom attributes
+        $aCustomAttributes = $oSurvey->getTokenAttributes();
         foreach ($aCustomAttributes as $column => $attributeName) {
-            if (isset(json_decode($oSurvey->attributedescriptions)->$attributeName->encrypted)) {
-                $aEncryptionSettingsOld[$attributeName]['encrypted'] = json_decode($oSurvey->attributedescriptions)->$attributeName->encrypted;
+            if (isset($attributeName['encrypted'])) {
+                $aEncryptionSettingsOld[$column]['encrypted'] = $attributeName['encrypted'];
             } else {
-                $aEncryptionSettingsOld[$attributeName]['encrypted'] = 'N';
+                $aEncryptionSettingsOld[$column]['encrypted'] = 'N';
             }
-            $aEncryptionSettings[$attributeName] = [
-                'encrypted' => $aEncryptionSettings[$attributeName]['encrypted'] === 'Y' ? 'Y' : 'N',
-            ];
+            if (isset($aEncryptionSettings[$column])) {
+                $aEncryptionSettings[$column] = [
+                    'encrypted' => $aEncryptionSettings[$column]['encrypted'] === 'Y' ? 'Y' : 'N',
+                ];
+            }
         }
 
         foreach ($oTokens as $token) {
@@ -2333,7 +2334,7 @@ class tokens extends Survey_Common_Action
             $archivedTokenSettings->tbl_type = 'token';
             $archivedTokenSettings->created = $DBDate;
             $archivedTokenSettings->properties = $aData['thissurvey']['tokenencryptionoptions'];
-            $archivedTokenSettings->attributes = $aData['thissurvey']['attributedescriptions'];
+            $archivedTokenSettings->attributes = json_encode($aData['thissurvey']['attributedescriptions']);
             $archivedTokenSettings->save();
 
             //Remove any survey_links to the CPDB
