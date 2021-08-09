@@ -4998,44 +4998,22 @@ function decryptArchivedTables450($oDB)
         if (!isset($tableSchema)) {
             continue;
         }
-        $surveyId = $archivedTableSettings['survey_id'];
-        $survey = $oDB
-            ->createCommand()
-            ->select('*')
-            ->from('{{surveys}}')
-            ->where('sid=:sid', ['sid' => $surveyId])
-            ->queryRow();
-        // if the encryption status is unknown
         $archivedTableSettingsProperties = json_decode($archivedTableSettings['properties'], true);
         $archivedTableSettingsAttributes = json_decode($archivedTableSettings['attributes'], true);
-        if (!empty($archivedTableSettingsProperties['columns'])) {
-            continue;
-        }
-        foreach ($archivedTableSettingsProperties as $archivedTableProperty) {
-            if ($archivedTableProperty === 'unknown') {
-                continue 2;
-            }
-        }
-        foreach ($archivedTableSettingsAttributes as $archivedTableSettingsAttribute) {
-            if ($archivedTableSettingsAttribute === 'unknown') {
-                continue 2;
-            }
-        }
 
+        // recrypt tokens
         if ($archivedTableSettings['tbl_type'] === 'token') {
-            $archivedTableRows = $oDB
-                ->createCommand()
-                ->select('*')
-                ->from("{{{$archivedTableSettings['tbl_name']}}}")
-                ->queryAll();
-            if ($archivedTableSettings['properties']) {
-                $tokenencryptionoptions = json_decode($archivedTableSettings['properties'], true);
+            // skip if the encryption status is unknown
+            if (isset($archivedTableSettingsProperties) && $archivedTableSettingsProperties[0] !== 'unknown') {
+                $tokenencryptionoptions = $archivedTableSettingsProperties;
 
                 // default attributes
                 foreach ($tokenencryptionoptions['columns'] as $column => $encrypted) {
                     $columnEncryptions[$column]['encrypted'] = $encrypted;
                 }
-
+            }
+            // skip if the encryption status is unknown
+            if (isset($archivedTableSettingsAttributes) && $archivedTableSettingsAttributes[0] !== 'unknown') {
                 // find custom attribute column names
                 $table = $oDB->schema->getTable("{{{$archivedTableSettings['tbl_name']}}}");
                 if (!$table) {
@@ -5045,40 +5023,44 @@ function decryptArchivedTables450($oDB)
                 }
 
                 // custom attributes
-                if ($survey) {
-                    foreach ($aCustomAttributes as $attributeName) {
-                        if (isset(json_decode($survey['attributedescriptions'])->$attributeName->encrypted)) {
-                            $columnEncryptions[$attributeName]['encrypted'] = json_decode($survey['attributedescriptions'], true)[$attributeName]['encrypted'];
-                        } else {
-                            $columnEncryptions[$attributeName]['encrypted'] = 'N';
-                        }
+                foreach ($aCustomAttributes as $attributeName) {
+                    if (isset(json_decode($archivedTableSettings['attributes'])->$attributeName->encrypted)) {
+                        $columnEncryptions[$attributeName]['encrypted'] = $archivedTableSettingsAttributes[$attributeName]['encrypted'];
+                    } else {
+                        $columnEncryptions[$attributeName]['encrypted'] = 'N';
                     }
                 }
-                if (isset($columnEncryptions) && $columnEncryptions) {
-                    foreach ($archivedTableRows as $archivedToken) {
-                        $recryptedToken = [];
-                        foreach ($columnEncryptions as $column => $value) {
-                            if ($columnEncryptions[$column]['encrypted'] === 'Y') {
-                                $decryptedTokenColumn = LSActiveRecord::decryptSingleOld($archivedToken[$column]);
-                                $recryptedToken[$column] = LSActiveRecord::encryptSingle($decryptedTokenColumn);
-                            }
+            }
+            if (isset($columnEncryptions) && $columnEncryptions) {
+                $archivedTableRows = $oDB
+                    ->createCommand()
+                    ->select('*')
+                    ->from("{{{$archivedTableSettings['tbl_name']}}}")
+                    ->queryAll();
+                foreach ($archivedTableRows as $archivedToken) {
+                    $recryptedToken = [];
+                    foreach ($columnEncryptions as $column => $value) {
+                        if ($value['encrypted'] === 'Y') {
+                            $decryptedTokenColumn = LSActiveRecord::decryptSingleOld($archivedToken[$column]);
+                            $recryptedToken[$column] = LSActiveRecord::encryptSingle($decryptedTokenColumn);
                         }
-                        if ($recryptedToken) {
-                            $oDB->createCommand()->update("{{{$archivedTableSettings['tbl_name']}}}", $recryptedToken, 'tid=' . $archivedToken['tid']);
-                        }
+                    }
+                    if ($recryptedToken) {
+                        $oDB->createCommand()->update("{{{$archivedTableSettings['tbl_name']}}}", $recryptedToken, 'tid=' . $archivedToken['tid']);
                     }
                 }
             }
         }
 
-        if ($archivedTableSettings['tbl_type'] === 'response') {
+        // recrypt responses // skip if the encryption status is unknown
+        if ($archivedTableSettings['tbl_type'] === 'response' && isset($archivedTableSettingsProperties) && $archivedTableSettingsProperties[0] !== 'unknown') {
             $responsesCount = $oDB->createCommand()
                 ->select('count(*)')
                 ->from("{{{$archivedTableSettings['tbl_name']}}}")
                 ->queryScalar();
             if ($responsesCount) {
                 $responseTableSchema = $oDB->schema->getTable("{{{$archivedTableSettings['tbl_name']}}}");
-                $encryptedResponseAttributes = json_decode($archivedTableSettings['properties'], true);
+                $encryptedResponseAttributes = $archivedTableSettingsProperties;
 
                 $fieldMap = [];
                 foreach ($responseTableSchema->getColumnNames() as $name) {
@@ -5217,7 +5199,7 @@ function createFieldMap450($survey): array
         // GXQXSXA
         // G=Group  Q=Question S=Subquestion A=Answer Option
         // If S or A don't exist then set it to 0
-        // Implicit (subqestion intermal to a question type ) or explicit qubquestions/answer count starts at 1
+        // Implicit (subqestion intermal to a question type) or explicit qubquestions/answer count starts at 1
 
         // Types "L", "!", "O", "D", "G", "N", "X", "Y", "5", "S", "T", "U"
         $fieldname = "{$arow['sid']}X{$arow['gid']}X{$arow['qid']}";
