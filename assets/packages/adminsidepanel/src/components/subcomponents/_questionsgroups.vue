@@ -225,7 +225,6 @@ export default {
           }
 
           return "";
-
         },
         questionHasCondition(question) {
             return question.relevance !== '1';
@@ -330,13 +329,15 @@ export default {
             if (this.questiongroupDragging) {
                 const targetPosition = parseInt(questiongroupObject.group_order);
                 const currentPosition = parseInt(this.draggedQuestionGroup.group_order);
-                if(Math.abs(parseInt(targetPosition)-parseInt(currentPosition)) == 1){
+                if (Math.abs(parseInt(targetPosition)-parseInt(currentPosition)) == 1) {
                     questiongroupObject.group_order = currentPosition;
                     this.draggedQuestionGroup.group_order = targetPosition
                 } 
                 
             } else {
-                if(window.SideMenuData.isActive) {return;}
+                if (window.SideMenuData.isActive) {
+                    return;
+                }
                 this.addActive(questiongroupObject.gid);
                 if (this.draggedQuestion.gid !== questiongroupObject.gid) {
                     const removedFromInital = LS.ld.remove(
@@ -402,10 +403,6 @@ export default {
     mounted() {
         this.active = this.$store.state.questionGroupOpenArray;
         this.updatePjaxLinks();
-
-        $(document).on("vue-reload-remote", () => {
-            //this.$forceUpdate();
-        });
     }
 };
 </script>

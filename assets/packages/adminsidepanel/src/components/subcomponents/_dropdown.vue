@@ -1,14 +1,3 @@
-<script>
-
-import ajaxMixin from '../../mixins/runAjax.js';
-
-export default {
-    props: {
-        'mainHref' : {type: String},
-        'mainTitle' : {type: String}
-    }
-}
-</script>
 
 <template>
     <div class="btn-group hidden-xs">
@@ -68,6 +57,17 @@ export default {
         </ul>
     </div>
 </template>
+<script>
+
+import ajaxMixin from '../../mixins/runAjax.js';
+
+export default {
+    props: {
+        'mainHref' : {type: String},
+        'mainTitle' : {type: String}
+    }
+}
+</script>
 <style lang="sass">
 
 </style>
