@@ -1,3 +1,12 @@
+<template>
+    <div class="ls-flex-column fill menu-pane overflow-enabled ls-space padding all-0 margin top-5" >
+        <div v-show="!loadingState"  v-for="menu in sortedMenues" :title="menu.title" :id="menu.id" class="ls-flex-row wrap ls-space padding all-0" v-bind:key="menu.id">
+            <label class="menu-label">{{menu.title}}</label>
+            <submenu :menu="menu"></submenu>
+        </div>
+        <loader-widget v-if="loadingState" id="sidemenuLoaderWidget" />
+    </div>
+</template>
 <script>
 import ajaxMethods from '../../mixins/runAjax.js';
 import Menuicon from './_menuicon.vue';
@@ -14,18 +23,22 @@ export default {
         'openSubpanelId' : {type: Number},
         loading: {type: Boolean, default: false}
     },
-    data(){
+    data() {
         return {
             menues : {},
         };
     },
     computed: {
-        sortedMenues(){
+        sortedMenues() {
             return LS.ld.orderBy(this.$store.state.sidemenus,(a)=>{return parseInt((a.ordering || 999999)) }, ['asc']);
         },
         loadingState: {
-            get() { return this.loading; },
-            set(newState) { this.$emit('changeLoadingState', newState); }
+            get() {
+                return this.loading;
+            },
+            set(newState) {
+                this.$emit('changeLoadingState', newState);
+            }
         }
     },
     methods:{
@@ -34,25 +47,21 @@ export default {
             let orderedArray = LS.ld.orderBy(entries,(a)=>{return parseInt((a.ordering || 999999)) }, ['asc']);            
             return orderedArray;
         },
-        setActiveMenuIndex(menuItem){
-            let activeMenuIndex = menuItem.id;
+        setActiveMenuIndex(menuItem) {
             this.$store.commit('lastMenuOpen', menuItem)
-            
         },
-        setActiveMenuItemIndex(menuItem){
-            let activeMenuIndex = menuItem.id;
-            this.$store.commit('lastMenuItemOpen', menuItem)
-            
+        setActiveMenuItemIndex(menuItem) {
+            this.$store.commit('lastMenuItemOpen', menuItem) 
         },
-        setOpenSubpanel(sId){
+        setOpenSubpanel(sId) {
             this.openSubpanelId = sId;
             this.$emit('menuselected', sId);
         },
-        debugOut(obj){
+        debugOut(obj) {
             return JSON.stringify(obj);
         }
     },
-    created(){
+    created() {
         this.$store.dispatch('getSidemenus')
         .then(
             (result) => {},
@@ -62,25 +71,12 @@ export default {
             (result) => { this.loadingState = false }
         );
     },
-    mounted(){
+    mounted() {
         const self = this;
         this.updatePjaxLinks();
-
-        $(document).on('vue-reload-remote', ()=>{
-            //this.$forceUpdate();
-        });
     }
 }
 </script>
-<template>
-    <div class="ls-flex-column fill menu-pane overflow-enabled ls-space padding all-0 margin top-5" >
-        <div v-show="!loadingState"  v-for="menu in sortedMenues" :title="menu.title" :id="menu.id" class="ls-flex-row wrap ls-space padding all-0" v-bind:key="menu.id">
-            <label class="menu-label">{{menu.title}}</label>
-            <submenu :menu="menu"></submenu>
-        </div>
-        <loader-widget v-if="loadingState" id="sidemenuLoaderWidget" />
-    </div>
-</template>
 <style lang="scss">
 
 </style>

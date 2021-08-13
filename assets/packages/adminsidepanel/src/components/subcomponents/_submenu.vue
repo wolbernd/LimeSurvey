@@ -63,13 +63,12 @@ export default {
         },
     },
     methods:{
-        setActiveMenuItemIndex(menuItem){
-            let activeMenuIndex = menuItem.id;
+        setActiveMenuItemIndex(menuItem) {
             this.$store.commit('lastMenuItemOpen', menuItem);
             this.$log.log('Opened Menuitem', menuItem);
             return true;
         },
-        checkIsOpen(toCheckMenu){
+        checkIsOpen(toCheckMenu) {
             let directSelect = this.$store.state.lastMenuOpen == toCheckMenu.id;
             let childSelected = false;
             LS.ld.each(toCheckMenu.submenus, (submenu,i)=>{
@@ -77,18 +76,17 @@ export default {
             });
             return (directSelect || childSelected || false);
         },
-        setActiveMenuIndex(menu){
-            let activeMenuIndex = menu.id;
+        setActiveMenuIndex(menu) {
             this.$store.commit('lastMenuOpen', menu);
         },
-        setOpenSubpanel(sId){
+        setOpenSubpanel(sId) {
             this.openSubpanelId = sId;
             this.$emit('menuselected', sId);
         },
-        debugOut(obj){
+        debugOut(obj) {
             return JSON.stringify(obj);
         },
-        getLinkClass(menuItem){
+        getLinkClass(menuItem) {
             let classes = "ls-flex-row nowrap ";
             classes += (menuItem.pjax ? 'pjax ' : ' ');
             classes += (this.$store.state.lastMenuItemOpen==menuItem.id ? 'selected ' : ' ' );
@@ -105,19 +103,11 @@ export default {
     },
     created(){
         const self = this;
-        //first load old settings from localStorage
-        
     },
     mounted(){
         const self = this;
         this.updatePjaxLinks();
         this.redoTooltips();
-        // this.get(this.getMenuUrl, {position: 'side'}).then( (result) =>{
-        //     self.$log.debug('sidemenues',result);
-        //     self.menues =  LS.ld.orderBy(result.data.menues,(a)=>{return parseInt((a.order || 999999))},['desc']);
-        //     self.$localStorage.set('sidemenues', JSON.stringify(self.menues));
-        //     self.$forceUpdate();
-        // });
     }
 }
 </script>
