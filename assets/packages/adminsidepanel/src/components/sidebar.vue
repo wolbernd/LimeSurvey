@@ -113,20 +113,36 @@ export default {
         };
     },
     computed: {
-        useMobileView() { return window.innerWidth < 768; },
-        isActive(){ return window.SideMenuData.isActive; },
-        questiongroups() { return this.$store.state.questiongroups },
+        useMobileView() {
+            return window.innerWidth < 768; },
+        isActive(){ return window.SideMenuData.isActive;
+        },
+        questiongroups() {
+            return this.$store.state.questiongroups
+            },
         sidemenus: {
-            get(){return this.$store.state.sidemenus; },
-            set(newValue) { this.$store.commit("updateSidemenus", newValue); }
+            get(){
+                return this.$store.state.sidemenus;
+                },
+            set(newValue) {
+                this.$store.commit("updateSidemenus", newValue);
+                }
         },
         collapsedmenus: {
-            get(){return this.$store.state.collapsedmenus; },
-            set(newValue) { this.$store.commit("updateCollapsedmenus", newValue); }
+            get() {
+                return this.$store.state.collapsedmenus;
+            },
+            set(newValue) {
+                this.$store.commit("updateCollapsedmenus", newValue);
+            }
         },
         currentTab: {
-            get() { return this.$store.state.currentTab; },
-            set(tab) { this.$store.commit("changeCurrentTab", tab); }
+            get() {
+                return this.$store.state.currentTab;
+            },
+            set(tab) {
+                this.$store.commit("changeCurrentTab", tab);
+            }
         },
         getSideBarWidth() {
             return this.$store.getters.isCollapsed ? "98" : this.sideBarWidth;
@@ -336,7 +352,7 @@ export default {
             this.smallScreenHidden = !this.smallScreenHidden;
         },
         mousedown(e) {
-            if(this.useMobileView) {
+            if (this.useMobileView) {
                 this.$store.commit("changeIsCollapsed", false);
                 this.smallScreenHidden = !this.smallScreenHidden;
             }
@@ -371,7 +387,7 @@ export default {
         },
         mousemove(e, self) {
             if (this.isMouseDown) {
-                if(self.$store.getters.isRTL) {
+                if (self.$store.getters.isRTL) {
                     if (e.screenX === 0 && e.screenY === 0) {
                         return;
                     }
@@ -434,11 +450,10 @@ export default {
     },
     created() {
         const self = this;
-        if(window.innerWidth < 768) {
+        if (window.innerWidth < 768) {
             this.$store.commit("changeIsCollapsed", false);
         }
         self.$store.commit('setSurveyActiveState', (parseInt(this.isActive)===1));
-        // self.$log.debug(this.$store.state);
         this.activeMenuIndex = this.$store.state.lastMenuOpen;
         if (this.$store.getters.isCollapsed) {
             this.sideBarWidth = "98";
@@ -455,13 +470,13 @@ export default {
             const promises = [
                 Promise.resolve()
             ];
-            if(payload.updateQuestions) {
+            if (payload.updateQuestions) {
                 promises.push(this.$store.dispatch('getQuestions'));
             }
-            if(payload.collectMenus) {
+            if (payload.collectMenus) {
                 promises.push(this.$store.dispatch('collectMenus'));
             }
-            if(payload.activeMenuIndex) {
+            if (payload.activeMenuIndex) {
                 this.controlActiveLink();
                 promises.push(Promise.resolve());
             }
@@ -474,7 +489,6 @@ export default {
                     this.loading = false;
                 })
         });
-
 
         $(document).trigger("sidebar:mounted");
         //Calculate the sidebar height and bin it to the resize event
