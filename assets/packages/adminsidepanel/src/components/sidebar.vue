@@ -1,3 +1,81 @@
+<template>
+    <div 
+        id="sidebar" 
+        class="ls-flex ls-ba ls-space padding left-0 col-md-4 nofloat transition-animate-width scoped-hide-on-small" 
+        :class=" smallScreenHidden ? 'toggled' : ''"
+        :style="{'max-height': $store.state.inSurveyViewHeight, 'display': hiddenStateToggleDisplay}" 
+        @mouseleave="mouseleave" 
+        @mouseup="mouseup"
+    >
+        <template v-if="(useMobileView && smallScreenHidden) || !useMobileView">
+            <div 
+                v-if="showLoader"
+                key="dragaroundLoader" 
+                class="sidebar_loader" 
+                :style="{width: getSideBarWidth, height: getloaderHeight}" 
+            >
+                <div class="ls-flex ls-flex-column fill align-content-center align-items-center">
+                    <i class="fa fa-circle-o-notch fa-2x fa-spin"></i>
+                </div>
+            </div>
+            <div 
+                class="col-12 fill-height ls-space padding all-0 mainContentContainer" 
+                style="height: 100%" 
+                key="mainContentContainer"
+            >
+                <div class="mainMenu container-fluid col-12 ls-space padding right-0 fill-height">
+                    <sidebar-state-toggle @collapse="toggleCollapse"/>
+                    <transition name="slide-fade">
+                        <sidemenu 
+                            v-show="showSideMenu"
+                            :loading="loading" 
+                            :style="{'min-height': calculateSideBarMenuHeight}" 
+                            @changeLoadingState="applyLoadingState" 
+                        />
+                    </transition>
+                    <transition name="slide-fade">
+                        <questionexplorer 
+                            v-show="showQuestionTree" 
+                            :loading="loading" 
+                            :style="{'min-height': calculateSideBarMenuHeight}" 
+                            @changeLoadingState="applyLoadingState" 
+                            @openentity="openEntity" 
+                            @questiongrouporder="changedQuestionGroupOrder"
+                        />
+                    </transition>
+                    <transition name="slide-fade">
+                        <quickmenu 
+                            v-show="$store.getters.isCollapsed" 
+                            :loading="loading" 
+                            :style="{'min-height': calculateSideBarMenuHeight}" 
+                            @changeLoadingState="applyLoadingState" 
+                        />
+                    </transition>
+                </div>
+            </div>
+        </template>
+        <div 
+            v-if="(useMobileView && !smallScreenHidden) || !useMobileView"
+            class="resize-handle ls-flex-column" 
+            key="resizeHandle"
+            :style="{'height': calculateSideBarMenuHeight, 'max-height': getWindowHeight}" 
+        >
+            <button 
+                v-show="!$store.getters.isCollapsed" 
+                class="btn btn-default" 
+                @mousedown="mousedown" @click.prevent="()=>{return false;}"
+            >
+                <i class="fa fa-ellipsis-v" />
+            </button>
+        </div>
+        <div class="scoped-placeholder-greyed-area" 
+            v-if="(useMobileView && smallScreenHidden)" 
+            @click="toggleSmallScreenHide" 
+            v-html="' '"
+        />
+    </div>
+    
+</template>
 <script>
 import _ from "lodash";
 import ajaxMixin from "../mixins/runAjax.js";
@@ -446,84 +524,6 @@ export default {
     }
 };
 </script>
-<template>
-    <div 
-        id="sidebar" 
-        class="ls-flex ls-ba ls-space padding left-0 col-md-4 nofloat transition-animate-width scoped-hide-on-small" 
-        :class=" smallScreenHidden ? 'toggled' : ''"
-        :style="{'max-height': $store.state.inSurveyViewHeight, 'display': hiddenStateToggleDisplay}" 
-        @mouseleave="mouseleave" 
-        @mouseup="mouseup"
-    >
-        <template v-if="(useMobileView && smallScreenHidden) || !useMobileView">
-            <div 
-                v-if="showLoader"
-                key="dragaroundLoader" 
-                class="sidebar_loader" 
-                :style="{width: getSideBarWidth, height: getloaderHeight}" 
-            >
-                <div class="ls-flex ls-flex-column fill align-content-center align-items-center">
-                    <i class="fa fa-circle-o-notch fa-2x fa-spin"></i>
-                </div>
-            </div>
-            <div 
-                class="col-12 fill-height ls-space padding all-0 mainContentContainer" 
-                style="height: 100%" 
-                key="mainContentContainer"
-            >
-                <div class="mainMenu container-fluid col-12 ls-space padding right-0 fill-height">
-                    <sidebar-state-toggle @collapse="toggleCollapse"/>
-                    <transition name="slide-fade">
-                        <sidemenu 
-                            v-show="showSideMenu"
-                            :loading="loading" 
-                            :style="{'min-height': calculateSideBarMenuHeight}" 
-                            @changeLoadingState="applyLoadingState" 
-                        />
-                    </transition>
-                    <transition name="slide-fade">
-                        <questionexplorer 
-                            v-show="showQuestionTree" 
-                            :loading="loading" 
-                            :style="{'min-height': calculateSideBarMenuHeight}" 
-                            @changeLoadingState="applyLoadingState" 
-                            @openentity="openEntity" 
-                            @questiongrouporder="changedQuestionGroupOrder"
-                        />
-                    </transition>
-                    <transition name="slide-fade">
-                        <quickmenu 
-                            v-show="$store.getters.isCollapsed" 
-                            :loading="loading" 
-                            :style="{'min-height': calculateSideBarMenuHeight}" 
-                            @changeLoadingState="applyLoadingState" 
-                        />
-                    </transition>
-                </div>
-            </div>
-        </template>
-        <div 
-            v-if="(useMobileView && !smallScreenHidden) || !useMobileView"
-            class="resize-handle ls-flex-column" 
-            key="resizeHandle"
-            :style="{'height': calculateSideBarMenuHeight, 'max-height': getWindowHeight}" 
-        >
-            <button 
-                v-show="!$store.getters.isCollapsed" 
-                class="btn btn-default" 
-                @mousedown="mousedown" @click.prevent="()=>{return false;}"
-            >
-                <i class="fa fa-ellipsis-v" />
-            </button>
-        </div>
-        <div class="scoped-placeholder-greyed-area" 
-            v-if="(useMobileView && smallScreenHidden)" 
-            @click="toggleSmallScreenHide" 
-            v-html="' '"
-        />
-    </div>
-    
-</template>
 <style lang="scss" scoped>
     .sidebar_loader {
         height: 100%;
