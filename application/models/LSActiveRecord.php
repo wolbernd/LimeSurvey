@@ -371,7 +371,15 @@ class LSActiveRecord extends CActiveRecord
         }
         // if $value is provided, it would decrypt
         if ($value) {
-            return $sodium->decrypt($value);
+            try {
+                return $sodium->decrypt($value);
+            } catch (throwable $e) {
+                try {
+                    return LSActiveRecord::decryptSingle($value);
+                } catch (throwable $e) {
+                    return $value;
+                }
+            }
         }
         return '';
     }
