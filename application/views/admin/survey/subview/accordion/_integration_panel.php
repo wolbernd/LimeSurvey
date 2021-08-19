@@ -16,7 +16,7 @@ echo viewHelper::getViewTestTag('surveyPanelIntegration');
   <div id='panelintegration' class=" tab-pane fade in text-center" >
     <div class="container-center">
         <div class="row">
-            <table id="urlparams" class='table dataTable table-striped table-borders' >
+            <table id="urlparams" class='table dataTable table-responsive table-hover table-borders' >
             <thead><tr>
                 <th></th><th><?php eT('Action');?></th><th><?php eT('Parameter');?></th><th><?php eT('Target question');?></th><th></th><th></th><th></th>
             </tr></thead>

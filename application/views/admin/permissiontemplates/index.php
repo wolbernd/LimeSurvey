@@ -22,7 +22,7 @@ echo viewHelper::getViewTestTag('roles');
                 'bootstrap.widgets.TbGridView',
                 [
                     'id'              => 'RoleControl--identity-gridPanel',
-                    'itemsCssClass'   => 'table items',
+                    'itemsCssClass'   => 'table-responsive',
                     'htmlOptions'     => ['style' => 'cursor: pointer;'],
                     'dataProvider'    => $model->search(),
                     'columns'         => $model->columns,
@@ -30,10 +30,8 @@ echo viewHelper::getViewTestTag('roles');
                     'ajaxType'        => 'POST',
                     'ajaxUpdate'      => 'RoleControl--identity-gridPanel',
                     'afterAjaxUpdate' => 'LS.RoleControl.bindButtons',
-                    'summaryText'     => "<div class='row' style='text-align:left; color:#000'>"
-                        . "<div class='col-xs-6'>" . $massiveAction . "</div>"
-                        . "<div class='col-xs-6'>"
-                        . gT('Displaying {start}-{end} of {count} result(s).') . ' '
+                    'template'        => "{items}\n<div id='rolecontrolListPager'><div class=\"col-sm-4\" id=\"massive-action-container\">$massiveAction</div><div class=\"col-sm-4 pager-container ls-ba \">{pager}</div><div class=\"col-sm-4 summary-container\">{summary}</div></div>",
+                    'summaryText'     => gT('Displaying {start}-{end} of {count} result(s).') . ' '
                         . sprintf(
                             gT('%s rows per page'),
                             CHtml::dropDownList(
@@ -42,8 +40,7 @@ echo viewHelper::getViewTestTag('roles');
                                 Yii::app()->params['pageSizeOptions'],
                                 ['class' => 'changePageSize form-control', 'style' => 'display: inline; width: auto']
                             )
-                        )
-                        . "</div></div>",
+                        ),
                 ]
             );
 

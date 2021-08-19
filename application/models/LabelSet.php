@@ -124,20 +124,21 @@ class LabelSet extends LSActiveRecord
      */
     public function getbuttons()
     {
+        $button = "<div class='icon-btn-row'>";
         // Edit labelset
         if (Permission::model()->hasGlobalPermission('labelsets', 'update')) {
             $url = Yii::app()->createUrl("admin/labels/sa/editlabelset/lid/$this->lid");
-            $button = ' <a class="btn btn-default btn-sm green-border" style="margin-right: 5px;" data-toggle="tooltip" data-placement="top" title="' . gT('Edit label set') . '" href="' . $url . '" role="button"><span class="fa fa-pencil" ></span></a>';
+            $button .= ' <a class="btn btn-default btn-sm green-border" data-toggle="tooltip" data-placement="top" title="' . gT('Edit label set') . '" href="' . $url . '" role="button"><span class="fa fa-pencil" ></span></a>';
         }
 
         // View labelset
         $url = Yii::app()->createUrl("admin/labels/sa/view/lid/$this->lid");
-        $button .= '<a class="btn btn-default btn-sm" data-toggle="tooltip" data-placement="left" title="' . gT('View labels') . '" href="' . $url . '" role="button"><span class="fa fa-list-alt" ></span></a>';
+        $button .= '<a class="btn btn-default btn-sm" data-toggle="tooltip" data-placement="top" title="' . gT('View labels') . '" href="' . $url . '" role="button"><span class="fa fa-list-alt" ></span></a>';
 
         // Export labelset
         if (Permission::model()->hasGlobalPermission('labelsets', 'export')) {
             $url = Yii::app()->createUrl("admin/export/sa/dumplabel/lid/$this->lid");
-            $button .= ' <a class="btn btn-default btn-sm" data-toggle="tooltip" data-placement="left" title="' . gT('Export label set') . '" href="' . $url . '" role="button"><span class="icon-export" ></span></a>';
+            $button .= ' <a class="btn btn-default btn-sm" data-toggle="tooltip" data-placement="top" title="' . gT('Export label set') . '" href="' . $url . '" role="button"><span class="icon-export" ></span></a>';
         }
 
         // Delete labelset
@@ -157,6 +158,7 @@ class LabelSet extends LSActiveRecord
                     <i class="text-danger fa fa-trash"></i>
                     </a>';
         }
+        $button .= "</div>";
             return $button;
     }
 

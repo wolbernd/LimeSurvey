@@ -155,28 +155,30 @@ class ParticipantShare extends LSActiveRecord
         $userId = yii::app()->user->id;
         $isOwner = $this->participant->owner_uid == $userId;
         $isSuperAdmin = Permission::model()->hasGlobalPermission('superadmin', 'read');
+        $buttons = "<div class='icon-btn-row'>";
         if ($isOwner || $isSuperAdmin) {
             $url = Yii::app()->createUrl(
                 'admin/participants/sa/deleteSingleParticipantShare',
-                array(
+                [
                     'participantId' => urlencode($this->participant_id),
-                    'shareUid' => $this->share_uid
-                )
+                    'shareUid'      => $this->share_uid
+                ]
             );
-
-            return "<a href='#' 
+            $buttons .= "<a href='#'
+            class='btn btn-sm btn-default action_delete_shareParticipant'
             data-toggle='modal' 
             data-target='#confirmation-modal'
-            data-title='". gt('Delete sharing')."'
+            data-title='" . gt('Delete sharing') . "'
             data-btnclass='btn-danger'
-            data-btntext='". gt('Delete') ."'
+            data-btntext='" . gt('Delete') . "'
             data-message='" . gT('Do you really want to delete the sharing of this participant?') . "' 
             data-onclick='(function() { LS.CPDB.deleteSingleParticipantShare(\"" . $url . "\"); })'>"
-                . "<button class='btn btn-xs btn-default action_delete_shareParticipant'><i class='fa fa-trash text-danger'></i></button>"
+                . "<i class='fa fa-trash text-danger'></i>"
                 . "</a>";
-        } else {
-            return '';
         }
+        $buttons .= "</div>";
+
+        return $buttons;
     }
 
     /**

@@ -9,7 +9,7 @@ $codeids = '';
     <?php foreach ($lslanguages as $lslanguage): ?>
         <div id='neweditlblset<?php echo $i ?>' class="tab-pane fade in <?php if($i==0){ echo 'active first';} else {echo "not_first";}?>">
             <input type='hidden' class='lslanguage' value='<?php echo $lslanguage ?>' <?php if($i==0){ echo 'id="lslanguagemain"';}?> />
-            <table class='answertable table'>
+            <table class='answertable table table-responsive table-hover'>
                 <thead>
                     <tr>
                         <?php if ($first): ?>
@@ -58,22 +58,23 @@ $codeids = '';
                                 }?>" />
                             </td>
 
-                            <td style='text-align:center;'>
-                            &nbsp;&nbsp;
-                                <?php if (Permission::model()->hasGlobalPermission('labelsets','update')):?>
-                                    <a
-                                        href='#'
-                                        class="btn btn-default btn-sm htmleditor--openmodal"
-                                        data-target-field-id="title_<?php echo $lslanguage; ?>_<?php echo $row['sortorder'] ?>"
-                                        data-toggle="tooltip"
-                                        title="Open editor">
-                                        <i class="fa fa-edit"></i>
-                                    </a>
-                                    <?php if ($first): ?>
-                                    <button class="btn btn-default btn-sm btnaddanswer"><i class="icon-add  text-success"></i> </button> <?php // eT("Insert a new label after this one") ?>
-                                    <button class="btn btn-default btn-sm btndelanswer"><i class="fa fa-trash  text-warning "></i> </button> <?php //eT("Delete this label") ?>
-                                    <?php endif;?>
-                                <?php endif;?>
+                            <td>
+                                <div class="icon-btn-row">
+                                    <?php if (Permission::model()->hasGlobalPermission('labelsets', 'update')): ?>
+                                        <a
+                                            href='#'
+                                            class="btn btn-default btn-sm htmleditor--openmodal"
+                                            data-target-field-id="title_<?php echo $lslanguage; ?>_<?php echo $row['sortorder'] ?>"
+                                            data-toggle="tooltip"
+                                            title="Open editor">
+                                            <i class="fa fa-edit"></i>
+                                        </a>
+                                        <?php if ($first): ?>
+                                            <button class="btn btn-default btn-sm btnaddanswer"><i class="icon-add  text-success"></i></button> <?php // eT("Insert a new label after this one") ?>
+                                            <button class="btn btn-default btn-sm btndelanswer"><i class="fa fa-trash  text-warning "></i></button> <?php //eT("Delete this label") ?>
+                                        <?php endif; ?>
+                                    <?php endif; ?>
+                                </div>
                             </td>
                         </tr>
                         <?php  $position++; ?>

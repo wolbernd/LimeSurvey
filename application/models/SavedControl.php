@@ -121,7 +121,7 @@ class SavedControl extends LSActiveRecord
             'imageUrl' => false,
             'url' => 'App()->createUrl("admin/dataentry/sa/editdata/subaction/edit",array("surveyid"=>$data->sid,"id"=>$data->srid));',
             'options' => array(
-                'class' => "btn btn-default btn-xs btn-edit",
+                'class' => "btn btn-default btn-sm btn-edit",
                 'data-toggle' => "tooltip",
                 'title' => gT("Edit response"),
             ),
@@ -132,7 +132,7 @@ class SavedControl extends LSActiveRecord
             'imageUrl' => false,
             'url' => 'App()->createUrl("admin/saved/sa/resend_accesscode",array("surveyid"=>$data->sid,"id"=>$data->srid));',
             'options' => array(
-                'class' => "btn btn-default btn-xs btn-edit",
+                'class' => "btn btn-default btn-sm btn-edit",
                 'data-toggle' => "tooltip",
                 'title' => gT("Resend access code"),
             ),
@@ -145,7 +145,7 @@ class SavedControl extends LSActiveRecord
             'icon' => false,
             'url' => 'App()->createUrl("admin/saved/sa/actionDelete",array("surveyid"=>$data->sid,"scid"=>$data->scid,"srid"=>$data->srid));',
             'options' => array(
-                'class' => "btn btn-default btn-xs btn-delete",
+                'class' => "btn btn-default btn-sm btn-delete",
                 'data-toggle' => "tooltip",
                 'title' => gT("Delete this entry and related response"),
             ),
@@ -164,9 +164,10 @@ class SavedControl extends LSActiveRecord
                 'filter' => false,
             ),
             array(
+                'header' => gT('Action'),
                 'class' => 'bootstrap.widgets.TbButtonColumn',
                 'template' => '{editresponse}{delete}',
-                //~ 'htmlOptions' => array('class' => 'text-left response-buttons'),
+                'htmlOptions' => array('class' => 'icon-btn-row'),
                 'buttons' => $this->gridButtons,
             ),
             array(

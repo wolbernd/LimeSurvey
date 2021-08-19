@@ -1,4 +1,4 @@
-<table class='table table-striped table-permissions-set'>
+<table class='table table-responsive table-hover table-permissions-set'>
     <thead>
         <tr>
             <th></th>

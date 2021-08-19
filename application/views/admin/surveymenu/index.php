@@ -1,8 +1,10 @@
 <?php
-/* @var AdminController $this */
-/* @var CActiveDataProvider $dataProvider */
-/* @var Surveymenu $model */
-/* @var SurveymenuEntries $entries_model */
+/**
+ * @var AdminController $this
+ * @var CActiveDataProvider $dataProvider
+ * @var Surveymenu $model
+ * @var SurveymenuEntries $entries_model
+ */
 
 $pageSize = Yii::app()->user->getState('pageSize', Yii::app()->params['defaultPageSize']);
 $massiveAction = App()->getController()->renderPartial('/admin/surveymenu/massive_action/_selector', [], true, false);
@@ -35,11 +37,11 @@ echo viewHelper::getViewTestTag('surveyMenus');
             <div id="surveymenues" class="tab-pane active">
                 <div class="col-12 ls-space margin top-15">
                     <div class="col-12 ls-flex-item">
-                        <?php $this->widget(
+                        <?php
+                        $this->widget(
                             'bootstrap.widgets.TbGridView',
                             [
                                 'dataProvider'             => $model->search(),
-                                // Number of row per page selection
                                 'id'                       => 'surveymenu-grid',
                                 'columns'                  => $model->getColumns(),
                                 'filter'                   => $model,
@@ -54,12 +56,12 @@ echo viewHelper::getViewTestTag('surveyMenus');
                                     )
                                 ),
                                 'rowHtmlOptionsExpression' => '["data-surveymenu-id" => $data->id]',
-                                'itemsCssClass'            => 'table table-hover',
+                                'itemsCssClass'            => 'table-responsive',
                                 'htmlOptions'              => ['class' => ' grid-view'],
                                 'ajaxType'                 => 'POST',
                                 'ajaxUpdate'               => 'surveymenu-grid',
                                 'template'                 => "{items}\n<div id='tokenListPager'><div class=\"col-sm-4\" id=\"massive-action-container\">$massiveAction</div><div class=\"col-sm-4 pager-container ls-ba \">{pager}</div><div class=\"col-sm-4 summary-container\">{summary}</div></div>",
-                                'afterAjaxUpdate'          => 'bindAction',
+                                'afterAjaxUpdate'          => 'surveyMenuFunctions',
                             ]
                         ); ?>
                     </div>
@@ -138,12 +140,13 @@ echo viewHelper::getViewTestTag('surveyMenus');
         }
     });
 
-    var surveyMenuEntryFunctions = new SurveyMenuFunctionsWrapper('#editcreatemenu', 'surveymenu-grid', {
+    var surveyMenuFunctions = function () {
+        getBindActionForSurveymenus('#editcreatemenu', 'surveymenu-grid', {
             loadSurveyEntryFormUrl: "<?php echo Yii::app()->urlManager->createUrl('/admin/menus/sa/getsurveymenuform') ?>",
             restoreEntriesUrl: "<?php echo Yii::app()->getController()->createUrl('/admin/menus/sa/restore'); ?>",
             deleteEntryUrl: "<?php echo Yii::app()->getController()->createUrl('/admin/menus/sa/delete'); ?>"
-        }),
-        bindAction = surveyMenuEntryFunctions.getBindActionForSurveymenus();
+        })
+    }
+    surveyMenuFunctions();
 
-    $(document).on('ready pjax:scriptcomplete', bindAction);
 </script>

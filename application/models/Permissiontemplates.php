@@ -212,13 +212,16 @@ class Permissiontemplates extends CActiveRecord
                     <i class='fa fa-trash'></i>
               </button>";
 
-        return join("\n", [
+        $buttons = "<div class='icon-btn-row'>";
+        $buttons .= implode("\n", [
             $editRoleButton,
             $editPermissionButton,
             $roleDetail,
             $exportRoleButton,
             $deleteRoleButton
         ]);
+        $buttons .= "</div>";
+        return $buttons;
     }
 
     /**

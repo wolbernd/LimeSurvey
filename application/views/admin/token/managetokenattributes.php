@@ -31,7 +31,7 @@
                     <?php $c=true;?>
                     <?php foreach ($oSurvey->allLanguages as $sLanguage) { ?>
                         <div id="language_<?php echo $sLanguage ?>"  class="tab-pane fade in <?php if ($c){$c=false; echo 'active'; }?>">
-                            <table class='listtokenattributes table'>
+                            <table class='listtokenattributes table table-responsive table-hover'>
                                 <thead> <tr>
                                     <th><?php eT("Attribute field"); ?></th>
                                     <th><?php eT("Field description"); ?></th>

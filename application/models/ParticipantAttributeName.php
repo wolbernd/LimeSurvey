@@ -104,11 +104,12 @@ class ParticipantAttributeName extends LSActiveRecord
         if ($this->core_attribute == 'Y') {
             return '';
         }
+        $buttons = "<div class='icon-btn-row'>";
         $raw_button_template = ""
-            . "<button class='btn btn-default btn-sm %s %s' role='button' style='margin-right: 5px;' data-toggle='tootltip' title='%s' onclick='return false;'>" //extra class //title
+            . "<button class='btn btn-default btn-sm %s %s' role='button' data-toggle='tootltip' title='%s' onclick='return false;'>" //extra class //title
             . "<span class='fa fa-%s' ></span>" //icon class
             . "</button>";
-        $buttons = "";
+        $buttons .= "";
         
         //Edit-button
         $editData = array(
@@ -135,6 +136,7 @@ class ParticipantAttributeName extends LSActiveRecord
         data-message=' " . gt("Do you really want to delete this attribute") ."?'
         data-onclick='deleteAttributeAjax(" . $this->attribute_id . ")'>";
         $buttons.= vsprintf($raw_button_template, $deleteData) . "</a>";
+        $buttons .= "</div>";
 
         return $buttons;
     }
