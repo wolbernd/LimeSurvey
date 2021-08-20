@@ -169,7 +169,7 @@ class Permissiontemplates extends CActiveRecord
                 class='btn btn-sm btn-default RoleControl--action--openmodal RoleControl--action--permissions'
                 data-toggle='tooltip' 
                 data-placement='top'
-                title='" . gT('Edit Permission') . "'
+                title='" . gT('Edit Permissions') . "'
                 data-href='" . $setPermissionsUrl . "'>
                     <i class='fa fa-lock'></i>
                 </button>";
