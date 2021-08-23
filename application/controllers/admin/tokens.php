@@ -2314,15 +2314,8 @@ class tokens extends Survey_Common_Action
 
         if (!Yii::app()->request->getQuery('ok')) {
             $aData['sidemenu']['state'] = false;
-            $this->_renderWrappedTemplate('token', array('message' => array(
-            'title' => gT("Delete survey participants table"),
-            'message' => gT("If you delete this table access codes will no longer be required to access this survey.") . "<br />" . gT("A backup of this table will be made if you proceed. Your system administrator will be able to access this table.") . "<br />\n"
-            . sprintf('("%s")<br /><br />', $newtableDisplay)
-            . "<input class='btn btn-danger' type='submit' value='"
-            . gT("Delete table") . "' onclick=\"window.open('" . $this->getController()->createUrl("admin/tokens/sa/kill/surveyid/{$iSurveyId}/ok/Y") . "', '_top')\" />\n"
-            . "<input class='btn btn-default' type='submit' value='"
-            . gT("Cancel") . "' onclick=\"window.open('" . $this->getController()->createUrl("admin/tokens/sa/index/surveyid/{$iSurveyId}") . "', '_top')\" />\n"
-            )), $aData);
+            $aData['tableName'] = $newtableDisplay;
+            $this->_renderWrappedTemplate('token', array('deleteparticipantstable'), $aData);
         } else /* The user has confirmed they want to delete the tokens table */
         {
             Yii::app()->db->createCommand()->renameTable("{{{$oldtable}}}", "{{{$newtable}}}");
