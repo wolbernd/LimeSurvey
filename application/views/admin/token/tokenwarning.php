@@ -15,12 +15,17 @@
                         </strong>
                     </p>
                 </h3>
-                <p>
+                <p style="margin-top: 50px;">
 
                     <?php
-                        if (Permission::model()->hasSurveyPermission($oSurvey->sid, 'surveysettings', 'update') || Permission::model()->hasSurveyPermission($oSurvey->sid, 'tokens','create')){
-                            eT("If you initialise a survey participants table for this survey then this survey will only be accessible to users who provide an access code either manually or by URL.");
-                        ?><br /><br />
+                        if (Permission::model()->hasSurveyPermission($oSurvey->sid, 'surveysettings', 'update') || Permission::model()->hasSurveyPermission($oSurvey->sid, 'tokens','create')) {
+                            eT("If you initialise a survey participants table for this survey then this survey will switch to "); ?>
+                            <strong>
+                                <?php eT("closed-access mode."); ?>
+                            </strong>
+                            <br />
+                            <?php eT("This means your survey will only be accessible to users who provide an accesss code either manually or by URL."); ?>
+                        <br /><br />
 
                         <?php
                             if ($oSurvey->isAnonymized) {
@@ -28,13 +33,16 @@
                             ?><br /><br />
                             <?php
                             }
-                            eT("Do you want to create a survey participant table for this survey?");
+                            eT("Do you want to create a survey participants table for this survey and switch to closed-access mode?");
                         ?>
                         <br /><br />
-
+                        <?php
+                            eT("If you change your mind at any later point you can switch back to open-access mode by deleting the participants table at any time.");
+                        ?>
+                        <br /><br />
                         <?php echo CHtml::form(array("admin/tokens/sa/index/surveyid/{$oSurvey->sid}"), 'post'); ?>
-                            <button type="submit" class="btn btn-default  btn-lg"  name="createtable" value="Y"><?php eT("Initialise participant table"); ?></button>
-                            <a href="<?php echo $this->createUrl("surveyAdministration/view/surveyid/$oSurvey->sid"); ?>" class="btn btn-default  btn-lg"><?php eT("No, thanks."); ?></a>
+                            <button type="submit" class="btn btn-default btn-lg"  name="createtable" value="Y"><?php eT("Switch to closed-access mode"); ?></button>
+                            <a href="<?php echo $this->createUrl("surveyAdministration/view/surveyid/$oSurvey->sid"); ?>" class="btn btn-default btn-lg"><?php eT("Continue in open-access mode"); ?></a>
                     <?php echo CHtml::endForm() ?>
 
 
