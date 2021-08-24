@@ -2333,13 +2333,16 @@ class tokens extends Survey_Common_Action
             SurveyLink::model()->deleteLinksBySurvey($iSurveyId);
 
             $aData['sidemenu']['state'] = false;
-            $this->_renderWrappedTemplate('token', array('message' => array(
+            $aData['tableName'] = $newtableDisplay;
+            $this->_renderWrappedTemplate('token', array('deleteparticipantstableconfirmation'), $aData);
+ 
+           /** $this->_renderWrappedTemplate('token', array('message' => array(
             'title' => gT("Delete survey participants table"),
             'message' => '<br />' . gT("The participant table has now been removed and access codes are no longer required to access this survey.") . "<br /> " . gT("A backup of this table has been made and can be accessed by your system administrator.") . "<br />\n"
             . sprintf('("%s")<br /><br />', $newtableDisplay)
             . "<input type='submit' class='btn btn-default' value='"
             . gT("Main Admin Screen") . "' onclick=\"window.open('" . Yii::app()->getController()->createUrl("surveyAdministration/view/surveyid/" . $iSurveyId) . "', '_top')\" />"
-            )), $aData);
+            )), $aData); */
 
             LimeExpressionManager::SetDirtyFlag(); // so that knows that survey participants tables have changed
         }

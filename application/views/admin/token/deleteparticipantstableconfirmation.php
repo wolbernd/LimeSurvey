@@ -1,4 +1,6 @@
 <?php
+?>
+<?php
     /**
      * This is the view, when your are trying to delete the survey participants table.
      */
@@ -16,15 +18,17 @@
                 </h3>
                 <p style="margin-top: 50px;">
                     <?php 
-                    eT("If you delete this table access codes will no longer be required to access this survey and your survey will switch back to "); 
+                    eT("The participant table has now been removed and your survey switched back to "); 
                     ?>
-                    <br>
                     <strong>
                         <?php eT("open-access mode."); ?>
                     </strong>
                     <br> 
                     <br>
-                    <?php eT("A backup of this table will be made if you proceed. Your system administrator will be able to access this table.");?>
+                    <?php eT("Access codes are no longer required to access this survey.");?>
+                    <br>
+                    <br>
+                    <?php eT("A backup of this table has been made and can be accessed by your administrator.");?>
                     <br>
                     <?php echo '("' . $tableName  . '")'?>
                     <br>
@@ -35,10 +39,11 @@
                     <br>
                     <br>
                 </p>
-                <input class="btn btn-default btn-lg" type="submit" name="cancel" value="<?php eT("Cancel") ?>" onclick="window.open('
-                    <?php echo $this->createUrl('admin/tokens/sa/index/surveyid/{$surveyid}') ?> , '_top')'" />
-                <input class="btn btn-danger btn-lg" type="submit" name="deleteTable" value="<?php eT("Delete table") ?>" onclick="window.open('
-                    <?php echo $this->createUrl("admin/tokens/sa/kill/surveyid/{$surveyid}/ok/Y") ?>', '_top')" />
+                <?php echo CHtml::form(array("admin/tokens/sa/kill/surveyid/{$iSurveyId}"), 'post'); ?>
+                    <button class="btn btn-default btn-lg" type="submit" name="cancel" href="<?php echo $this->createUrl("surveyAdministration/view/surveyid/" . $iSurveyId) .; ?>">
+                        <?php eT("Back to main admin screen") ?>
+                    </button>
+                <?php echo CHtml::endForm() ?>
             </div>
         </div>
     </div>
